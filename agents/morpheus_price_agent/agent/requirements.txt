@@ -1,0 +1,8 @@
+python-levenshtein
+accelerate
+langchain
+huggingface-hub
+pandas 
+scikit-learn
+flask==2.2.2
+Werkzeug==2.2.2
