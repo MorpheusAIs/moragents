@@ -1,6 +1,5 @@
 import requests
 import logging
-from difflib import SequenceMatcher
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from langchain.pydantic_v1 import BaseModel, Field
@@ -8,17 +7,14 @@ from langchain.agents import Tool
 from config import Config
 
 def get_most_similar(text, data):
-    """Find the most similar item in a list of data to a given text."""
+    """Returns a list of most similar items based on cosine similarity."""
     vectorizer = TfidfVectorizer()
-    vectorizer.fit(data)
-    sentence_vectors = vectorizer.transform(data)
+    sentence_vectors = vectorizer.fit_transform(data)
     text_vector = vectorizer.transform([text])
     similarity_scores = cosine_similarity(text_vector, sentence_vectors)
-    top_indices = similarity_scores.argsort()[0][-20:][::-1]
-    res = [data[item] for item in top_indices]
-    sim = [SequenceMatcher(None, text, item).ratio() for item in res]
-    max_index = max(range(len(sim)), key=sim.__getitem__)
-    return res[max_index]
+    top_indices = similarity_scores.argsort()[0][-20:]
+    top_matches = [data[item] for item in top_indices if similarity_scores[0][item] > 0.5]
+    return top_matches
 
 def get_coingecko_id(text, type="coin"):
     """Get the CoinGecko ID for a given coin or NFT."""
@@ -104,20 +100,13 @@ def get_protocols_list():
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-        return [item['slug'] for item in data] ,[item['gecko_id'] for item in data]
+        return [item['slug'] for item in data] ,[item['name'] for item in data] ,[item['gecko_id'] for item in data]
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to retrieve protocols list: {str(e)}")
         raise
 
-def get_protocol_tvl(protocol_name):
-    """Get the TVL (Total Value Locked) of a protocol from DefiLlama API."""
-    id,gecko = get_protocols_list()
-    tag = get_coingecko_id(protocol_name)
-    if not tag:
-        return None
-    protocol_id = next((i for i, j in zip(id, gecko) if j == tag), None)
-    if not protocol_id:
-        return None
+def get_tvl_value(protocol_id):
+    """Gets the TVL value using the protocol ID from DefiLlama API."""
     url = f"{Config.DEFILLAMA_BASE_URL}/tvl/{protocol_id}"
     try:
         response = requests.get(url)
@@ -126,6 +115,29 @@ def get_protocol_tvl(protocol_name):
     except requests.exceptions.RequestException as e:
         logging.error(f"Failed to retrieve protocol TVL: {str(e)}")
         raise
+
+def get_protocol_tvl(protocol_name):
+    """Get the TVL (Total Value Locked) of a protocol from DefiLlama API."""
+    id,name,gecko = get_protocols_list()
+    tag = get_coingecko_id(protocol_name)
+    if tag:
+        protocol_id = next((i for i, j in zip(id, gecko) if j == tag), None)
+        if protocol_id:
+            return {tag: get_tvl_value(protocol_id)}
+    if not tag or not protocol_id:
+        res = get_most_similar(protocol_name, name)
+        if not res:
+            return None
+        else:
+            result = []
+            for item in res:
+                protocol_id = next((i for i, j in zip(id, name) if j == item), None)
+                tvl = get_tvl_value(protocol_id)
+                result.append({protocol_id: tvl})
+            if not result:
+                return None
+            max_key = max(result, key=lambda dct: dct.get(list(dct.keys())[0]))
+            return max_key
 
 class GetPrice(BaseModel):
     """Input schema for the get_coin_price_tool."""
@@ -165,7 +177,8 @@ def get_protocol_total_value_locked_tool(protocol_name):
         tvl = get_protocol_tvl(protocol_name)
         if tvl is None:
             return Config.TVL_FAILURE_MESSAGE
-        return Config.TVL_SUCCESS_MESSAGE.format(protocol_name=protocol_name, tvl=tvl)
+        protocol,tvl_value=list(tvl.items())[0][0],list(tvl.items())[0][1]
+        return Config.TVL_SUCCESS_MESSAGE.format(protocol_name=protocol_name, tvl=tvl_value)
     except requests.exceptions.RequestException:
         return Config.API_ERROR_MESSAGE
 

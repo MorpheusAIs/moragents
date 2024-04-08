@@ -16,16 +16,20 @@ class ChatbotUI(ctk.CTk):
         self.host_port_price_fetching_agent = host_port_price_fetching_agent
 
         self.title("MORagents")
-        self.geometry("400x500")
+        self.geometry("420x500")
+        self.resizable(False, True)
 
-        self.chat_display = ctk.CTkTextbox(self, width=380, height=400, wrap="word")
+        self.chat_display = ctk.CTkTextbox(self, width=400, height=400, wrap="word")
         self.chat_display.pack(pady=20)
 
-        self.user_input = ctk.CTkEntry(self, width=320, placeholder_text="Type your message here...")
+        self.user_input = ctk.CTkEntry(self, width=320, placeholder_text="Ask about price, market cap, or TVL here")
         self.user_input.pack(side="left", padx=10)
+        self.user_input.bind("<Return>", lambda event: self.send_message())
 
-        self.send_button = ctk.CTkButton(self, text="Send", command=self.send_message)
-        self.send_button.pack(side="right")
+        self.send_button = ctk.CTkButton(self, text="Send", command=self.send_message, width=100, height=30)
+        self.send_button.pack(side="right", padx=10)
+        self.send_button.bind("<Return>", lambda event: self.send_message())
+        self.send_button.focus_set()
 
     def send_message(self):
         user_message = self.user_input.get()
