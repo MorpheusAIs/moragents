@@ -13,8 +13,6 @@ class ChatbotUI(ctk.CTk):
     def __init__(self, host_port_price_fetching_agent: int):
         super().__init__()
 
-        # TODO, have a warm-up step which silently fetches btc price. Give user notice.
-
         self.host_port_price_fetching_agent = host_port_price_fetching_agent
 
         self.title("MORagents")
@@ -33,12 +31,30 @@ class ChatbotUI(ctk.CTk):
         self.send_button.bind("<Return>", lambda event: self.send_message())
         self.send_button.focus_set()
 
+        # Warm-up step: Silently fetch BTC price and give user notice
+        self.display_message("Waking up agent \"Fetcher\"...\n"
+                             "Just a few seconds...\n\n")
+        self.after(2000, self.warm_up_agent)
+
+    def warm_up_agent(self):
+        try:
+            url = f'http://localhost:{self.host_port_price_fetching_agent}/'
+            data = {'prompt': 'BTC price'}
+            response = requests.post(url, json=data, timeout=1000)
+
+            if response.status_code == 200:
+                self.display_message("Fetcher agent is ready!\nYou can ask about prices, market caps, and TVLs\n\n\n")
+            else:
+                self.display_message("Fetcher agent warm-up failed.")
+        except Exception as e:
+            self.display_message(f"Fetcher: Failed to connect to the agent during warm-up. Error: {e}")
+
     def send_message(self):
         user_message = self.user_input.get()
         self.display_message(f"You: {user_message}")
 
         self.user_input.delete(0, "end")
-        self.display_message("Fetcher: Thinking...")
+        self.display_message("Fetcher: Working...")
         Thread(target=self.call_rest_api, args=(user_message,)).start()
 
     def display_message(self, message):
@@ -49,12 +65,12 @@ class ChatbotUI(ctk.CTk):
 
     def call_rest_api(self, message):
         try:
-            url = f'http://localhost:{host_port_price_fetching_agent}/'
+            url = f'http://localhost:{self.host_port_price_fetching_agent}/'
             data = {'prompt': message}
             response = requests.post(url, json=data, timeout=1000)
 
             self.chat_display.configure(state="normal")
-            thinking_index = self.chat_display.search("Fetcher: Thinking...", "end", backwards=True)
+            thinking_index = self.chat_display.search("Fetcher: Working...", "end", backwards=True)
             if thinking_index:
                 self.chat_display.delete(thinking_index, f"{thinking_index}+1l")
             else:
@@ -67,7 +83,7 @@ class ChatbotUI(ctk.CTk):
             self.chat_display.configure(state="disabled")
         except Exception as e:
             self.chat_display.configure(state="normal")
-            thinking_index = self.chat_display.search("Fetcher: Thinking...", "end", backwards=True)
+            thinking_index = self.chat_display.search("Fetcher: Working...", "end", backwards=True)
             if thinking_index:
                 self.chat_display.delete(thinking_index, f"{thinking_index}+1l")
             else:
