@@ -1,10 +1,8 @@
 import tools
-import logging
-from flask import Flask, request, jsonify
 from huggingface_hub import hf_hub_download
-from accelerate import Accelerator
+from langchain import hub
+from langchain.agents import AgentExecutor, create_react_agent
 from langchain_community.llms import LlamaCpp
-from langchain.agents import initialize_agent
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from config import Config
@@ -14,12 +12,13 @@ def download_model(model_name, revision):
     model_directory = hf_hub_download(repo_id=model_name, filename=revision)
     return model_directory
 
+
 def load_llm():
-    model_path = Config.MODEL_PATH
+    model_path = download_model(Config.MODEL_NAME, Config.MODEL_REVISION)
     n_gpu_layers = 0
     n_batch = 512
     callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-    
+
     llm = LlamaCpp(
         model_path=model_path,
         n_gpu_layers=n_gpu_layers,
@@ -30,8 +29,9 @@ def load_llm():
         temperature=0.1,
         streaming=False
     )
-    
+
     return llm
+
 
 def load_agent(tools):
     PREFIX = "<<SYS>> You are smart agent that selects a function from list of functions based on user queries.\\ When the function throws Error Tell the user why u stopped and about the error from the description\\ Run only one function tool at a time in one query.<</SYS>>\\n"
@@ -49,9 +49,10 @@ def load_agent(tools):
     )
     return agent
 
+
 tools_provided = tools.get_tools()
 agent = load_agent(tools_provided)
-        
+
 if __name__ == '__main__':
     while True:
         text = input("enter your query?")
