@@ -13,6 +13,8 @@ class ChatbotUI(ctk.CTk):
     def __init__(self, host_port_price_fetching_agent: int):
         super().__init__()
 
+        # TODO, have a warm-up step which silently fetches btc price. Give user notice.
+
         self.host_port_price_fetching_agent = host_port_price_fetching_agent
 
         self.title("MORagents")
@@ -22,7 +24,7 @@ class ChatbotUI(ctk.CTk):
         self.chat_display = ctk.CTkTextbox(self, width=400, height=400, wrap="word")
         self.chat_display.pack(pady=20)
 
-        self.user_input = ctk.CTkEntry(self, width=320, placeholder_text="Ask about price, market cap, or TVL here")
+        self.user_input = ctk.CTkEntry(self, width=320, placeholder_text="Ask about price, market cap, or TVL")
         self.user_input.pack(side="left", padx=10)
         self.user_input.bind("<Return>", lambda event: self.send_message())
 
@@ -36,10 +38,13 @@ class ChatbotUI(ctk.CTk):
         self.display_message(f"You: {user_message}")
 
         self.user_input.delete(0, "end")
+        self.display_message("Fetcher: Thinking...")
         Thread(target=self.call_rest_api, args=(user_message,)).start()
 
     def display_message(self, message):
-        self.chat_display.insert("end", message + "\n\n")
+        self.chat_display.configure(state="normal")
+        self.chat_display.insert("end", message + "\n")
+        self.chat_display.configure(state="disabled")
         self.chat_display.see("end")
 
     def call_rest_api(self, message):
@@ -48,13 +53,27 @@ class ChatbotUI(ctk.CTk):
             data = {'prompt': message}
             response = requests.post(url, json=data, timeout=1000)
 
+            self.chat_display.configure(state="normal")
+            thinking_index = self.chat_display.search("Fetcher: Thinking...", "end", backwards=True)
+            if thinking_index:
+                self.chat_display.delete(thinking_index, f"{thinking_index}+1l")
+            else:
+                self.chat_display.insert("end", "\n")
             if response.status_code == 200:
                 bot_response = response.json()['response']
-                self.chat_display.insert("end", f"Fetcher: {bot_response}\n\n")
+                self.chat_display.insert("end", f"Fetcher: {bot_response}\n")
             else:
-                self.display_message("Fetcher: Sorry, there was a problem with the request.")
+                self.chat_display.insert("end", "Fetcher: Sorry, there was a problem with the request.\n")
+            self.chat_display.configure(state="disabled")
         except Exception as e:
-            self.display_message(f"Fetcher: Failed to connect to the server. Error: {e}")
+            self.chat_display.configure(state="normal")
+            thinking_index = self.chat_display.search("Fetcher: Thinking...", "end", backwards=True)
+            if thinking_index:
+                self.chat_display.delete(thinking_index, f"{thinking_index}+1l")
+            else:
+                self.chat_display.insert("end", "\n")
+            self.chat_display.insert("end", f"Fetcher: Failed to connect to the server. Error: {e}\n")
+            self.chat_display.configure(state="disabled")
 
         self.chat_display.see("end")
 
