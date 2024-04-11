@@ -1,0 +1,19 @@
+# PyCharm files
+.idea/
+
+# Compiled Python files
+*.pyc
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Environment
+venv/
+.env
+
+# Jupyter Notebook temporary files
+.ipynb_checkpoints/
+
+######
+
+simple_eth_agent/simple_eth_agent.egg-info

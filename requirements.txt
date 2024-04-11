@@ -2,3 +2,4 @@ docker
 tk
 customtkinter
 requests
+setuptools
