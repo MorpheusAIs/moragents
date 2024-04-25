@@ -3,3 +3,4 @@ tk
 customtkinter
 requests
 setuptools
+pyinstaller
