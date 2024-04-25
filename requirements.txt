@@ -2,3 +2,5 @@ docker
 tk
 customtkinter
 requests
+setuptools
+pyinstaller

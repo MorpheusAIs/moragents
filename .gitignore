@@ -19,6 +19,7 @@ dist/
 build/
 *.egg-info/
 *.egg
+.eggs/
 
 # Unit test / coverage reports
 htmlcov/
@@ -48,3 +49,6 @@ coverage.xml
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+## resource files
+resources/*

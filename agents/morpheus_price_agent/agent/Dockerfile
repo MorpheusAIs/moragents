@@ -14,13 +14,14 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip && \
     python3 -m pip install --no-cache-dir --upgrade -r requirements.txt && \
     pip install --no-cache-dir -U llama-cpp-python
 
+# download ahead of source code copy so source code can be developed on without redownload of gguf file
+RUN huggingface-cli download TheBloke/OpenHermes-2.5-Mistral-7B-GGUF openhermes-2.5-mistral-7b.Q4_K_M.gguf --local-dir model --local-dir-use-symlinks False
+
 # Copy the application code and necessary files
 COPY src/ ./src/
 
-# TODO, download this before copying src
-
-# Download the model (assuming download_model.py handles the download)
-RUN python3 src/download_model.py
+## Download the model (assuming download_model.py handles the download)
+#RUN python3 src/download_model.py
 
 # Expose the port your application listens on
 EXPOSE 5000
@@ -29,4 +30,4 @@ EXPOSE 5000
 ENV FLASK_APP=src/agent.py
 
 # Run the application
-CMD ["flask", "run", "--host", "0.0.0.0"]
+CMD ["python3", "src/agent.py"]

@@ -34,7 +34,7 @@ class ChatbotUI(ctk.CTk):
         # Warm-up step: Silently fetch BTC price and give user notice
         self.display_message("Waking up agent \"Fetcher\"...\n"
                              "Just a few seconds...\n\n")
-        self.after(2000, self.warm_up_agent)
+        self.after(5000, self.warm_up_agent)  # wait 2 secs for container to spin up, then kick-off warm-up routine
 
     def warm_up_agent(self):
         try:
@@ -95,13 +95,16 @@ class ChatbotUI(ctk.CTk):
 
 
 if __name__ == "__main__":
-    os_name, arch = get_os_and_arch()
+    # os_name, arch = get_os_and_arch()
+    #
+    # host_port_price_fetching_agent = launch_container(
+    #     AgentDockerConfig.PRICE_FETCHER_IMAGE_NAME,
+    #     AgentDockerConfig.PRICE_FETCHER_INTERNAL_PORT,
+    #     AgentDockerConfig.PRICE_FETCHER_DOCKERFILE[arch]
+    # )
+    #
+    # app = ChatbotUI(host_port_price_fetching_agent=host_port_price_fetching_agent)
+    # app.mainloop()
 
-    host_port_price_fetching_agent = launch_container(
-        AgentDockerConfig.PRICE_FETCHER_IMAGE_NAME,
-        AgentDockerConfig.PRICE_FETCHER_INTERNAL_PORT,
-        AgentDockerConfig.PRICE_FETCHER_DOCKERFILE[arch]
-    )
-
-    app = ChatbotUI(host_port_price_fetching_agent=host_port_price_fetching_agent)
+    app = ChatbotUI(host_port_price_fetching_agent=53591)
     app.mainloop()
