@@ -26,8 +26,8 @@ transaction.
    2. Transient tkinter-based UI, which will be replaced by a more compelling UI developed by CliffordAttractor
    3. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
 4. **artfuljars on Discord**:
-   5. Windows Build (EXE version of .app)
-   6. Two installation wizards. One each for macOS and Windows (install system dependencies + MORagents app)
+   5. (pending) Windows Build (EXE version of .app)
+   6. (pending) Two installation wizards. One each for macOS and Windows (install system dependencies + MORagents app)
 
 ### Decentralized Inference:
 #### Non-Local Installation Agents for Permission-less Compute
