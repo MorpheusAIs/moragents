@@ -12,16 +12,16 @@ transaction.
 
 ### Current Projects (all local):
 1. **CliffordAttractor on Discord** - Following Assume 16GB+ RAM:
-   1. Developed a price fetcher agent using CoinGecko, which is being integrated by LachsBagel.
-   2. (Pending) A web interface that will be served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
+   1. Developed a [price fetcher agent](https://github.com/cliffordattractor/morpheus-data-agent) using CoinGecko, which is being integrated by LachsBagel.
+   2. (Pending) A [web interface](https://github.com/cliffordattractor/morpheus-ui) that will be served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
    EVM-based wallets.
-   3. (Pending) A swap agent which can iteratively ask users to provide needed details for disambiguation.
+   3. (Pending) A [swap agent](https://github.com/cliffordattractor/morpheus-swap-agent) which can iteratively ask users to provide needed details for disambiguation.
    4. (Pending) A general-purpose agent that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
 2. **PolyWrap and FLock** - Assumes 8GB+ of RAM:
    1. FLock is distilling a model from Polywrap's [AutoTx](https://github.com/polywrap/AutoTx), which will allow users with 8 GB of RAM to use Flock's fine-tuned version of 
    AutoTX. 
       2. FLock has provided the codebase [here](https://github.com/nickcom007/AutoTx). This is pending integration by CliffordAttractor
-3. **lachsbagel on Discord**: 
+3. **lachsbagel on Discord** - [this repo](https://github.com/LachsBagel/moragents): 
    1. Local Docker install
    2. Transient tkinter-based UI, which will be replaced by a more compelling UI developed by CliffordAttractor
    3. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
