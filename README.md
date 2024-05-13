@@ -38,7 +38,7 @@ Before the single-click app is ready, you will need to build the app locally.
 
 ```shell
 For ARM (M1, M2, M3) 
-    $ docker build -t morpheus/price_fetcher_agent -f Dockerfile-apple agents/morpheus_price_agent/agent
+    $ docker build -t morpheus/price_fetcher_agent -f agents/morpheus_price_agent/agent/Dockerfile-apple .
 
 For Intel (x86_64)
     $ docker build -t morpheus/price_fetcher_agent -f Dockerfile agents/morpheus_price_agent/agent
