@@ -25,7 +25,7 @@ Soon there will be a pre-built single file install for the UI.
 Before the single-click app is ready, you will need to build the app locally.
 
 #### macOS
-1. Ensure you have Python, Pip, tcl-tk, [Docker Desktop](https://www.docker.com/products/docker-desktop/), and Git installed. Note: please install python version 3.10.0+, older versions will produce outdated versions of tkinter when running the requirements install.
+1. Ensure you have Python, Pip, [Docker Desktop](https://www.docker.com/products/docker-desktop/), and Git installed. Note: please install python version 3.10.0+, older versions will produce outdated versions of tkinter when running the requirements install.
 
 
 2. Clone Repo
