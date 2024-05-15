@@ -100,12 +100,14 @@ docker rmi morpheus/price_fetcher_agent
 ```shell
 pyinstaller --windowed --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --icon="moragents.ico" main.py
 ```
-If there is a security warning, perform the following:
+There is a known and common issue where pyinstaller will trigger Windows Defender (see [here](https://stackoverflow.com/questions/54733909/windows-defender-alert-users-from-my-pyinstaller-exe) for more details). If there is a security warning, perform the following:
 
 - Open Windows Security: Go to Start > Settings > Update & Security > Windows Security > Virus & threat protection.
 - Manage Settings: Under Virus & threat protection settings, select "Manage settings."
 - Add or remove exclusions: Scroll down to "Exclusions" and select "Add or remove exclusions."
 - Add an exclusion: Select "Add an exclusion" and choose the folder where your project is located.
+
+More details located [here](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26)
 
 7. The compiled executable will be located in the dist folder. You can create a shortcut to the MORagents.exe file for easy access.
 8. Double-click the MORagents.exe file to open the MORagents app on your Windows machine. Make sure Docker is running before opening MORagents.
