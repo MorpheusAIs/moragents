@@ -35,7 +35,15 @@ def check_docker_image(image_name):
         return False
 
 def load_docker_image(image_path):
-    subprocess.run(["docker", "load", "-i", image_path], check=True)
+    print(f"Loading Docker image {image_path}. Please wait...")
+    try:
+        result = subprocess.run(["docker", "load", "-i", image_path], capture_output=True, text=True, check=True, timeout=300)
+        print(f"Docker image loaded successfully: {result.stdout}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error loading Docker image: {e}")
+        print(f"Command: {e.cmd}")
+        print(f"Output: {e.output}")
+        print(f"Error: {e.stderr}")
 
 def check_container_running(image_name):
     try:
@@ -56,7 +64,7 @@ def docker_setup():
 
     image_name = "morpheus/price_fetcher_agent"
     if not check_docker_image(image_name):
-        image_path = os.path.join(os.path.dirname(__file__), "resources", "morpheus_pricefetcheragent.tar")
+        image_path = os.path.join(os.path.dirname(__file__), "resources", "morpheus_pricefetcheragentwindows.tar")
         load_docker_image(image_path)
 
     port_mapping = "53591:5000"

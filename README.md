@@ -91,11 +91,6 @@ docker rmi morpheus/price_fetcher_agent
 > pip install -r requirements.txt
 ```
 
-5. Install dependencies for the UI:
-```shell
-> pip install -r requirements.txt
-```
-
 6. Build App for Local Installation
 ```shell
 pyinstaller --windowed --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --icon="moragents.ico" main.py

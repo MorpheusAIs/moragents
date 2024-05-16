@@ -1,8 +1,15 @@
 ## Distribution
 
+For Mac:
 ```sh
 $ pyinstaller --windowed --runtime-hook runtime_hook.py --add-data "resources:resources" --name="MORagents" --icon="moragents.icns" main.py
 ```
+
+For Windows:
+```shell
+> pyinstaller --windowed --runtime-hook runtime_hook_windows.py --name="MORagents" --add-data "resources;resources" main.py
+```
+
 
 
 # Code signing
