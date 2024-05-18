@@ -36,7 +36,7 @@ def check_docker_image(image_name):
         return False
 
 def load_docker_image(image_path):
-    print(f"Loading Docker image {image_path}. Please wait...")
+    print(f"Loading Docker image {image_path}. This will take about 5-10 minutes, please wait...")
     try:
         result = subprocess.run(["docker", "load", "-i", image_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True, timeout=300)
         print(f"Docker image loaded successfully: {result.stdout}")
