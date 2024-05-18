@@ -7,7 +7,7 @@ $ pyinstaller --windowed --runtime-hook runtime_hook.py --add-data "resources:re
 
 For Windows:
 ```shell
-> pyinstaller --windowed --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --add-data "resources;resources" main.py
+> pyinstaller --windowed --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --add-data "resources;resources" --icon="./moragents.ico" main.py
 ```
 
 

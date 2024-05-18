@@ -5,7 +5,7 @@ import time
 
 def check_docker_installed():
     try:
-        subprocess.run(["docker", "--version"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["docker", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
@@ -19,7 +19,7 @@ def start_docker():
 
     while True:
         try:
-            output = subprocess.check_output(["docker", "info"], stderr=subprocess.DEVNULL)
+            output = subprocess.check_output(["docker", "info"], stderr=subprocess.PIPE)
             if "Server Version" in output.decode():
                 print("Docker engine is running.")
                 break
@@ -30,7 +30,7 @@ def start_docker():
 
 def check_docker_image(image_name):
     try:
-        subprocess.run(["docker", "inspect", image_name], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["docker", "inspect", image_name], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
@@ -49,6 +49,8 @@ def load_docker_image(image_path):
 def check_container_running(image_name):
     try:
         output = subprocess.check_output(["docker", "ps", "-f", f"ancestor={image_name}", "--format", "{{.Names}}"])
+        if not output:
+            return False
         return output.decode().strip() != ""
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
