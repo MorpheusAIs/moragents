@@ -21,15 +21,19 @@ transaction.
    1. FLock is distilling a model from Polywrap's [AutoTx](https://github.com/polywrap/AutoTx), which will allow users with 8 GB of RAM to use Flock's fine-tuned version of 
    AutoTX. 
       1. FLock has provided the codebase [here](https://github.com/nickcom007/AutoTx). This is pending integration by CliffordAttractor
+      2. *Note: on-hold*
 3. **lachsbagel on Discord** - [this repo](https://github.com/LachsBagel/moragents): 
    1. Local Docker install
    2. Transient tkinter-based UI, which will be replaced by a more compelling UI developed by CliffordAttractor
    3. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
 4. **artfuljars on Discord**:
-   1. (pending) Windows Build (EXE version of .app)
-   2. (pending) Two installation wizards. One each for macOS and Windows (install system dependencies + MORagents app)
+   1. Windows Build (EXE version of .app)
+   2. Two installation wizards:
+      1. Windows 
+      2. (pending) macOS
 5. **proprietary and teknium on Discord**
    1. Morph-Caller: a Function Calling Model 7B. Can be found on [HuggingFace](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller)
+      2. (pending) integration and usage by above agents
 
 ### Decentralized Inference:
 #### Non-Local Installation Agents for Permission-less Compute
@@ -46,4 +50,4 @@ The local installation mentioned above may grow into allowing compute providers 
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: May 9, 2024*
+*Last Updated: May 19, 2024*
