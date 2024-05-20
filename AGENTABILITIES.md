@@ -32,8 +32,10 @@ transaction.
       1. Windows 
       2. (pending) macOS
 5. **proprietary and teknium on Discord**
-   1. Morph-Caller: a Function Calling Model 7B. Can be found on [HuggingFace](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller)
-      2. (pending) integration and usage by above agents
+   1. Morph-Caller: a Function Calling Model 7B.
+      1. [Main HuggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller)
+      2. [Quantized Models huggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller-GGUF)
+   2. (pending) integration and usage by above agents
 
 ### Decentralized Inference:
 #### Non-Local Installation Agents for Permission-less Compute
