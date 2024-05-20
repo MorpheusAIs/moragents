@@ -11,6 +11,10 @@ For Windows:
 ```
 
 Windows Inno Setup for Wizard:
+
+1) Install Inno Setup
+2) In the GUI, enter this setup and compile
+   
 ```text
 [Setup]
 AppName=MOR Agent
