@@ -1,12 +1,7 @@
 ## Distribution
-For Mac:
-```sh
-$ pyinstaller --windowed --runtime-hook runtime_hook.py --add-data "resources:resources" --name="MORagents" --icon="moragents.icns" main.py
-```
 
-For Windows:
+Run pyinstaller to build tar image. This will be packaged up in the inno setup.
 ```shell
-> pyinstaller --windowed --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --add-data "resources;resources" --icon="./moragents.ico" main.py
 > pyinstaller --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --add-data "resources;resources" --icon="./moragents.ico" main.py
 ```
 
