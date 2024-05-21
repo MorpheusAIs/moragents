@@ -13,9 +13,9 @@ transaction.
 ### Current Projects:
 1. **CliffordAttractor on Discord** - Following Assume 16GB+ RAM:
    1. Developed a [price fetcher agent](https://github.com/cliffordattractor/moragents_dockers/) using CoinGecko, which is being integrated by LachsBagel.
-   2. (Pending) A [web interface](https://github.com/cliffordattractor/moragents_dockers/) that will be served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
+   2. A [web interface](https://github.com/cliffordattractor/moragents_dockers/) that will be served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
    EVM-based wallets.
-   3. (Pending) A [swap agent](https://github.com/cliffordattractor/moragents_dockers/) which can iteratively ask users to provide needed details for disambiguation.
+   3. A [swap agent](https://github.com/cliffordattractor/moragents_dockers/) which can iteratively ask users to provide needed details for disambiguation.
    4. (Pending) A general-purpose agent that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
 2. **PolyWrap and FLock** - Assumes 8GB+ of RAM:
    1. FLock is distilling a model from Polywrap's [AutoTx](https://github.com/polywrap/AutoTx), which will allow users with 8 GB of RAM to use Flock's fine-tuned version of 
