@@ -12,10 +12,10 @@ transaction.
 
 ### Current Projects:
 1. **CliffordAttractor on Discord** - Following Assume 16GB+ RAM:
-   1. Developed a [price fetcher agent](https://github.com/cliffordattractor/morpheus-data-agent) using CoinGecko, which is being integrated by LachsBagel.
-   2. (Pending) A [web interface](https://github.com/cliffordattractor/morpheus-ui) that will be served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
+   1. Developed a [price fetcher agent](https://github.com/cliffordattractor/moragents_dockers/) using CoinGecko, which is being integrated by LachsBagel.
+   2. (Pending) A [web interface](https://github.com/cliffordattractor/moragents_dockers/) that will be served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
    EVM-based wallets.
-   3. (Pending) A [swap agent](https://github.com/cliffordattractor/morpheus-swap-agent) which can iteratively ask users to provide needed details for disambiguation.
+   3. (Pending) A [swap agent](https://github.com/cliffordattractor/moragents_dockers/) which can iteratively ask users to provide needed details for disambiguation.
    4. (Pending) A general-purpose agent that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
 2. **PolyWrap and FLock** - Assumes 8GB+ of RAM:
    1. FLock is distilling a model from Polywrap's [AutoTx](https://github.com/polywrap/AutoTx), which will allow users with 8 GB of RAM to use Flock's fine-tuned version of 
@@ -24,7 +24,8 @@ transaction.
       2. *Note: on-hold*
 3. **lachsbagel on Discord** - [this repo](https://github.com/LachsBagel/moragents): 
    1. Local Docker install
-   2. Transient tkinter-based UI, which will be replaced by a more compelling UI developed by CliffordAttractor
+   2. Transient tkinter-based UI
+      1. (pending) will be replaced by a more compelling UI developed by CliffordAttractor
    3. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
 4. **artfuljars on Discord**:
    1. Windows Build (EXE version of .app)
@@ -32,7 +33,7 @@ transaction.
       1. Windows 
       2. (pending) macOS
 5. **proprietary and teknium on Discord**
-   1. Morph-Caller: a Function Calling Model 7B.
+   1. Morph-Caller: an 8B Function Calling Model
       1. [Main HuggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller)
       2. [Quantized Models huggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller-GGUF)
    2. (pending) integration and usage by above agents
@@ -52,4 +53,4 @@ The local installation mentioned above may grow into allowing compute providers 
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: May 19, 2024*
+*Last Updated: May 20, 2024*
