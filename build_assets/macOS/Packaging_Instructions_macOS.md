@@ -2,7 +2,7 @@
 
 ## Build and Sign
 ```sh
-pyinstaller --windowed --runtime-hook runtime_hook.py --add-data "resources:resources" --osx-bundle-identifier "com.liquidtensor.moragents" --codesign-identity "Developer ID Application: Liquid Tensor LLC (ZQN244GMTD)" --name="MORagents" --icon="moragents.icns" --osx-entitlements-file "MORagents.entitlements" main.py
+pyinstaller --windowed --runtime-hook runtime_hook.py --add-data "resources:resources" --osx-bundle-identifier "com.liquidtensor.moragents" --codesign-identity "Developer ID Application: Liquid Tensor LLC (ZQN244GMTD)" --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
 ```
 
 ## Compress

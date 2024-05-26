@@ -65,7 +65,7 @@ If the app shows connections errors to agent fetcher. Please ensure Docker Deskt
 ### Build it Yourself
 
 #### Build instructions:
-1. [macOS](README_MACOS_DEV_BUILD.md)
-2. [Windows](README_WINDOWS_DEV_BUILD.md)
+1. [macOS](build_assets/macOS/README_MACOS_DEV_BUILD.md)
+2. [Windows](build_assets/windows/README_WINDOWS_DEV_BUILD.md)
 
 

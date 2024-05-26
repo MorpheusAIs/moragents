@@ -1,7 +1,7 @@
 ## For Developers
 
 This README will guide you on building a Docker container for agent execution as well as a desktop UI app.
-You may instead simply download the [pre-built app](README.md)
+You may instead simply download the [pre-built app](../../README.md)
 
 #### Windows
 1. Ensure you have Python, Pip, [Docker Desktop](https://www.docker.com/products/docker-desktop/), and Git installed on your Windows machine. Note: please install python version 3.10.0+, older versions will produce outdated versions of tkinter when running the requirements install.
@@ -48,4 +48,4 @@ More details located [here](https://support.microsoft.com/en-us/windows/add-an-e
 
 ---
 
-MacOS build instructions can be found [here](README_MACOS_DEV_BUILD.md)
+MacOS build instructions can be found [here](../macOS/README_MACOS_DEV_BUILD.md)
