@@ -1,9 +1,0 @@
-**Get Transaction Receipt**:
-```json
-{
- "jsonrpc": "2.0",
- "method": "eth_getTransactionReceipt",
- "params": ["0xTransactionHash"],
- "id": 1
-}
-```
