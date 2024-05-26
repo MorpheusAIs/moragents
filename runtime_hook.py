@@ -21,23 +21,23 @@ def get_docker_path():
     return None
 
 
-# def get_docker_compose_path():
-#     docker_paths = ['/Applications/Docker.app/Contents/Resources/bin/docker-compose', shutil.which('docker-compose')]
-#     for docker_path in docker_paths:
-#         if os.path.exists(docker_path):
-#             return docker_path
-#
-#     logging.error("Docker Compose executable not found in PATH.")
-#     return None
-#
-#
-# def run_docker_compose(docker_compose_path, docker_compose_yaml_path):
-#     try:
-#         # Run the docker-compose command
-#         subprocess.run([docker_compose_path, "-f", docker_compose_yaml_path, "up", "-d"], check=True)
-#         logging.info("Docker Compose started successfully.")
-#     except subprocess.CalledProcessError as e:
-#         logging.error(f"Error running Docker Compose: {e}")
+def get_docker_compose_path():
+    docker_paths = ['/Applications/Docker.app/Contents/Resources/bin/docker-compose', shutil.which('docker-compose')]
+    for docker_path in docker_paths:
+        if os.path.exists(docker_path):
+            return docker_path
+
+    logging.error("Docker Compose executable not found in PATH.")
+    return None
+
+
+def run_docker_compose(docker_compose_path, docker_compose_yaml_path):
+    try:
+        # Run the docker-compose command
+        subprocess.run([docker_compose_path, "-f", docker_compose_yaml_path, "up", "-d"], check=True)
+        logging.info("Docker Compose started successfully.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"Error running Docker Compose: {e}")
 
 
 def check_docker_installed(docker_path):
@@ -86,39 +86,7 @@ def docker_image_present_on_host(docker_path, image_name):
                        stderr=subprocess.DEVNULL)
         return True
     except (subprocess.CalledProcessError, TypeError) as e:
-        logging.warning(f"Error checking Docker image '{image_name}': {str(e)}")
         return False
-
-
-def run_agents_container(docker_path, image_name):
-    try:
-        # Run the agents container
-        subprocess.run([
-            docker_path, "run", "-d", "--rm",
-            "--name", "agents",
-            "-p", "8080:5000",
-            "--restart", "always",
-            "-v", "/var/lib/agents",
-            "-v", "./agents/src:/app/src",
-            image_name
-        ], check=True)
-        logging.info("Agents container started successfully.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error running agents container: {e}")
-
-
-def run_nginx_container(docker_path, image_name):
-    try:
-        # Run the nginx container
-        subprocess.run([
-            docker_path, "run", "-d", "--rm",
-            "--name", "nginx",
-            "-p", "3333:80",
-            image_name
-        ], check=True)
-        logging.info("Nginx container started successfully.")
-    except subprocess.CalledProcessError as e:
-        logging.error(f"Error running nginx container: {e}")
 
 
 def migration_remove_old_images(docker_path):
@@ -144,8 +112,8 @@ def docker_setup():
     docker_path = get_docker_path()
     logging.info(f"Docker path: {docker_path}")
 
-    # docker_compose_path = get_docker_compose_path()
-    # logging.info(f"Docker compose path: {docker_compose_path}")
+    docker_compose_path = get_docker_compose_path()
+    logging.info(f"Docker compose path: {docker_compose_path}")
 
     if not check_docker_installed(docker_path):
         logging.critical("Docker is not installed.")
@@ -159,24 +127,11 @@ def docker_setup():
     logging.info("Checking whether new images need to be loaded.")
     migration_load_current_docker_images(docker_path)
 
-    # os_name, arch = get_os_and_arch()
-    # compose_yaml_path = os.path.join(repo_root, "submodules/moragents_dockers/docker-compose-apple.yml") \
-    #     if arch == "ARM64" else os.path.join(repo_root, "submodules/moragents_dockers/docker-compose.yml")
+    os_name, arch = get_os_and_arch()
+    compose_yaml_path = os.path.join(repo_root, "submodules/moragents_dockers/docker-compose-apple.yml") \
+        if arch == "ARM64" else os.path.join(repo_root, "submodules/moragents_dockers/docker-compose.yml")
 
-    # run_docker_compose(docker_compose_path, compose_yaml_path)
-
-    # Run the containers
-    nginx_image_name, agents_image_name = AgentDockerConfig.CURRENT_IMAGE_NAMES
-    run_agents_container(docker_path, agents_image_name)
-    run_nginx_container(docker_path, nginx_image_name)
-
-    # FIXME
-    """
-    (HTTP code 500) server error - Mounts denied: 
-    The path /agents/src is not shared from the host and is not known to Docker. 
-    You can configure shared paths from Docker -> Preferences... -> Resources -> File Sharing. 
-    See https://docs.docker.com/desktop/mac for more info.
-    """
+    run_docker_compose(docker_compose_path, compose_yaml_path)
 
 
 # Invoke the docker_setup() function
