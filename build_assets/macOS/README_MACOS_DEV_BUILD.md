@@ -33,7 +33,7 @@ For Intel (x86_64)
 
 5. Build App for Local Installation
 ```shell
- $  pyinstaller --windowed --runtime-hook runtime_hook.py --name="MORagents" --icon="moragents.icns" main.py
+ $  pyinstaller --windowed --runtime-hook runtime_setup_macos.py --name="MORagents" --icon="moragents.icns" main.py
 ```
     # If you have issues, try
     python -m PyInstaller --windowed --runtime-hook runtime_hook.py --name="MORagents" --icon="moragents.icns" main.py
