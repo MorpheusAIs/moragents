@@ -2,7 +2,6 @@ import os
 import shutil
 import subprocess
 
-from utils.host_utils import get_os_and_arch
 from utils.logger_config import setup_logger
 from config import AgentDockerConfig, AgentDockerConfigDeprecate
 
@@ -17,25 +16,6 @@ def get_docker_path():
 
     logger.error("Docker executable not found in PATH.")
     return None
-
-
-# def get_docker_compose_path():
-#     docker_paths = ['/Applications/Docker.app/Contents/Resources/bin/docker-compose', shutil.which('docker-compose')]
-#     for docker_path in docker_paths:
-#         if os.path.exists(docker_path):
-#             return docker_path
-#
-#     logger.error("Docker Compose executable not found in PATH.")
-#     return None
-
-
-def run_docker_compose(docker_compose_path, docker_compose_yaml_path):
-    try:
-        # Run the docker-compose command
-        subprocess.run(f"{docker_compose_path} -f {docker_compose_yaml_path} up -d", check=True)
-        logger.info("Docker Compose started successfully.")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Error running Docker Compose: {e}")
 
 
 def check_docker_installed(docker_path):
@@ -95,15 +75,6 @@ def remove_container(docker_path, container):
                        stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to remove container '{container}': {e}")
-
-
-# def start_container(docker_path, image_name, port_mapping):
-#     try:
-#         subprocess.run([docker_path, "run", "-d", "--rm", "-p", port_mapping, image_name], check=True)
-#         logger.info(f"Container started with image '{image_name}' and port mapping '{port_mapping}'.")
-#     except (subprocess.CalledProcessError, TypeError) as e:
-#         logger.error(f"Error starting container with image '{image_name}' and port mapping '{port_mapping}': {str(e)}")
-#         raise
 
 
 def docker_image_present_on_host(docker_path, image_name):
@@ -173,9 +144,6 @@ def docker_setup():
     docker_path = get_docker_path()
     logger.info(f"Docker path: {docker_path}")
 
-    # docker_compose_path = get_docker_compose_path()
-    # logger.info(f"Docker compose path: {docker_compose_path}")
-
     if not check_docker_installed(docker_path):
         logger.critical("Docker is not installed.")
         raise RuntimeError("Docker is not installed.")
@@ -184,15 +152,7 @@ def docker_setup():
     logger.info("Checking whether old images need removal.")
     migration_remove_old_images(docker_path)
 
-    # FIXME, uncomment
-    # # ensure this release's images are present
-    # logger.info("Checking whether new images need to be loaded.")
-    # migration_load_current_docker_images(docker_path)
-
-    # os_name, arch = get_os_and_arch()
-    # compose_yaml_path = os.path.join(repo_root, "submodules/moragents_dockers/docker-compose-apple.yml") \
-    #     if arch == "ARM64" else os.path.join(repo_root, "submodules/moragents_dockers/docker-compose.yml")
-    # run_docker_compose(docker_compose_path, compose_yaml_path)
+    migration_load_current_docker_images(docker_path)
 
     remove_containers_for_image(docker_path, "moragents_dockers-agents:latest")
     remove_containers_for_image(docker_path, "moragents_dockers-nginx:latest")
@@ -213,14 +173,6 @@ def docker_setup():
         docker_path, "run", "-d", "--name", "nginx", "-p", "3333:80",
                     "moragents_dockers-nginx:latest"
     ], check=True)
-
-
-# Invoke the docker_setup() function
-try:
-    docker_setup()
-except Exception as e:
-    logger.critical(f"Error during Docker setup: {str(e)}")
-    raise
 
 
 if __name__ == "__main__":
