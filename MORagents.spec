@@ -9,9 +9,10 @@ a = Analysis(
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=['runtime_hook.py'],
+    runtime_hooks=[],
     excludes=[],
     noarchive=False,
+    optimize=0,
 )
 pyz = PYZ(a.pure)
 
@@ -29,9 +30,9 @@ exe = EXE(
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon=['moragents.icns'],
+    codesign_identity='Developer ID Application: Liquid Tensor LLC (ZQN244GMTD)',
+    entitlements_file='build_assets/macOS/MORagents.entitlements',
+    icon=['images/moragents.icns'],
 )
 coll = COLLECT(
     exe,
@@ -45,6 +46,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='MORagents.app',
-    icon='moragents.icns',
-    bundle_identifier=None,
+    icon='images/moragents.icns',
+    bundle_identifier='com.liquidtensor.moragents',
 )

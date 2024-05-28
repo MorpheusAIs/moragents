@@ -1,0 +1,4 @@
+[submodule "submodules/moragents_dockers"]
+	path = submodules/moragents_dockers
+	url = https://github.com/cliffordattractor/moragents_dockers
+	branch = main
