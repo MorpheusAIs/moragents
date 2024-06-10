@@ -22,9 +22,7 @@ transaction.
       2. First integration will be for ETH sends.
 3. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
    1. Local Docker install
-   2. Transient tkinter-based UI
-      1. (pending) will be replaced by a more compelling UI developed by CliffordAttractor
-   3. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
+   2. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
 4. **artfuljars on Discord**:
    1. Windows Build (EXE version of .app)
    2. Two installation wizards:
