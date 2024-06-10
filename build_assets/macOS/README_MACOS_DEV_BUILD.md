@@ -9,7 +9,7 @@ You may instead simply download the [pre-built app](../../README.md)
 
 2. Clone Repo
 ```shell
- $ git clone https://github.com/LachsBagel/moragents.git
+ $ git clone https://github.com/MorpheusAIs/moragents
  $ cd  moragents
 ```
 
@@ -17,10 +17,10 @@ You may instead simply download the [pre-built app](../../README.md)
 
 ```shell
 For ARM (M1, M2, M3) 
-    $ docker build -t morpheus/price_fetcher_agent -f agents/morpheus_price_agent/agent/Dockerfile-apple agents/morpheus_price_agent/agent
+    $ docker-compose -f submodules/moragents_dockers/docker-compose-apple.yml up
 
 For Intel (x86_64)
-    $ docker build -t morpheus/price_fetcher_agent -f agents/morpheus_price_agent/agent/Dockerfile agents/morpheus_price_agent/agent
+    $ docker-compose -f submodules/moragents_dockers/docker-compose.yml up
 ```
 
 
@@ -33,7 +33,7 @@ For Intel (x86_64)
 
 5. Build App for Local Installation
 ```shell
- $  pyinstaller --windowed --runtime-hook runtime_setup_macos.py --name="MORagents" --icon="moragents.icns" main.py
+ $  pyinstaller --windowed --add-data "resources:resources" --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
 ```
     # If you have issues, try
     python -m PyInstaller --windowed --runtime-hook runtime_hook.py --name="MORagents" --icon="moragents.icns" main.py
