@@ -22,14 +22,16 @@ transaction.
       2. First integration will be for ETH sends.
 3. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
    1. Local Docker install
-   2. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
+   2. Transient tkinter-based UI
+      1. (pending) will be replaced by a more compelling UI developed by CliffordAttractor
+   3. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
 4. **artfuljars on Discord**:
    1. Windows Build (EXE version of .app)
    2. Two installation wizards:
       1. (pending) Windows
       2. (pending) macOS
 5. **proprietary and teknium on Discord**
-   1. Morph-Caller: a Function Calling Model 7B.
+   1. Morph-Caller: an 8B Function Calling Model
       1. [Main HuggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller)
       2. [Quantized Models huggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller-GGUF)
    2. (pending) integration and usage by above agents
