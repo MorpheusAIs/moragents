@@ -12,23 +12,21 @@ transaction.
 
 ### Current Projects:
 1. **CliffordAttractor on Discord** - Following Assume 16GB+ RAM:
-   1. Developed a [price fetcher agent](https://github.com/cliffordattractor/morpheus-data-agent) using CoinGecko, which is being integrated by LachsBagel.
-   2. A [web interface](https://github.com/cliffordattractor/morpheus-ui) that will be served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
+   1. Developed a [price fetcher agent](submodules/moragents_dockers/agents/src/data_agent) using CoinGecko.
+   2. A [web interface](submodules/moragents_dockers/frontend) which is served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
    EVM-based wallets.
-   3. A [swap agent](https://github.com/cliffordattractor/morpheus-swap-agent) which can iteratively ask users to provide needed details for disambiguation.
+   3. A [swap agent](submodules/moragents_dockers/agents/src/swap_agent) which can iteratively ask users to provide needed details for disambiguation.
    4. (Pending) A general-purpose agent that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
-2. **PolyWrap and FLock** - Assumes 8GB+ of RAM:
-   1. FLock is distilling a model from Polywrap's [AutoTx](https://github.com/polywrap/AutoTx), which will allow users with 8 GB of RAM to use Flock's fine-tuned version of 
-   AutoTX. 
-      1. FLock has provided the codebase [here](https://github.com/nickcom007/AutoTx). This is pending integration by CliffordAttractor
-      2. *Note: on-hold*
-3. **lachsbagel on Discord** - [this repo](https://github.com/LachsBagel/moragents): 
+2. **PolyWrap**:
+   1. Polywrap is rebuilding some of the [AutoTx](https://github.com/polywrap/AutoTx) functionality into this local install using only the local OSS model.
+      2. First integration will be for ETH sends.
+3. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
    1. Local Docker install
    2. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
 4. **artfuljars on Discord**:
    1. Windows Build (EXE version of .app)
    2. Two installation wizards:
-      1. Windows 
+      1. (pending) Windows
       2. (pending) macOS
 5. **proprietary and teknium on Discord**
    1. Morph-Caller: a Function Calling Model 7B.
@@ -41,14 +39,20 @@ transaction.
 Pending Lumerin's work. Eventually Agent Builders will be able to permission-lessly upload Agent and Model artifacts to a decentralized registry.
 These agents will need to be integrated in self-standing applications, and thus are not suitable for the local installation.
 The local installation mentioned above may grow into allowing compute providers to download, host, and serve these arbitrary models, however it is unlikely to be the interface from which they are consumed.
+1. (pending) [FLock](https://www.flock.io/#/) is working on a decentralized agent which will regularly be updated with most recent docs surrounding the Morpheus system for the following audiences:
+   1. Normal user perspective (broad Q/A for those new to Morpheus ecosystem)
+   2. Developer perspective wanting to deploy on Morpheus
+   3. Perspective of capital contributors
+
 
 ### How to Contribute:
 - If you are working on an agent which can provide value through open models and relies on processing public data, please reach out to lachsbagel on Discord (link below)   
   - Otherwise, you are more than welcome to publish your agent to the registry when it goes live pending Lumerin's work and any other necessary pieces which come up to better ensure security and verifiability of models in non-local execution environments.
 - If you are working on security and/or verifiability of models and the runtime, please reach out to LachsBagel on the Morpheus Discord.
   - Currently looking at [Hyperbolic.xyz](https://hyperbolic.xyz) and [6079](https://6079-ai.gitbook.io/6079.ai/technology/6079-proof-of-inference-protocol). See more ecosystem members [here](https://mor.org/ecosystem).
+  - LachsBagel is also working on a new research concept using a Transformer specific heuristic for model verification. 
 
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: May 27, 2024*
+*Last Updated: June 10, 2024*
