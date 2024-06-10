@@ -8,18 +8,13 @@ You may instead simply download the [pre-built app](../../README.md)
 
 2. Clone the repository using Command Prompt or PowerShell:
 ```shell
-> git clone https://github.com/LachsBagel/moragents.git
+> git clone  https://github.com/MorpheusAIs/moragents
 > cd moragents
 ```
 
 3. Build the Docker Image for Local Agent Execution:
 ```shell
-> docker build -t morpheus/price_fetcher_agent -f agents/morpheus_price_agent/agent/Dockerfile agents/morpheus_price_agent/agent
-```
-
-If we have run this command before, run this to clear the old docker image.
-```shell
-docker rmi morpheus/price_fetcher_agent
+> docker-compose -f submodules/moragents_dockers/docker-compose.yml up
 ```
 
 4. Install Deps for UI, Recommended to use virtualenv
@@ -32,7 +27,7 @@ docker rmi morpheus/price_fetcher_agent
 
 6. Build App for Local Installation
 ```shell
-pyinstaller --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --icon="moragents.ico" main.py
+pyinstaller --name="MORagents" --icon="moragents.ico" main.py
 ```
 There is a known and common issue where pyinstaller will trigger Windows Defender (see [here](https://stackoverflow.com/questions/54733909/windows-defender-alert-users-from-my-pyinstaller-exe) for more details). If there is a security warning, perform the following:
 
