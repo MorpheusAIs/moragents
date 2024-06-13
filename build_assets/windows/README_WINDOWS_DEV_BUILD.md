@@ -14,7 +14,7 @@ You may instead simply download the [pre-built app](../../README.md)
 
 3. Build the Docker Image for Local Agent Execution:
 ```shell
-> docker-compose -f submodules/moragents_dockers/docker-compose.yml up
+> docker compose -f submodules/moragents_dockers/docker-compose.yml up
 ```
 
 4. Install Deps for UI, Recommended to use virtualenv

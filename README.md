@@ -31,7 +31,7 @@
 ---
 
 ### Install
-#### macOS M1/2/3 etc. (arm64)
+#### macOS on M1/2/3 etc. (arm64)
 >Assumes minimum 16GB RAM
 
 #### Steps
