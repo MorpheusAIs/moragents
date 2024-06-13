@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from config import Config
 from swap_agent.src import agent as swap_agent
 from data_agent.src import agent as data_agent
+from send_agent.src import agent as send_agent
 from llama_cpp import Llama
 from llama_cpp.llama_tokenizer import LlamaHFTokenizer
 
@@ -23,6 +24,19 @@ llm=load_llm()
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/send_agent', methods=['POST'])
+def send_agent_chat():
+    global llm
+    return send_agent.chat(request, llm)
+
+@app.route('/send_agent/messages', methods=['GET'])
+def send_agent_messages():
+    return send_agent.get_messages()
+
+@app.route('/send_agent/clear_messages', methods=['GET'])
+def send_agent_clear_messages():
+    return send_agent.clear_messages()
 
 @app.route('/swap_agent/', methods=['POST'])
 def swap_agent_chat():

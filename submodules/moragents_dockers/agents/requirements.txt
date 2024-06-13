@@ -9,3 +9,4 @@ Werkzeug==2.2.2
 gradio > /dev/null
 flask-cors
 web3
+autotx==0.1.0
