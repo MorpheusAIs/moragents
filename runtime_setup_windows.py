@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import time
 
@@ -129,13 +130,16 @@ def remove_containers_by_name(container_name):
 
 def migration_load_current_docker_images():
     for image_name, image_path in zip(AgentDockerConfig.CURRENT_IMAGE_NAMES, AgentDockerConfig.CURRENT_IMAGE_PATHS):
-        if docker_image_present_on_host(image_name):
-            # Remove containers corresponding to the image
-            remove_containers_for_image(image_name)
 
-            # Remove the existing image
-            delete_docker_image(image_name)
-            logger.info(f"Removed existing docker image '{image_name}'")
+        # FIXME, this is temporary
+        if getattr(sys, 'frozen', False):
+            image_path = os.path.join(sys._MEIPASS, "resources", os.path.basename(image_path))
+        else:
+            image_path = os.path.join(os.path.dirname(__file__), "resources", os.path.basename(image_path))
+
+        if docker_image_present_on_host(image_name):
+            logger.info(f"Docker image '{image_name}' is already present, skipping loading")
+            continue
 
         if not os.path.exists(image_path):
             logger.critical(f"Docker image file: {image_name} was not found at path: '{image_path}'")
