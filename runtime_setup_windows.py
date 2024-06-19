@@ -123,7 +123,7 @@ def remove_containers_by_name(container_name):
             subprocess.run(remove_command, check=True)
             logger.info(f"Removed container '{container_name}'")
         else:
-            logger.info(f"Container '{container_name}' not found")
+            logger.info(f"Not removing container '{container_name}' as it was not found")
     except subprocess.CalledProcessError as e:
         logger.error(f"Error removing container '{container_name}': {str(e)}")
 
@@ -131,11 +131,11 @@ def remove_containers_by_name(container_name):
 def migration_load_current_docker_images():
     for image_name, image_path in zip(AgentDockerConfig.CURRENT_IMAGE_NAMES, AgentDockerConfig.CURRENT_IMAGE_PATHS):
 
-        # FIXME, this is temporary
-        if getattr(sys, 'frozen', False):
-            image_path = os.path.join(sys._MEIPASS, "resources", os.path.basename(image_path))
-        else:
-            image_path = os.path.join(os.path.dirname(__file__), "resources", os.path.basename(image_path))
+        # # FIXME, this is temporary
+        # if getattr(sys, 'frozen', False):
+        #     image_path = os.path.join(sys._MEIPASS, "resources", os.path.basename(image_path))
+        # else:
+        #     image_path = os.path.join(os.path.dirname(__file__), "resources", os.path.basename(image_path))
 
         if docker_image_present_on_host(image_name):
             logger.info(f"Docker image '{image_name}' is already present, skipping loading")
@@ -160,6 +160,7 @@ def check_container_running(image_name):
 
 
 def start_container(image_name, port_mapping):
+    logger.info(f"Spinning up container for image {image_name} with port mapping: {port_mapping}")
     subprocess.run(["docker", "run", "-d", "-p", port_mapping, image_name], check=True)
 
 
