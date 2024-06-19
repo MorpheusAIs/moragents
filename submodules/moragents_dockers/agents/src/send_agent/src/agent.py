@@ -12,7 +12,7 @@ from autotx.AutoTx import Config as AutoTxConfig, CustomModel
 from autotx.utils.ethereum.networks import NetworkInfo
 from autotx.wallets.smart_wallet import SmartWallet
 from autotx.agents.SendTokensAgent import SendTokensAgent
-from autotx.utils.ethereum.eth_address import ETHAddress
+from autotx.eth_address import ETHAddress
 from web3 import Web3, HTTPProvider
 from flask import jsonify
 
