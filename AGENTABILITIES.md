@@ -17,22 +17,23 @@ transaction.
    EVM-based wallets.
    3. A [swap agent](submodules/moragents_dockers/agents/src/swap_agent) which can iteratively ask users to provide needed details for disambiguation.
    4. (Pending) A general-purpose agent that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
-2. **PolyWrap**:
+   5. (Pending) Delegating agent which can maintain user's persona/interests as well as coordinating to task agents and tools.
+3. **PolyWrap**:
    1. Polywrap is rebuilding some of the [AutoTx](https://github.com/polywrap/AutoTx) functionality into this local install using only the local OSS model.
       2. First integration will be for ETH sends.
 3. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
    1. Local Docker install
-   2. (pending) Delegator agent to allow automatic delegation of downstream tasks of agents without requiring manual specification by users.
+   2. (pending) HideNSeek: An algorithm for verifying and fingerprinting which model a compute provider is actually running
 4. **artfuljars on Discord**:
    1. Windows Build (EXE version of .app)
    2. Two installation wizards:
-      1. (pending) Windows
+      1. Windows
       2. (pending) macOS
-5. **proprietary and teknium on Discord**
-   1. Morph-Caller: an 8B Function Calling Model
-      1. [Main HuggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller)
-      2. [Quantized Models huggingFace Page](https://huggingface.co/Morpheus-Function-Calling/Morph-Caller-GGUF)
-   2. (pending) integration and usage by above agents
+   3. (pending) CICD builds for Windows, Linux, and macOS
+   4. (pending) Vulnerability scanning of dependencies and code
+5. GenLayer
+   1. (pending) AI filtered logging system to surface user demand for new functionality  
+
 
 ### Decentralized Inference:
 #### Non-Local Installation Agents for Permission-less Compute
@@ -50,9 +51,9 @@ The local installation mentioned above may grow into allowing compute providers 
   - Otherwise, you are more than welcome to publish your agent to the registry when it goes live pending Lumerin's work and any other necessary pieces which come up to better ensure security and verifiability of models in non-local execution environments.
 - If you are working on security and/or verifiability of models and the runtime, please reach out to LachsBagel on the Morpheus Discord.
   - Currently looking at [Hyperbolic.xyz](https://hyperbolic.xyz) and [6079](https://6079-ai.gitbook.io/6079.ai/technology/6079-proof-of-inference-protocol). See more ecosystem members [here](https://mor.org/ecosystem).
-  - LachsBagel is also working on a new research concept using a Transformer specific heuristic for model verification. 
+  - LachsBagel is also working on a new algorithm, named HideNSeek, which uses a Transformer specific heuristic for model verification. 
 
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: June 10, 2024*
+*Last Updated: June 19, 2024*
