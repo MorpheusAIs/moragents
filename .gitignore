@@ -52,3 +52,7 @@ yarn-error.log*
 
 ## resource files
 resources/*
+
+## installer
+MORagentsWindowsInstaller
+MORagentsWindowsInstaller.zip

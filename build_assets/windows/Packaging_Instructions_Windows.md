@@ -1,36 +1,21 @@
 ## Distribution
 
 For Windows:
+1. Export docker images after building. See [Windows Build](./README_WINDOWS_DEV_BUILD.md)
 ```shell
-> pyinstaller --windowed --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --add-data "resources;resources" --icon="./images/moragents.ico" main.py
-> pyinstaller --runtime-hook runtime_hook_windows.py --name="MORagentsWindows" --add-data "resources;resources" --icon="./moragents.ico" main.py
+  docker save -o moragents_dockers-nginx.tar moragents_dockers-nginx:latest
+  docker save -o moragents_dockers-agents.tar moragents_dockers-agents:latest
+
+```
+
+2.
+```shell
+  pyinstaller --name="MORagents" --add-data "resources;resources" --icon=".\images\moragents.ico" main.py
 ```
 
 Windows Inno Setup for Wizard:
-
 1) Install Inno Setup
-2) In the GUI, enter this setup and compile
-   
-```text
-[Setup]
-AppName=MOR Agent
-AppVersion=1.0
-DefaultDirName={pf}\MOR Agent
-OutputDir=.\Output
-OutputBaseFilename=MORAgentSetup
-DiskSpanning=yes
-SlicesPerDisk=1
-DiskSliceSize=max
-[Messages]
-WelcomeLabel1=Welcome to the MOR Agent Setup Wizard
-WelcomeLabel2=This will install MOR Agent on your computer. Please click Next to continue.
-[Files]
-Source: "moragents\dist\MORagentsWindows\MoragentsWindows.exe"; DestDir: "{app}"
-Source: "moragents\dist\MORagentsWindows\_internal\*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
-Source: "moragents\images\moragents.ico"; DestDir: "{app}"
-Source: "Docker Desktop Installer.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
-[Icons]
-Name: "{commondesktop}\MOR Agent"; Filename: "{app}\MORagentsWindows.exe"; IconFilename: "{app}\images\moragents.ico"
-[Run]
-Filename: "{tmp}\Docker Desktop Installer.exe"; Description: "Installing Docker Desktop..."; StatusMsg: "Installing Docker Desktop..."
-```
+2) In the GUI, enter the text found in [wizard_windows.iss](../../wizard_windows.iss)
+3) Click Build > Compile
+4) Hit the Play/Run button on the top
+5) Installer is the 

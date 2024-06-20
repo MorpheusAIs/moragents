@@ -26,13 +26,13 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
-    codesign_identity='Developer ID Application: Liquid Tensor LLC (ZQN244GMTD)',
-    entitlements_file='build_assets/macOS/MORagents.entitlements',
-    icon=['images/moragents.icns'],
+    codesign_identity=None,
+    entitlements_file=None,
+    icon=['images\\moragents.ico'],
 )
 coll = COLLECT(
     exe,
@@ -42,10 +42,4 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='MORagents',
-)
-app = BUNDLE(
-    coll,
-    name='MORagents.app',
-    icon='images/moragents.icns',
-    bundle_identifier='com.liquidtensor.moragents',
 )
