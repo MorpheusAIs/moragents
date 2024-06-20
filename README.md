@@ -48,8 +48,7 @@
 >Assumes minimum 16GB RAM
 
 #### Steps
-# FIXME, mention disabling anti-virus 
-1. Use Chrome to download [MOR Agent Installer](https://drive.proton.me/urls/9BE8X1ZMTG#Oh1SfTeklH4W)
+1. Use Chrome to download [MORagentsWindowsInstaller.zip](https://drive.proton.me/urls/9BE8X1ZMTG#Oh1SfTeklH4W)
     > SHA256 0a5f5e3a288d45854c83994fa4afa4c713019229d99d67f28442fc56a5de1b20 MORagentsWindowsInstaller.zip
 2. Go to downloaded **MORagentsWindowsInstaller(.zip)** file and click to "Extract All"
 3. Open Extracted Folder **MORagentsWindowsInstaller**
