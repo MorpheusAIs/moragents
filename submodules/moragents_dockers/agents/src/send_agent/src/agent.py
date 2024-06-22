@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import logging
@@ -38,7 +39,18 @@ def chat(request, llm):
             )
             autotx = AutoTx(w3, wallet, network, [SendTokensAgent()], autotx_config)
             result = autotx.run(prompt, True, summary_method="reflection_with_llm")
-            logging.info(result.intents)
+            transactions = asyncio.run(
+                result.intents[0].build_transactions(w3, network, ETHAddress(data["wallet_address"]))
+            )
+
+            transaction_params = {
+                "from": transactions[0].params["from"],
+                "to": transactions[0].params["to"],
+                "data": transactions[0].params["data"],
+                "value": transactions[0].params["value"],
+            }
+            logging.info("Transaction to be executed in the frontend: ")
+            logging.info(transaction_params)
 
             try:
                 summary = json.loads(result.summary)
