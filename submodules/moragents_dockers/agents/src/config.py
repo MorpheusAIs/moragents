@@ -10,7 +10,7 @@ class Config:
     MODEL_REVISION = "functionary-small-v2.4.Q4_0.gguf"
     MODEL_PATH = "model/"+MODEL_REVISION
     DOWNLOAD_DIR = "model"
-    # Data agent
+    # API endpoints
     COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3"
     DEFILLAMA_BASE_URL = "https://api.llama.fi"
     PRICE_SUCCESS_MESSAGE = "The price of {coin_name} is ${price:,}"
@@ -24,7 +24,6 @@ class Config:
     MARKET_CAP_SUCCESS_MESSAGE = "The market cap of {coin_name} is ${market_cap:,}"
     MARKET_CAP_FAILURE_MESSAGE = "Failed to retrieve market cap. Please enter a valid coin name."
     API_ERROR_MESSAGE = "I can't seem to access the API at the moment."
-    # Swap agent
     INCH_URL = "https://api.1inch.dev/token"
     QUOTE_URL = "https://api.1inch.dev/swap"
     APIBASEURL = f"https://api.1inch.dev/swap/v6.0/"
