@@ -3,8 +3,8 @@ from llama_cpp.llama_tokenizer import LlamaHFTokenizer
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
-from data_agent.src import tools
-from config import Config
+import tools
+from data_agent_config import Config
 import json
 
 
@@ -53,7 +53,7 @@ def chat(request,llm):
         if 'prompt' in data:
             prompt = data['prompt']
             response,role = generate_response(prompt,llm)
-            return jsonify({"role":role,"content":response})
+            return jsonify({"role":role,"content":response}), 200
         else:
             return jsonify({"error": "Missing required parameters"}), 400
 
