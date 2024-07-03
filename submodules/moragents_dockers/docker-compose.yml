@@ -10,7 +10,11 @@ services:
     restart: always
     volumes:
       - agents_data:/var/lib/agents
-      - ./agents/src:/app/src  # Volume for swapagent src
+      - ./agents/src:/app/src
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - BASE_URL=http://host.docker.internal:11434
 
   nginx:
     build:
@@ -19,6 +23,7 @@ services:
       target: nginx
     ports:
       - '3333:80'
+
 
 
 volumes:

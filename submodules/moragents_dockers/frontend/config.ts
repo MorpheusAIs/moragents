@@ -28,16 +28,14 @@ export const availableAgents: {
         requirements: {
             connectedWallet: false
         }
-    }
-    /*
+    },
     'rag-agent': {
-        'name': 'Functional Data Agent (RAG FOR FILES)',
-        'description': 'Mock of the Data Agent that supports files',
-        'endpoint': 'http://127.0.0.1:8081',
+        'name': 'PDF Agent',
+        'description': 'Ask questions about an uploaded PDF file',
+        'endpoint': 'http://127.0.0.1:8080/rag_agent',
         requirements: {
             connectedWallet: false
         },
         supportsFiles: true
     }
-    */
 }

@@ -18,4 +18,4 @@ Windows Inno Setup for Wizard:
 2) In the GUI, enter the text found in [wizard_windows.iss](../../wizard_windows.iss)
 3) Click Build > Compile
 4) Hit the Play/Run button on the top
-5) Installer is the 
+5) Installer will run and create a Desktop icon to run the application.
