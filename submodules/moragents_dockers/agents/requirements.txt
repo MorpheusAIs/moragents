@@ -9,3 +9,6 @@ Werkzeug==2.2.2
 gradio > /dev/null
 flask-cors
 web3
+pytest
+pytest-flask
+pytest-mock

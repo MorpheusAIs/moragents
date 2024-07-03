@@ -1,7 +1,7 @@
 import requests
 import logging
 import time
-from config import Config
+from swap_agent_config import Config
 from web3 import Web3
 
 
