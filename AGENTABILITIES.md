@@ -1,5 +1,4 @@
 # MORagents
-
 Welcome to the world of Web3 agents! If you're interested in building and using agents locally, this document will guide you through the principles and 
 current projects underway.
 
@@ -11,35 +10,34 @@ payloads for a user's approval. This is due to the limitations of current LLMs i
 transaction.
 
 ### Current Projects:
-1. **CliffordAttractor on Discord** - Following Assume 16GB+ RAM:
-   1. Developed a [price fetcher agent](submodules/moragents_dockers/agents/src/data_agent) using CoinGecko.
-   2. A [web interface](submodules/moragents_dockers/frontend) which is served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
-   EVM-based wallets.
-   3. A [swap agent](submodules/moragents_dockers/agents/src/swap_agent) which can iteratively ask users to provide needed details for disambiguation.
-   4. (Pending) A general-purpose agent that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
-   5. (Pending) Delegating agent which can maintain user's persona/interests as well as coordinating to task agents and tools.
-3. **PolyWrap**:
-   1. Polywrap is rebuilding some of the [AutoTx](https://github.com/polywrap/AutoTx) functionality into this local install using only the local OSS model.
-      2. First integration will be for ETH sends.
-3. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
+1. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
    1. Local Docker install
-   2. (pending) HideNSeek: An algorithm for verifying and fingerprinting which model a compute provider is actually running
-4. **artfuljars on Discord**:
+   2. (pending) [HideNSeek](https://github.com/MorpheusAIs/HideNSeek): An algorithm for verifying and fingerprinting which model a compute provider is actually running
+      1. Note: this repo will be made public under an MIT license following the publishing of a paper by the same name which is currently in the works
+   3. (future) Posting Agent - an agent which optimizes content for social media posting
+2. **IODmitri on GitHhub**
+   3. (pending) [HideNSeek](https://github.com/MorpheusAIs/HideNSeek): An algorithm for verifying and fingerprinting which model a compute provider is actually running
+3. **artfuljars on Discord**:
    1. Windows Build (EXE version of .app)
    2. Two installation wizards:
       1. Windows
       2. (pending) macOS
    3. (pending) CICD builds for Windows, Linux, and macOS
    4. (pending) Vulnerability scanning of dependencies and code
-5. GenLayer
-   1. (pending) AI filtered logging system to surface user demand for new functionality  
+4. GenLayer
+   1. (pending) [FeedBuzz](https://github.com/yeagerai/feedbuzz-contracts) - AI filtered logging system to surface user demand and failure modes for new functionality  
+5. **CliffordAttractor on Discord** - Following Assume 16GB+ RAM:
+   1. Developed a [price fetcher agent](submodules/moragents_dockers/agents/src/data_agent) using CoinGecko.
+   2. A [web interface](submodules/moragents_dockers/frontend) which is served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
+   EVM-based wallets.
+   3. A [swap agent](submodules/moragents_dockers/agents/src/swap_agent) which can iteratively ask users to provide needed details for disambiguation.
+   4. (Pending Integration) [A general-purpose agent](https://github.com/MorpheusAIs/moragents/pull/34) that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
+   5. (Pending) Delegating agent which can maintain user's persona/interests as well as coordinating to task agents and tools.
 
 
 ### Decentralized Inference:
 #### Non-Local Installation Agents for Permission-less Compute
 Pending Lumerin's work. Eventually Agent Builders will be able to permission-lessly upload Agent and Model artifacts to a decentralized registry.
-These agents will need to be integrated in self-standing applications, and thus are not suitable for the local installation.
-The local installation mentioned above may grow into allowing compute providers to download, host, and serve these arbitrary models, however it is unlikely to be the interface from which they are consumed.
 1. (pending) [FLock](https://www.flock.io/#/) is working on a decentralized agent which will regularly be updated with most recent docs surrounding the Morpheus system for the following audiences:
    1. Normal user perspective (broad Q/A for those new to Morpheus ecosystem)
    2. Developer perspective wanting to deploy on Morpheus
@@ -51,9 +49,10 @@ The local installation mentioned above may grow into allowing compute providers 
   - Otherwise, you are more than welcome to publish your agent to the registry when it goes live pending Lumerin's work and any other necessary pieces which come up to better ensure security and verifiability of models in non-local execution environments.
 - If you are working on security and/or verifiability of models and the runtime, please reach out to LachsBagel on the Morpheus Discord.
   - Currently looking at [Hyperbolic.xyz](https://hyperbolic.xyz) and [6079](https://6079-ai.gitbook.io/6079.ai/technology/6079-proof-of-inference-protocol). See more ecosystem members [here](https://mor.org/ecosystem).
-  - LachsBagel is also working on a new algorithm, named HideNSeek, which uses a Transformer specific heuristic for model verification. 
+  - LachsBagel is also working on a new algorithm, named [HideNSeek](https://github.com/MorpheusAIs/HideNSeek), which uses a Transformer specific heuristic for model verification
+  - [Atoma.Network](https://www.atoma.network/) will help with implementing the plumbing for [HideNSeek](https://github.com/MorpheusAIs/HideNSeek)
 
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: June 19, 2024*
+*Last Updated: July 7, 2024*
