@@ -4,7 +4,7 @@ mcap_error_tolerance = 0.01 # 1% error tolerance
 coins = [
     {
         "coingecko_id": "bitcoin",
-        "names": ["bitcoin", "Bit coin", "expected_to_fail"]
+        "names": ["bitcoin", "Bit coin", "btc_expected_to_fail"]
     },
     {
         "coingecko_id": "ripple",
@@ -15,7 +15,7 @@ coins = [
         "names": ["litecoin", "ltc"]
     },
     {
-        "coingecko_id": "expected_to_fail",
+        "coingecko_id": "gecko_id_expected_to_fail",
         "names": ["bitcoin"]
     },
 ]
