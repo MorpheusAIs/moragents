@@ -1,6 +1,6 @@
 import time
 import argparse
-from helpers import ask_data_llm, check_response, extract_llm_usd_value
+from helpers import ask_data_llm, check_response, extract_agent_usd_value
 from config import coins, price_prompts, mcap_prompts, price_error_tolerance, mcap_error_tolerance
 from adapters.coingecko_adapter import CoingeckoAdapter
 from adapters.defillama_adapter import DefillamaAdapter
@@ -34,17 +34,16 @@ try:
             for name in coin["names"]:
                 llm_prompt = prompt.format(name)
                 print(f"Checking {coingecko_id}: {llm_prompt}")
-                llm_response = ask_data_llm(prompt.format(name))
-                llm_usd_value = extract_llm_usd_value(llm_response)
+                agent_response = ask_data_llm(prompt.format(name))
+                agent_usd_value = extract_agent_usd_value(agent_response)
                 for adapter in all_adapters:
-                    if benchmark_type == "price":
-                        if adapter.has_get_price():
-                            benchmark_value = adapter.get_price(coingecko_id)
-                            check_response(llm_usd_value, coingecko_id, adapter, name, benchmark_value, price_error_tolerance)
-                    elif benchmark_type == "mcap":
-                        if adapter.has_get_marketcap():
-                            benchmark_value = adapter.get_marketcap(coingecko_id)
-                            check_response(llm_usd_value, coingecko_id, adapter, name, benchmark_value, mcap_error_tolerance)
+                    if benchmark_type == "price" and adapter.has_get_price():
+                        benchmark_value = adapter.get_price(coingecko_id)
+                        error_tolerance = price_error_tolerance
+                    elif benchmark_type == "mcap" and adapter.has_get_marketcap():
+                        benchmark_value = adapter.get_marketcap(coingecko_id)
+                        error_tolerance = price_error_tolerance
+                    check_response(agent_usd_value, coingecko_id, adapter, name, benchmark_value, error_tolerance)
                 time.sleep(10) # must to be high for coingecko rate limits
                 print()
 except Exception as e:

@@ -34,7 +34,7 @@ def ask_data_agent(prompt: str):
     result_content = response.json()['content']
     return result_content
 
-def extract_llm_usd_value(content: str):
+def extract_agent_usd_value(content: str):
     match = re.search(r'\$\d+(?:,\d{3})*(?:\.\d{1,8})?', content) # 8 usd digits should be plenty
     if match:
         price_str = match.group(0).replace('$', '').replace(',', '')

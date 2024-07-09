@@ -2,9 +2,9 @@
 
 ## About
 
--- Measures how accurately the data agent responds vs benchmark values from coinecko, defillama, coincap, etc.
+- Measures how accurately the data agent responds for price & market cap vs benchmark values from coinecko, defillama, coincap, etc.
 
--Tests every combination of coins & prompts defined in `config.py` against each of the benchmark adapters.
+- Tests every combination of coins & prompts defined in `config.py` against each of the benchmark adapters.
 
 ## Running
 
