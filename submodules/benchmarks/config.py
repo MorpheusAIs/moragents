@@ -7,12 +7,12 @@ coins = [
         "names": ["bitcoin", "Bit coin", "expected_to_fail"]
     },
     {
-        "coingecko_id": "litecoin",
-        "names": ["litecoin", "ltc"]
+        "coingecko_id": "ripple",
+        "names": ["xrp", "ripple"]
     },
     {
-        "coingecko_id": "xrp",
-        "names": ["ripple", "xrp"]
+        "coingecko_id": "litecoin",
+        "names": ["litecoin", "ltc"]
     },
     {
         "coingecko_id": "expected_to_fail",
