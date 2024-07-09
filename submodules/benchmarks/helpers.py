@@ -41,19 +41,19 @@ def extract_agent_usd_value(content: str):
         return float(price_str)
     return None
 
-def check_response(llm_value: float, coin_id: str, adapter: BaseAdapter, name: str, benchmark_value: float, error_tolerance: float):
-    if benchmark_value is None or llm_value is None:
+def check_response(agent_value: float, coin_id: str, adapter: BaseAdapter, name: str, benchmark_value: float, error_tolerance: float):
+    if benchmark_value is None or agent_value is None:
         result = f"{adapter.name} FAIL"
-        if benchmark_value is None and llm_value is None:
+        if benchmark_value is None and agent_value is None:
             result_message = f"Failed to get benchmark and agent for {coin_id} and {name}"
         elif benchmark_value is None:
             result_message = f"Failed to get benchmark for {coin_id}"
-        elif llm_value is None:
+        elif agent_value is None:
             result_message = f"Failed to get agent for {name}"
     else:
-        difference = abs(llm_value - benchmark_value)
+        difference = abs(agent_value - benchmark_value)
         percent_difference = (difference / benchmark_value) * 100
-        result_message = f"${llm_value:.8f} / ${benchmark_value:.8f}, {percent_difference:.2f}% off"
+        result_message = f"${agent_value:.8f} / ${benchmark_value:.8f}, {percent_difference:.2f}% off"
         if percent_difference <= error_tolerance * 100:
             result = f"{adapter.name} PASS"
         else:
