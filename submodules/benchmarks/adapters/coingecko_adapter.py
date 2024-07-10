@@ -17,6 +17,7 @@ class CoingeckoAdapter(BaseAdapter):
 
     def get_marketcap(self, coin_id: str) -> float:
             request_url = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
+            print('about toget', request_url)
             response = requests.get(request_url)
             response.raise_for_status()
             data = response.json()

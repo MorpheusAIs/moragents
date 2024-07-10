@@ -14,10 +14,6 @@
 ## 4. Run `python benchmarks.py price` for price benchmarks
 ## 5. Run `python benchmarks.py mcap` for market cap benchmarks
 
-cd submodules/benchmarks
-
-Run python benchmarks.py price for price benchmarks
-Run python benchmarks.py mcap for market cap benchmarks
 ## Considerations
 
 - The source of truth asset id is the coingecko id. Any new adapters will need some way of translating the coingecko id if they use something else. For example, the coincap doesn't use the same id format as coingecko and will need a translation layer (TODO).
