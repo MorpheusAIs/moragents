@@ -1,13 +1,14 @@
 import time
 import argparse
 from helpers import ask_data_agent, compare_usd_values, extract_agent_usd_value
-from config import coins, price_prompts, mcap_prompts, price_error_tolerance, mcap_error_tolerance
+from config import coins, price_prompts, mcap_prompts, price_error_tolerance, mcap_error_tolerance, loop_delay
 from adapters.coingecko_adapter import CoingeckoAdapter
 from adapters.defillama_adapter import DefillamaAdapter
 
 all_adapters = [
-    CoingeckoAdapter(),
-    DefillamaAdapter(),]
+    DefillamaAdapter(),
+    CoingeckoAdapter()
+]
 
 parser = argparse.ArgumentParser(description="Specify the type of prompts to use (price or mcap).")
 parser.add_argument('type', choices=['price', 'mcap'], help="Type of prompts to use")
@@ -31,29 +32,33 @@ try:
         for coin in coins:
             coingecko_id = coin["coingecko_id"]
             for name in coin["names"]:
-                llm_prompt = prompt.format(name)
-                print(f"Checking {coingecko_id}: {llm_prompt}")
+                agent_prompt = prompt.format(name)
+                print(f"{agent_prompt}")
                 try:
                     agent_response = ask_data_agent(prompt.format(name))
+                    time.sleep(loop_delay) # the agent gets rate limitted by coingecko if we call it too fast
                     agent_usd_value = extract_agent_usd_value(agent_response)
                 except:
-                    agent_usd_value = None
-                for adapter in all_adapters:
-                    if benchmark_type == "price" and adapter.has_get_price():
-                        try:
-                            benchmark_value = adapter.get_price(coingecko_id)
-                        except:
-                            benchmark_value = None
-                    elif benchmark_type == "mcap" and adapter.has_get_marketcap():
-                        try:
-                            benchmark_value = adapter.get_marketcap(coingecko_id)
-                        except:
-                            benchmark_value = None
-                    result = compare_usd_values(agent_usd_value, coingecko_id, adapter, name, benchmark_value, error_tolerance, failures)
+                    result = f"FAIL DataAgent: {agent_prompt}"
                     print(result)
                     total_checks += 1
-                time.sleep(10) # must to be high for coingecko rate limits
-                print()
+                    failures.append(result)
+                    continue
+
+                for adapter in all_adapters:
+                    try:
+                        if benchmark_type == "price" and adapter.has_get_price():
+                            benchmark_value = adapter.get_price(coingecko_id)
+                        elif benchmark_type == "mcap" and adapter.has_get_marketcap():
+                            benchmark_value = adapter.get_marketcap(coingecko_id)
+                        result = compare_usd_values(agent_usd_value, coingecko_id, adapter, name, benchmark_value, error_tolerance, failures)
+                    except:
+                        result = f"FAIL {adapter.name}: {coingecko_id}"
+                        failures.append(result)
+
+                    print(result)
+                    total_checks += 1
+
     passed_checks = total_checks - len(failures)
     print()
     print(f"{passed_checks} / {total_checks} Benchmarks passed")

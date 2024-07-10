@@ -1,6 +1,7 @@
-price_error_tolerance = 0.01 # 1% error tolerance
-mcap_error_tolerance = 0.01 # 1% error tolerance
+loop_delay = 10 # prevent rate limiting
 
+price_error_tolerance = 0.01 # 1%
+mcap_error_tolerance = 0.01 # 1%
 coins = [
     {
         "coingecko_id": "bitcoin",

@@ -8,8 +8,9 @@
 
 ## Running
 
-## 1. `cd submodules/benchmarks`
-## 2. Modify `config.py` with new prompts, coins & error tolerances
+## 0. Start [ DataAgent Docker Service](../moragents_dockers/agents/src/data_agent/README.md)
+## 1. Modify `config.py` with new prompts, coins & error tolerances
+## 2. `cd submodules/benchmarks`
 ## 3. Run `pip install -r requirements.txt`
 ## 4. Run `python benchmarks.py price` for price benchmarks
 ## 5. Run `python benchmarks.py mcap` for market cap benchmarks

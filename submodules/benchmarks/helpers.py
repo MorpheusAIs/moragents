@@ -2,7 +2,6 @@ import requests
 import json
 import re
 from adapters.base_adapter import BaseAdapter
-from config import price_error_tolerance, mcap_error_tolerance
 
 url = 'http://127.0.0.1:8080/data_agent/'
 
@@ -43,21 +42,12 @@ def extract_agent_usd_value(content: str):
     return None
 
 def compare_usd_values(agent_value: float, coin_id: str, adapter: BaseAdapter, name: str, benchmark_value: float, error_tolerance: float, failures: list):
-    if benchmark_value is None or agent_value is None:
-        if benchmark_value is None and agent_value is None:
-            result_message = f"FAIL {adapter.name}. Failed to get benchmark and agent for {coin_id} and {name}"
-        elif benchmark_value is None:
-            result_message = f"FAIL {adapter.name}. Failed to get benchmark for {coin_id}"
-        elif agent_value is None:
-            result_message = f"FAIL {adapter.name}. Failed to get agent for {name}"
-        failures.append(result_message)
+    difference = abs(agent_value - benchmark_value)
+    percent_difference = (difference / benchmark_value) * 100
+    result_value = f"${agent_value:.8f} / ${benchmark_value:.8f}, {percent_difference:.2f}% off"
+    if percent_difference <= error_tolerance * 100:
+        result_message = f"PASS {adapter.name}. {result_value}"
     else:
-        difference = abs(agent_value - benchmark_value)
-        percent_difference = (difference / benchmark_value) * 100
-        result_value = f"${agent_value:.8f} / ${benchmark_value:.8f}, {percent_difference:.2f}% off"
-        if percent_difference <= error_tolerance * 100:
-            result_message = f"PASS {adapter.name}. {result_value}"
-        else:
-            result_message = f"FAIL {adapter.name}. {result_value}"
-            failures.append(result_message)
+        result_message = f"FAIL {adapter.name}. {result_value}"
+        failures.append(result_message)
     return result_message
