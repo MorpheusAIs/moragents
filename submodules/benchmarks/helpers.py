@@ -45,19 +45,19 @@ def extract_agent_usd_value(content: str):
 def compare_usd_values(agent_value: float, coin_id: str, adapter: BaseAdapter, name: str, benchmark_value: float, error_tolerance: float, failures: list):
     if benchmark_value is None or agent_value is None:
         if benchmark_value is None and agent_value is None:
-            result_message = f"{adapter.name} FAIL. Failed to get benchmark and agent for {coin_id} and {name}"
+            result_message = f"FAIL {adapter.name}. Failed to get benchmark and agent for {coin_id} and {name}"
         elif benchmark_value is None:
-            result_message = f"{adapter.name} FAIL. Failed to get benchmark for {coin_id}"
+            result_message = f"FAIL {adapter.name}. Failed to get benchmark for {coin_id}"
         elif agent_value is None:
-            result_message = f"{adapter.name} FAIL. Failed to get agent for {name}"
+            result_message = f"FAIL {adapter.name}. Failed to get agent for {name}"
         failures.append(result_message)
     else:
         difference = abs(agent_value - benchmark_value)
         percent_difference = (difference / benchmark_value) * 100
         result_value = f"${agent_value:.8f} / ${benchmark_value:.8f}, {percent_difference:.2f}% off"
         if percent_difference <= error_tolerance * 100:
-            result_message = f"{adapter.name} PASS. {result_value}"
+            result_message = f"PASS {adapter.name}. {result_value}"
         else:
-            result_message = f"{adapter.name} FAIL. {result_value}"
+            result_message = f"FAIL {adapter.name}. {result_value}"
             failures.append(result_message)
     return result_message
