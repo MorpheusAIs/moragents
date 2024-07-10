@@ -4,23 +4,17 @@ from helpers import ask_data_agent, compare_usd_values, extract_agent_usd_value
 from config import coins, price_prompts, mcap_prompts, price_error_tolerance, mcap_error_tolerance
 from adapters.coingecko_adapter import CoingeckoAdapter
 from adapters.defillama_adapter import DefillamaAdapter
-from adapters.coincap_adapter import CoincapAdapter
 
-# Define all adapters
 all_adapters = [
     CoingeckoAdapter(),
-    DefillamaAdapter(),
-    CoincapAdapter()
-]
+    DefillamaAdapter(),]
 
-# Argument parsing
 parser = argparse.ArgumentParser(description="Specify the type of prompts to use (price or mcap).")
 parser.add_argument('type', choices=['price', 'mcap'], help="Type of prompts to use")
 args = parser.parse_args()
 
 benchmark_type = args.type
 
-# Set prompts based on the specified type
 if benchmark_type == 'price':
     prompts = price_prompts
     error_tolerance = price_error_tolerance

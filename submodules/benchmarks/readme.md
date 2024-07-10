@@ -2,7 +2,7 @@
 
 ## About
 
-- Measures how accurately the data agent responds for price & market cap vs benchmark values from coinecko, defillama, coincap, etc.
+- Measures how accurately the data agent responds for price & market cap vs benchmark values from coinecko, defillama, etc.
 
 - Generates agent prompts from values defined in `config.py` and validates them against each of the benchmark adapters.
 
@@ -16,6 +16,6 @@
 
 ## Considerations
 
-- The source of truth asset id is the coingecko id. Any new adapters will need some way of translating the coingecko id if they use something else. For example, the coincap doesn't use the same id format as coingecko and will need a translation layer (TODO).
+- The source of truth asset id is the coingecko id. Any new adapters will need some way of translating the coingecko id if they use something else. For example, the defillama adapter "just works" because they use coingecko ids.
 
 - Disabling coingecko adapter lets us reduce the `time.sleep()` in `benchmarks.py` and run much faster (rate limiting).
