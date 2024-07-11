@@ -22,10 +22,13 @@ if benchmark_type == 'price':
 elif benchmark_type == 'mcap':
     prompts = mcap_prompts
     error_tolerance = mcap_error_tolerance
+else:
+    raise ValueError("Invalid benchmark type")
 
 total_checks = 0
 failures = []
 
+print('benchmark type', benchmark_type)
 try:
     print()
     for prompt in prompts:
@@ -36,9 +39,9 @@ try:
                 print(f"{agent_prompt}")
                 try:
                     agent_response = ask_data_agent(prompt.format(name_variation))
-                    time.sleep(loop_delay) # the agent gets rate limitted by coingecko if we call it too fast
                     agent_usd_value = extract_agent_usd_value(agent_response)
                     print(f"{agent_usd_value}")
+                    time.sleep(loop_delay) # the agent gets rate limitted by coingecko if we call it too fast
                 except:
                     result = f"FAIL DataAgent: {agent_prompt}"
                     print(result)
@@ -48,14 +51,17 @@ try:
                     continue
 
                 for adapter in all_adapters:
+                    print(f"Checking {adapter.name}...")
                     try:
                         if benchmark_type == "price" and adapter.has_get_price():
                             benchmark_value = adapter.get_price(coingecko_id)
                         elif benchmark_type == "mcap" and adapter.has_get_marketcap():
                             benchmark_value = adapter.get_marketcap(coingecko_id)
+                        else:
+                            continue
                         result = compare_usd_values(agent_usd_value, adapter, coingecko_id, name_variation, benchmark_value, error_tolerance, failures)
-                    except:
-                        result = f"FAIL {adapter.name}: {coingecko_id}"
+                    except Exception as e:
+                        result = f"FAIL {adapter.name}: {coingecko_id} ({e})"
                         failures.append(result)
 
                     print(result)
