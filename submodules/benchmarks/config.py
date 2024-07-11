@@ -5,19 +5,19 @@ mcap_error_tolerance = 0.01 # 1%
 coins = [
     {
         "coingecko_id": "bitcoin",
-        "names": ["bitcoin", "Bit coin", "btc_expected_to_fail"]
+        "name_variations": ["bitcoin", "Bit coin", "btc_expected_to_fail"]
     },
     {
         "coingecko_id": "litecoin",
-        "names": ["litecoin", "ltc"]
+        "name_variations": ["litecoin", "ltc"]
     },
     {
         "coingecko_id": "ripple",
-        "names": ["ripple", "xrp"]
+        "name_variations": ["ripple", "xrp"]
     },
     {
         "coingecko_id": "gecko_id_expected_to_fail",
-        "names": ["bitcoin"]
+        "name_variations": ["bitcoin"]
     },
 ]
 

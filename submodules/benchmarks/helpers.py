@@ -39,15 +39,16 @@ def extract_agent_usd_value(content: str):
     if match:
         price_str = match.group(0).replace('$', '').replace(',', '')
         return float(price_str)
-    return None
+    raise ValueError("Could not extract a price from the agent response")
 
-def compare_usd_values(agent_value: float, coin_id: str, adapter: BaseAdapter, name: str, benchmark_value: float, error_tolerance: float, failures: list):
+def compare_usd_values(agent_value: float, adapter: BaseAdapter, coingecko_id, name_variation: str, benchmark_value: float, error_tolerance: float, failures: list):
     difference = abs(agent_value - benchmark_value)
     percent_difference = (difference / benchmark_value) * 100
-    result_value = f"${agent_value:.8f} / ${benchmark_value:.8f}, {percent_difference:.2f}% off"
+    result_value = f"${benchmark_value:.8f}, {percent_difference:.2f}% off"
     if percent_difference <= error_tolerance * 100:
         result_message = f"PASS {adapter.name}. {result_value}"
     else:
         result_message = f"FAIL {adapter.name}. {result_value}"
+        failure_message = f"FAIL {adapter.name}. {result_value}. {coingecko_id}. {name_variation}" # so we have more information to summarize failures at the end
         failures.append(result_message)
     return result_message

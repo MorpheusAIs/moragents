@@ -31,16 +31,18 @@ try:
     for prompt in prompts:
         for coin in coins:
             coingecko_id = coin["coingecko_id"]
-            for name in coin["names"]:
-                agent_prompt = prompt.format(name)
+            for name_variation in coin["name_variations"]:
+                agent_prompt = prompt.format(name_variation)
                 print(f"{agent_prompt}")
                 try:
-                    agent_response = ask_data_agent(prompt.format(name))
+                    agent_response = ask_data_agent(prompt.format(name_variation))
                     time.sleep(loop_delay) # the agent gets rate limitted by coingecko if we call it too fast
                     agent_usd_value = extract_agent_usd_value(agent_response)
+                    print(f"{agent_usd_value}")
                 except:
                     result = f"FAIL DataAgent: {agent_prompt}"
                     print(result)
+                    print()
                     total_checks += 1
                     failures.append(result)
                     continue
@@ -51,14 +53,16 @@ try:
                             benchmark_value = adapter.get_price(coingecko_id)
                         elif benchmark_type == "mcap" and adapter.has_get_marketcap():
                             benchmark_value = adapter.get_marketcap(coingecko_id)
-                        result = compare_usd_values(agent_usd_value, coingecko_id, adapter, name, benchmark_value, error_tolerance, failures)
+                        result = compare_usd_values(agent_usd_value, adapter, coingecko_id, name_variation, benchmark_value, error_tolerance, failures)
                     except:
                         result = f"FAIL {adapter.name}: {coingecko_id}"
                         failures.append(result)
 
                     print(result)
                     total_checks += 1
+                print()
 
+    # Summarize Results
     passed_checks = total_checks - len(failures)
     print()
     print(f"{passed_checks} / {total_checks} Benchmarks passed")
