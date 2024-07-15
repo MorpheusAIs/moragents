@@ -69,7 +69,13 @@ If the app shows connections errors to agent fetcher. Please ensure Docker Deskt
 ---
 
 #### Linux
-*Coming soon*
+sudo apt install docker-compose-v2
+sudo systemctl start docker (if not running)
+sudo chmod 666 /var/run/docker.sock
+git clone https://github.com/MorpheusAIs/moragents.git
+cd moragents/submodules/moragents_dockers
+docker compose up
+open http://127.0.0.1:3333/ in a browser
 
 
 ---
