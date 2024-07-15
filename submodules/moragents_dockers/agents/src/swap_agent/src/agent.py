@@ -2,9 +2,8 @@ from flask import Flask, request, jsonify
 from llama_cpp import Llama
 from llama_cpp.llama_tokenizer import LlamaHFTokenizer
 import requests
-from swap_agent.src import tools
-from swap_agent.src.tools import InsufficientFundsError, TokenNotFoundError, SwapNotPossibleError
-from config import Config
+from . import tools
+from swap_agent_config import Config
 import json
 
 

@@ -162,6 +162,7 @@ export const Chat: FC<ChatProps> = ({
 
         await onSubmitMessage(message, file);
         setMessage('');
+        setFile(null); // Clear the file state after upload
         setShowSpinner(false);
     }
 

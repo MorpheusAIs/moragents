@@ -1,6 +1,6 @@
 import requests
 import logging
-from config import Config
+from data_agent_config import Config
 import time
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity

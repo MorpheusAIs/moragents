@@ -18,6 +18,7 @@ Source: "dist\MORagents\MORagents.exe"; DestDir: "{app}"
 Source: "dist\MORagents\_internal\*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
 Source: "images\moragents.ico"; DestDir: "{app}"
 Source: "resources\Docker Desktop Installer.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
+Source: "resources\OllamaSetup.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 Source: "LICENSE"; DestDir: "{app}"; Flags: isreadme
 
 [Icons]
@@ -25,6 +26,8 @@ Name: "{commondesktop}\MORagents"; Filename: "{app}\MORagents.exe"; IconFilename
 
 [Run]
 Filename: "{app}\LICENSE"; Description: "License Agreement"; Flags: postinstall shellexec skipifsilent
+Filename: "{tmp}\Docker Desktop Installer.exe"; Description: "Installing Docker Desktop..."; StatusMsg: "Installing Docker Desktop..."
+Filename: "{tmp}\OllamaSetup.exe"; Description: "Installing Ollama..."; StatusMsg: "Installing Ollama..."
 
 [Code]
 function InitializeSetup(): Boolean;
