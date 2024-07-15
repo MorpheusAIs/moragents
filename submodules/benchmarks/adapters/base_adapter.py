@@ -15,7 +15,7 @@ class BaseAdapter(ABC):
         pass
 
     def has_get_marketcap(self) -> bool:
-        return hasattr(self, 'get_marketcap') and callable(getattr(self, 'get_marketcap'))
+        pass
 
     def has_get_price(self) -> bool:
-        return hasattr(self, 'get_price') and callable(getattr(self, 'get_price'))
+        pass
