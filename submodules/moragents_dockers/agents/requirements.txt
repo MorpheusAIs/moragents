@@ -6,12 +6,8 @@ scikit-learn
 huggingface-hub
 flask==2.2.2
 Werkzeug==2.2.2
-gradio
 flask-cors
 web3
-pytest
-pytest-flask
-pytest-mock
 pymupdf==1.22.5
 faiss-cpu
 langchain-text-splitters
