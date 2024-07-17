@@ -1,4 +1,4 @@
-llama-cpp-python
+llama-cpp-python==0.2.78
 transformers
 sentencepiece
 protobuf
