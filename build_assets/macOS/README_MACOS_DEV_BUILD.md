@@ -33,7 +33,7 @@ For Intel (x86_64)
 
 5. Build App for Local Installation
 ```shell
- $  pyinstaller --windowed --add-data "resources:resources" --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
+ $  pyinstaller --windowed --add-data --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
 ```
     # If you have issues, try
     python -m PyInstaller --windowed --runtime-hook runtime_hook.py --name="MORagents" --icon="moragents.icns" main.py
