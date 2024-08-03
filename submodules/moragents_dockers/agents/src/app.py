@@ -1,10 +1,14 @@
+import json
+import os
+import logging
+from config import Config
+from llama_cpp import Llama
 from flask_cors import CORS
 from flask import Flask, request, jsonify
-from config import Config
-from swap_agent.src import agent as swap_agent
-from data_agent.src import agent as data_agent
-from llama_cpp import Llama
+from langchain_community.llms import Ollama
+from delegator import Delegator
 from llama_cpp.llama_tokenizer import LlamaHFTokenizer
+from langchain_community.embeddings import OllamaEmbeddings
 
 
 def load_llm():
@@ -19,54 +23,104 @@ def load_llm():
     return llm
 
 
-llm=load_llm()
+llm = load_llm()
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/swap_agent/', methods=['POST'])
-def swap_agent_chat():
-    global llm
-    return swap_agent.chat(request, llm)
+upload_state = False
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = Config.MAX_UPLOAD_LENGTH
 
-@app.route('/swap_agent/tx_status', methods=['POST'])
+llm_ollama = Ollama(model="llama3", base_url=Config.OLLAMA_URL)
+embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Config.OLLAMA_URL)
+
+logging.basicConfig(level=logging.DEBUG)
+
+delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)
+messages = [{'role': "assistant", "content": "This highly experimental chatbot is not intended for making important decisions, and its responses are generated based on incomplete data and algorithms that may evolve rapidly. By using this chatbot, you acknowledge that you use it at your own discretion and assume all risks associated with its limitations and potential errors."}]
+
+next_turn_agent = None
+
+
+@app.route('/', methods=['POST'])
+def chat():
+    global next_turn_agent, messages
+    data = request.get_json()
+    try:
+        if 'prompt' in data:
+            prompt = data['prompt']
+            messages.append(prompt)
+        if not next_turn_agent:
+            result = delegator.get_delegator_response(prompt, upload_state)
+            if "tool_calls" not in result:
+                messages.append({"role": "assistant", "content": result["content"]})
+                return jsonify({"role": "assistant", "content": result["content"]})
+            else:
+                if not result["tool_calls"]:
+                    messages.append({"role": "assistant", "content": result["content"]})
+                    return jsonify({"role": "assistant", "content": result["content"]})
+                res = json.loads(result['tool_calls'][0]['function']['arguments'])
+                response_swap = delegator.delegate_chat(res["next"], request)
+                if "next_turn_agent" in response_swap.keys():
+                    next_turn_agent = response_swap["next_turn_agent"]
+                response = {"role": response_swap["role"], "content": response_swap["content"]}
+        else:
+            response_swap = delegator.delegate_chat(next_turn_agent, request)
+            next_turn_agent = response_swap["next_turn_agent"]
+            response = {"role": response_swap["role"], "content": response_swap["content"]}
+        messages.append(response)
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({"Error": str(e)}), 500
+
+
+@app.route('/tx_status', methods=['POST'])
 def swap_agent_tx_status():
-    return swap_agent.tx_status(request)
+    global messages
+    response = delegator.delegate_route("crypto swap agent", request, "tx_status")
+    messages.append(response)
+    return jsonify(response)
 
-@app.route('/swap_agent/messages', methods=['GET'])
-def swap_agent_messages():
-    return swap_agent.get_messages()
-    
-@app.route('/swap_agent/clear_messages', methods=['GET'])
-def swap_agent_clear_messages():
-    return swap_agent.clear_messages()
-       
-@app.route('/swap_agent/allowance', methods=['POST'])
+
+@app.route('/messages', methods=['GET'])
+def get_messages():
+    global messages
+    return jsonify({"messages": messages})
+
+
+@app.route('/clear_messages', methods=['GET'])
+def clear_messages():
+    global messages
+    messages = [{'role': "assistant", "content": "This highly experimental chatbot is not intended for making important decisions, and its responses are generated based on incomplete data and algorithms that may evolve rapidly. By using this chatbot, you acknowledge that you use it at your own discretion and assume all risks associated with its limitations and potential errors."}]
+    return jsonify({"response": "successfully cleared message history"})
+
+
+@app.route('/allowance', methods=['POST'])
 def swap_agent_allowance():
-    return swap_agent.get_allowance(request)
-    
-@app.route('/swap_agent/approve', methods=['POST'])
+    return delegator.delegate_route("crypto swap agent", request, "get_allowance")
+
+
+@app.route('/approve', methods=['POST'])
 def swap_agent_approve():
-    return swap_agent.approve(request)
-    
-@app.route('/swap_agent/swap', methods=['POST'])
-def swap_agent_swap():   
-    return swap_agent.swap(request)
-
-@app.route('/data_agent/', methods=['POST'])
-def data_agent_chat():
-    global llm
-    return data_agent.chat(request, llm)
+    return delegator.delegate_route("crypto swap agent", request, "approve")
 
 
-@app.route('/data_agent/messages', methods=['GET'])
-def data_agent_messages():
-    return data_agent.get_messages()
+@app.route('/swap', methods=['POST'])
+def swap_agent_swap():
+    return delegator.delegate_route("crypto swap agent", request, "swap")
 
-@app.route('/data_agent/clear_messages', methods=['GET'])
-def data_agent_clear_messages():
-    return data_agent.clear_messages()
 
-    
+@app.route('/upload', methods=['POST'])
+def rag_agent_upload():
+    global messages, upload_state
+    response = delegator.delegate_route("rag agent", request, "upload_file")
+    messages.append(response)
+    upload_state = True
+    return jsonify(response)
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

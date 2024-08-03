@@ -1,8 +1,8 @@
 import React, { FC, ComponentPropsWithoutRef } from 'react';
 import Image from 'next/image';
 import { Box, HStack, Spacer } from '@chakra-ui/react';
-import { AgentSelector } from './agentSelector';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { availableAgents } from '../../config';
 
 export interface HeaderBarProps extends ComponentPropsWithoutRef<'div'> {
     onAgentChanged(agent: string): void;
@@ -10,36 +10,27 @@ export interface HeaderBarProps extends ComponentPropsWithoutRef<'div'> {
 }
 
 export const HeaderBar: FC<HeaderBarProps> = (props) => {
+    const defaultAgent = 'swap-agent'; // Set your default agent here
+    const selectedAgent = availableAgents[defaultAgent];
+
     return (
         <Box bgColor={'header'} sx={{
-            // height: '6.25vh',
             padding: '10px 10px 10px 10px',
             borderBottom: '1px solid #313137',
             zIndex: 1401,
-        }}
-        >
-            <HStack sx={{
-
-            }}>
-                <Box sx={{
-                    mr: '200px',
-
-                }}>
+        }}>
+            <HStack>
+                <Box sx={{ mr: '200px' }}>
                     <Image src='/assets/logo.svg' alt="logo" width={60} height={30} />
                 </Box>
-
                 <Box>
-                    <AgentSelector onSelectedAgent={(agent) => {
-                        props.onAgentChanged(agent);
-                    }}
-                        selectedAgent={props.currentAgent}
-                    />
+                    <Spacer />
                 </Box>
                 <Spacer />
                 <Box>
                     <ConnectButton />
                 </Box>
             </HStack>
-        </Box >
+        </Box>
     );
 };

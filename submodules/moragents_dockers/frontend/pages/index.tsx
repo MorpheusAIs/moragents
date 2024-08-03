@@ -10,15 +10,13 @@ import { HeaderBar } from '../components/HeaderBar';
 import { availableAgents } from '../config';
 import { WalletRequiredModal } from '../components/WalletRequiredModal';
 import { ErrorBackendModal } from '../components/ErrorBackendModal';
-import { get } from 'http';
 
 const Home: NextPage = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const chainId = useChainId();
   const { address } = useAccount();
-  const [selectedAgent, setSelectedAgent] = useState<string>('swap-agent'); // default is swap agent for now. TODO ask what should be the default agent.
+  const [selectedAgent, setSelectedAgent] = useState<string>('swap-agent'); // default is swap agent for now.
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
-
 
   useEffect(() => {
     getMessagesHistory(
