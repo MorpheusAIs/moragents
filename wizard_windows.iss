@@ -4,32 +4,93 @@ AppVersion=0.0.8
 DefaultDirName={commonpf}\MORagents
 OutputDir=.\MORagentsWindowsInstaller
 OutputBaseFilename=MORagentsSetup
-DiskSpanning=yes
-SlicesPerDisk=1
-DiskSliceSize=max
-Compression = none
+WizardStyle=modern
 
 [Messages]
-WelcomeLabel1=Welcome to the MORagents Setup Wizard. By proceeding you acknowledge you had read and agreed to the License found at: https://github.com/MorpheusAIs/moragents/blob/778b0aba68ae873d7bb355f2ed4419389369e042/LICENSE
+WelcomeLabel1=Welcome to the MORagents Setup Wizard
 WelcomeLabel2=This will install MORagents on your computer. Please click Next to continue.
 
 [Files]
 Source: "dist\MORagents\MORagents.exe"; DestDir: "{app}"
 Source: "dist\MORagents\_internal\*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
 Source: "images\moragents.ico"; DestDir: "{app}"
-Source: "resources\Docker Desktop Installer.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 Source: "LICENSE"; DestDir: "{app}"; Flags: isreadme
+Source: "{tmp}\DockerDesktopInstaller.exe"; DestDir: "{tmp}"; Flags: external deleteafterinstall
+Source: "{tmp}\OllamaSetup.exe"; DestDir: "{tmp}"; Flags: external deleteafterinstall
+Source: "runtime_setup_windows.py"; DestDir: "{app}"
 
 [Icons]
 Name: "{commondesktop}\MORagents"; Filename: "{app}\MORagents.exe"; IconFilename: "{app}\moragents.ico"
 
 [Run]
-Filename: "{app}\LICENSE"; Description: "License Agreement"; Flags: postinstall shellexec skipifsilent
+Filename: "{tmp}\DockerDesktopInstaller.exe"; Parameters: "install"; StatusMsg: "Installing Docker Desktop..."; Flags: waituntilterminated
+Filename: "{tmp}\OllamaSetup.exe"; StatusMsg: "Installing Ollama..."; Flags: waituntilterminated
+Filename: "{app}\LICENSE"; Description: "View License Agreement"; Flags: postinstall shellexec skipifsilent
+Filename: "{app}\MORagents.exe"; Description: "Launch MORagents"; Flags: postinstall nowait skipifsilent unchecked
+Filename: "cmd.exe"; Parameters: "/c ollama pull llama3 && ollama pull nomic-embed-text"; StatusMsg: "Pulling Ollama models..."; Flags: runhidden waituntilterminated
+
 
 [Code]
-function InitializeSetup(): Boolean;
+var
+  EULAAccepted: Boolean;
+  DownloadPage: TDownloadWizardPage;
+  EULAPage: TOutputMsgWizardPage;
+
+procedure InitializeWizard;
 begin
-    Result := MsgBox('Please read the license agreement found at https://github.com/MorpheusAIs/moragents/blob/778b0aba68ae873d7bb355f2ed4419389369e042/LICENSE carefully. Do you accept the terms of the License agreement?', mbConfirmation, MB_YESNO) = idYes;
-    if not Result then
-        MsgBox('Setup cannot continue without accepting the License agreement.', mbInformation, MB_OK);
+  EULAPage := CreateOutputMsgPage(wpWelcome, 
+    'License Agreement', 'Please read the following License Agreement carefully',
+    'By continuing, you acknowledge that you have read and agreed to the License. ' +
+    'The full license text can be found at: ' +
+    'https://github.com/MorpheusAIs/moragents/blob/778b0aba68ae873d7bb355f2ed4419389369e042/LICENSE' + #13#10 + #13#10 +
+    'Do you accept the terms of the License agreement?');
+
+  DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), nil);
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+
+  if CurPageID = EULAPage.ID then
+  begin
+    EULAAccepted := True;
+  end
+  else if CurPageID = wpReady then
+  begin
+    if not EULAAccepted then
+    begin
+      MsgBox('You must accept the License Agreement to continue.', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
+
+    DownloadPage.Clear;
+    DownloadPage.Add('https://desktop.docker.com/win/stable/Docker%20Desktop%20Installer.exe', 'DockerDesktopInstaller.exe', '');
+    DownloadPage.Add('https://ollama.com/download/OllamaSetup.exe', 'OllamaSetup.exe', '');
+    DownloadPage.Show;
+    try
+      try
+        DownloadPage.Download;
+        Result := True;
+      except
+        if DownloadPage.AbortedByUser then
+          Log('Aborted by user.')
+        else
+          SuppressibleMsgBox(AddPeriod(GetExceptionMessage), mbCriticalError, MB_OK, IDOK);
+        Result := False;
+      end;
+    finally
+      DownloadPage.Hide;
+    end;
+  end;
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  
+  { Skip EULA page if already accepted }
+  if (PageID = EULAPage.ID) and EULAAccepted then
+    Result := True;
 end;
