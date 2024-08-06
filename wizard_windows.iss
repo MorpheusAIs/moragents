@@ -29,7 +29,6 @@ Filename: "{app}\LICENSE"; Description: "View License Agreement"; Flags: postins
 Filename: "{app}\MORagents.exe"; Description: "Launch MORagents"; Flags: postinstall nowait skipifsilent unchecked
 Filename: "cmd.exe"; Parameters: "/c ollama pull llama3 && ollama pull nomic-embed-text"; StatusMsg: "Pulling Ollama models..."; Flags: runhidden waituntilterminated
 
-
 [Code]
 var
   EULAAccepted: Boolean;
