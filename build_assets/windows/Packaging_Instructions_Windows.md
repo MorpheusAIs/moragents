@@ -10,7 +10,7 @@ For Windows:
 
 2.
 ```shell
-  pyinstaller --name="MORagents" --add-data "resources;resources" --icon=".\images\moragents.ico" main.py
+  pyinstaller --name="MORagents" --icon=".\images\moragents.ico" main.py
 ```
 
 Windows Inno Setup for Wizard:

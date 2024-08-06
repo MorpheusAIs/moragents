@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('resources', 'resources')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -26,13 +26,13 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
-    entitlements_file=None,
-    icon=['images\\moragents.ico'],
+    entitlements_file='build_assets/macOS/MORagents.entitlements',
+    icon=['images/moragents.icns'],
 )
 coll = COLLECT(
     exe,
@@ -42,4 +42,10 @@ coll = COLLECT(
     upx=True,
     upx_exclude=[],
     name='MORagents',
+)
+app = BUNDLE(
+    coll,
+    name='MORagents.app',
+    icon='images/moragents.icns',
+    bundle_identifier=None,
 )
