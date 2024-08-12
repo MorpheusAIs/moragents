@@ -8,8 +8,10 @@ from web3 import Web3
 class InsufficientFundsError(Exception):
     pass
 
+
 class TokenNotFoundError(Exception):
     pass
+
 
 class SwapNotPossibleError(Exception):
     pass
@@ -29,6 +31,7 @@ def search_tokens(query, chain_id, limit=1, ignore_listed="false"):
         logging.error(f"Failed to search tokens. Status code: {response.status_code}")
         return None
 
+
 def get_token_balance(web3: Web3, wallet_address: str, token_address: str, abi: list) -> int:
     """ Get the balance of an ERC-20 token for a given wallet address. """
     if not token_address:  # If no token address is provided, assume checking ETH or native token balance
@@ -37,9 +40,11 @@ def get_token_balance(web3: Web3, wallet_address: str, token_address: str, abi: 
         contract = web3.eth.contract(address=web3.to_checksum_address(token_address), abi=abi)
         return contract.functions.balanceOf(web3.to_checksum_address(wallet_address)).call()
 
+
 def eth_to_wei(amount_in_eth: float) -> int:
     """Convert an amount in ETH to wei."""
-    return int(amount_in_eth * 10**18)
+    return int(amount_in_eth * 10 ** 18)
+
 
 def validate_swap(web3: Web3, token1, token2, chain_id, amount, wallet_address):
     native = Config.NATIVE_TOKENS
@@ -74,6 +79,7 @@ def validate_swap(web3: Web3, token1, token2, chain_id, amount, wallet_address):
 
     return t1[0]['address'], t1[0]['symbol'], t2[0]['address'], t2[0]['symbol']
 
+
 def get_quote(token1, token2, amount_in_wei, chain_id):
     endpoint = f"/v6.0/{chain_id}/quote"
     params = {
@@ -88,6 +94,7 @@ def get_quote(token1, token2, amount_in_wei, chain_id):
         logging.error(f"Failed to get quote. Status code: {response.status_code}")
         return None
 
+
 def get_token_decimals(web3: Web3, token_address: str) -> int:
     if not token_address:
         return 18  # Assuming 18 decimals for the native gas token
@@ -95,9 +102,11 @@ def get_token_decimals(web3: Web3, token_address: str) -> int:
         contract = web3.eth.contract(address=Web3.to_checksum_address(token_address), abi=Config.ERC20_ABI)
         return contract.functions.decimals().call()
 
+
 def convert_to_smallest_unit(web3: Web3, amount: float, token_address: str) -> int:
     decimals = get_token_decimals(web3, token_address)
     return int(amount * (10 ** decimals))
+
 
 def convert_to_readable_unit(web3: Web3, smallest_unit_amount: int, token_address: str) -> float:
     decimals = get_token_decimals(web3, token_address)
@@ -113,7 +122,7 @@ def swap_coins(token1, token2, amount, chain_id, wallet_address):
     t1_address = '' if t1_a == Config.INCH_NATIVE_TOKEN_ADDRESS else t1_a
     smallest_unit_amount = convert_to_smallest_unit(web3, amount, t1_address)
     result = get_quote(t1_a, t2_a, smallest_unit_amount, chain_id)
-    
+
     if result:
         price = result["dstAmount"]
         t2_address = '' if t2_a == Config.INCH_NATIVE_TOKEN_ADDRESS else t2_a
@@ -131,6 +140,54 @@ def swap_coins(token1, token2, amount, chain_id, wallet_address):
         "approve_tx_cb": "/approve",
         "swap_tx_cb": "/swap"
     }, "swap"
+
+def prepare_claim_rewards(pool_id, receiver_address):
+    """
+    Prepare the transaction data for claiming rewards.
+
+    Parameters:
+    - pool_id: int - The ID of the pool from which to claim rewards.
+    - receiver_address: str - The address to receive the claimed rewards.
+
+    Returns:
+    - dict: Transaction data to be signed by the user's wallet.
+    """
+    try:
+        # Initialize the web3 instance
+        web3 = Web3(Web3.HTTPProvider(Config.WEB3RPCURL["1"]))  # Ethereum Mainnet
+
+        # Load the contract
+        contract = web3.eth.contract(
+            address=Web3.to_checksum_address(Config.DISTRIBUTION_PROXY_ADDRESS),
+            abi=Config.DISTRIBUTION_ABI
+        )
+
+        # Prepare the transaction data
+        tx_data = contract.encodeABI(fn_name="claim", args=[pool_id, Web3.to_checksum_address(receiver_address)])
+
+        # Set the mint fee (0.001 ETH)
+        mint_fee = web3.to_wei(0.001, 'ether')
+
+        # Estimate gas (optional, can be done on the frontend)
+        estimated_gas = contract.functions.claim(pool_id, Web3.to_checksum_address(receiver_address)).estimate_gas({
+            'from': Web3.to_checksum_address(receiver_address),
+            'value': mint_fee
+        })
+
+        return {
+            "status": "success",
+            "to": Config.DISTRIBUTION_PROXY_ADDRESS,
+            "data": tx_data,
+            "value": str(mint_fee),  # 0.001 ETH in wei
+            "gas": str(estimated_gas),
+            "chainId": "1"  # Ethereum Mainnet
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
 
 def get_tools():
     """Return a list of tools for the agent."""
@@ -157,6 +214,27 @@ def get_tools():
                         }
                     },
                     "required": ["token1", "token2", "value"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "prepare_claim_rewards",
+                "description": "Prepare transaction data for claiming rewards from a specified pool. Requires a 0.001 ETH mint fee.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "pool_id": {
+                            "type": "integer",
+                            "description": "The ID of the pool from which to claim rewards"
+                        },
+                        "receiver_address": {
+                            "type": "string",
+                            "description": "The address to receive the claimed rewards"
+                        }
+                    },
+                    "required": ["pool_id", "receiver_address"]
                 }
             }
         }

@@ -7,7 +7,6 @@ from swap_agent.src.tools import InsufficientFundsError, TokenNotFoundError, Swa
 from config import Config
 import json
 
-
 tools_provided = tools.get_tools()
 messages = [{'role':"assistant","content":"This highly experimental chatbot is not intended for making important decisions, and its responses are generated based on incomplete data and algorithms that may evolve rapidly. By using this chatbot, you acknowledge that you use it at your own discretion and assume all risks associated with its limitations and potential errors."}]
 context = []
@@ -59,6 +58,11 @@ def get_response(message, chain_id, wallet_address,llm):
                 messages.append({"role": "assistant", "content": str(e)})
                 return str(e), "assistant"
             return res, role
+
+        elif func["name"] == 'prepare_claim_rewards':
+            args = json.loads(func["arguments"])
+            return tools.prepare_claim_rewards(args['pool_id'], args['receiver_address']), "assistant"
+
     messages.append({"role": "assistant", "content": result["choices"][0]["message"]['content']})
     context.append({"role": "assistant", "content": result["choices"][0]["message"]['content']})
     return result["choices"][0]["message"]['content'], "assistant"
