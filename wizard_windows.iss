@@ -1,6 +1,6 @@
 [Setup]
 AppName=MORagents
-AppVersion=0.0.8
+AppVersion=0.0.9
 DefaultDirName={commonpf}\MORagents
 OutputDir=.\MORagentsWindowsInstaller
 OutputBaseFilename=MORagentsSetup
@@ -41,7 +41,7 @@ begin
     'License Agreement', 'Please read the following License Agreement carefully',
     'By continuing, you acknowledge that you have read and agreed to the License. ' +
     'The full license text can be found at: ' +
-    'https://github.com/MorpheusAIs/moragents/blob/778b0aba68ae873d7bb355f2ed4419389369e042/LICENSE' + #13#10 + #13#10 +
+    'https://github.com/MorpheusAIs/moragents/blob/main/LICENSE.md' + #13#10 + #13#10 +
     'Do you accept the terms of the License agreement?');
 
   DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), nil);
