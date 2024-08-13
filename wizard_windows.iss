@@ -14,7 +14,7 @@ WelcomeLabel2=This will install MORagents on your computer. Please click Next to
 Source: "dist\MORagents\MORagents.exe"; DestDir: "{app}"
 Source: "dist\MORagents\_internal\*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
 Source: "images\moragents.ico"; DestDir: "{app}"
-Source: "LICENSE"; DestDir: "{app}"; Flags: isreadme
+Source: "LICENSE.md"; DestDir: "{app}"; Flags: isreadme
 Source: "{tmp}\DockerDesktopInstaller.exe"; DestDir: "{tmp}"; Flags: external deleteafterinstall
 Source: "{tmp}\OllamaSetup.exe"; DestDir: "{tmp}"; Flags: external deleteafterinstall
 Source: "runtime_setup_windows.py"; DestDir: "{app}"
@@ -25,7 +25,7 @@ Name: "{commondesktop}\MORagents"; Filename: "{app}\MORagents.exe"; IconFilename
 [Run]
 Filename: "{tmp}\DockerDesktopInstaller.exe"; Parameters: "install"; StatusMsg: "Installing Docker Desktop..."; Flags: waituntilterminated
 Filename: "{tmp}\OllamaSetup.exe"; StatusMsg: "Installing Ollama..."; Flags: waituntilterminated
-Filename: "{app}\LICENSE"; Description: "View License Agreement"; Flags: postinstall shellexec skipifsilent
+Filename: "{app}\LICENSE.md"; Description: "View License Agreement"; Flags: postinstall shellexec skipifsilent
 Filename: "{app}\MORagents.exe"; Description: "Launch MORagents"; Flags: postinstall nowait skipifsilent unchecked
 Filename: "cmd.exe"; Parameters: "/c ollama pull llama3 && ollama pull nomic-embed-text"; StatusMsg: "Pulling Ollama models..."; Flags: runhidden waituntilterminated
 
@@ -37,12 +37,30 @@ var
 
 procedure InitializeWizard;
 begin
-  EULAPage := CreateOutputMsgPage(wpWelcome, 
+  EULAPage := CreateOutputMsgPage(wpWelcome,
     'License Agreement', 'Please read the following License Agreement carefully',
-    'By continuing, you acknowledge that you have read and agreed to the License. ' +
-    'The full license text can be found at: ' +
-    'https://github.com/MorpheusAIs/moragents/blob/main/LICENSE.md' + #13#10 + #13#10 +
-    'Do you accept the terms of the License agreement?');
+    'By continuing, you acknowledge that you have read and agreed to the License. '
+    + 'The full license text can be found below:'
+    + #13#10
+    + 'MIT License'
+    + #13#10
+    + 'Copyright (c) 2024 Liquid Tensor LLC'
+    + #13#10
+    + 'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”),
+ to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: '
+
+    + ''
+    + 'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.'
+    + ''
+
+    + 'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+    INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+    PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+    DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'
+    + #13#10
+    + 'Do you accept the terms of the License agreement?');
 
   DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), nil);
 end;
