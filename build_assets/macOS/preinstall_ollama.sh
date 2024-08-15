@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl -L https://github.com/jmorganca/ollama/releases/download/v0.1.46/ollama-darwin -o ollama
+curl -L https://github.com/ollama/ollama/releases/download/v0.3.6/ollama-darwin -o ollama
 
 chmod +x ollama
 
