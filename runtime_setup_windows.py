@@ -107,6 +107,20 @@ def pull_docker_images():
             logger.error(f"Failed to pull image {image_name}: {e}")
             raise
 
+def start_ollama_server():
+    ollama_path = "ollama"
+
+    try:
+        print(f"Attempting to start Ollama server using: {ollama_path}")
+        subprocess.Popen([ollama_path, "serve"], 
+                         stdout=subprocess.PIPE, 
+                         stderr=subprocess.PIPE, 
+                         creationflags=subprocess.CREATE_NO_WINDOW)
+        print("Ollama server started successfully.")
+    except Exception as e:
+        print(f"Failed to start Ollama server: {e}")
+
+
 def docker_setup():
     if not check_docker_installed():
         print("Docker is not installed. Please install Docker Desktop.")
@@ -138,6 +152,11 @@ def docker_setup():
         docker_path, "run", "-d", "--name", "nginx", "-p", "3333:80",
         AgentDockerConfig.get_current_image_names()[0]  # nginx image
     ], check=True)
+
+def main():
+    # main() called every time the app is opened (from main.py). Put all app open code here.
+    start_ollama_server()
+    docker_setup()
 
 if __name__ == "__main__":
     docker_setup()

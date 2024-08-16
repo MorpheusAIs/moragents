@@ -106,6 +106,18 @@ def pull_docker_images(docker_path):
             logger.error(f"Failed to pull image {image}: {e}")
             raise
 
+def start_ollama_server():
+    ollama_path = '/usr/local/bin/ollama'
+
+    try:
+        # Start Ollama server
+        logger.info("Starting Ollama server...")
+        subprocess.Popen([ollama_path, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        logger.info("Ollama server started successfully.")
+    except Exception as e:
+        logger.info("Failed to start Ollama server.")
+        logger.error(f"Failed to start Ollama server: {e}")
+
 def docker_setup():
     docker_path = get_docker_path()
     logger.info(f"Docker path: {docker_path}")
@@ -141,5 +153,11 @@ def docker_setup():
         AgentDockerConfig.get_current_image_names()[0]  # nginx image
     ], check=True)
 
-if __name__ == "__main__":
+def main():
+    # main() called every time the app is opened (from main.py). Put all app open code here.
+    logger.info("Starting app...")
+    start_ollama_server()
     docker_setup()
+
+if __name__ == "__main__":
+    main()
