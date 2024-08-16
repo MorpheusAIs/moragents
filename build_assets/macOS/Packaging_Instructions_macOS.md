@@ -49,5 +49,5 @@ a) Create a New Project ... set the template as "Distribution".\
 b) Under the Packages, either edit the existing package or create a new one. Set "Identifier" to com.morpheus.pkg.MORAgents, set the Payload to have MORAgents.app under /Applications, then under Scripts, add the preinstall.sh and postinstall.sh from the downloaded files.\
 c) Create a new Package, then under Payload, add the Docker Desktop Mac Install under /Applications\
 d) Create a new Package, then under preinstall scripts, add the preinstall_ollama.sh script from the downloaded files.\
-e) Navigate to Project, then set Presentation to have the welcome.html file and other settings to present the installer.
+e) Navigate to Project, then set Presentation to have the welcome.html and license.html files and other settings to present the installer.
 
