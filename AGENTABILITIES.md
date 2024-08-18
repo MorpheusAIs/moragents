@@ -56,4 +56,4 @@ Pending Lumerin's work. Eventually Agent Builders will be able to permission-les
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: August 8, 2024*
+*Last Updated: August 16, 2024*
