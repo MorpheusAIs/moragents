@@ -3,41 +3,47 @@
 
 ## Morpheus Install for Local Web3 Agent Interaction
 
+![UI 1](images/moragents_chatpdf.png)
 
-![UI 1](images/wallet_integration.png)
+![UI 2](images/wallet_integration.png)
 
-![UI 2](images/successful_swap.png)
+![UI 3](images/successful_swap.png)
 
-![UI 3](images/agent_clarify.png)
+![UI 4](images/agent_clarify.png)
+
 ---
 
 ### Features
-#### Current: 
-- Fetch price, market cap, and TVL of coins and tokens supported on CoinGecko
-- Web interface
-- Wallet integrations for your existing wallets in-browser
-  - MetaMask
-  - Rainbow
-  - Coinbase Wallet
-  - WalletConnect
-- Web3 swap agents
-
-#### Pending:
-- Chat with local files agent (general purpose)
+- Chat with local PDF files
+- Swap ERC Compatible Tokens
+- Fetch Price, Market Cap, and TVL of coins and tokens supported on CoinGecko
+- Web interface works in your preferred browser:
+  - Chrome
+  - Brave 
+  
+  with your favorite wallet extensions:
+    - MetaMask
+    - Rainbow
+    - Coinbase Wallet
+    - WalletConnect
 
 ---
 
-### Install
-#### macOS on M1/2/3 etc. (arm64)
+## Install
+### macOS on M1/2/3 etc. (arm64)
 >Assumes minimum 16GB RAM
 
-#### Steps
+#### Steps to Install
 1. Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
    1. Follow default settings, can skip surveys, then leave docker desktop running. You can minimize it.
-2. USe Chrome to download [Moragents.zip](https://drive.proton.me/urls/X35VBE3GWW#mtrqT6rAzZbi), open ZIP, and copy MORagents.app to your Applications folder 
-    > SHA256 96c2510e4f7a752c613b322be0a107958ee34814415e3e7b950b426298379a7a MORagents.zip
-3. Open **MORagents** app. Give it a few minutes the first time, and then it should open your browser. 
-   1. If there's an issue, try opening the MORagents app again
+2. Download and install [MORagents009.pkg](https://drive.proton.me/urls/762Z6QFNH4#68MKubcGeDtf) 
+    > SHA256 5200350bba351a40cfac5552476bad1bb67d32ff069a4d9ebc0b3556367673b7  MORagents009.pkg
+3. Wait several minutes for background files to download and then your browser should automatically open to http://localhost:3333
+    > Note: After installation is complete, the MORagents app icon will bounce for several minutes on your dock, and then stop. This is normal behavior as it's downloading a large 9GB file in the background. You can open "Activity Monitor" and in the Network tab see that it's downloading.
+
+#### Future Usage
+- Open the "MORagents" app from Mac search bar.
+  - For easier access: Right-click MORagents icon on dock -> Options -> Keep in Dock 
 
 ### macOS Intel (x86_64)
 *coming soon*
@@ -64,7 +70,7 @@
     2. If anything hangs for >10min, please try opening the MORagents app again from the Desktop
 
 #### Troubleshooting
-If the app shows connections errors to agent fetcher. Please ensure Docker Desktop is running, then close and reopen **MORagents** from desktop.
+If the app shows connections errors in connecting to agents. Please ensure Docker Desktop is running, then close and reopen **MORagents** from desktop.
 
 ---
 

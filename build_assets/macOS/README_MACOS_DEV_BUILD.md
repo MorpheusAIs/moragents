@@ -36,7 +36,7 @@ For Intel (x86_64)
  $  pyinstaller --windowed --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
 ```
     # If you have issues, try
-    python -m PyInstaller --windowed --runtime-hook runtime_hook.py --name="MORagents" --icon="moragents.icns" main.py
+    python -m PyInstaller --windowed --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
 
 6. Install Application 
 ```shell
