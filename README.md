@@ -45,6 +45,10 @@
 - Open the "MORagents" app from Mac search bar.
   - For easier access: Right-click MORagents icon on dock -> Options -> Keep in Dock 
 
+#### Troubleshooting
+If the app shows connections errors in connecting to agents. Please ensure Docker Desktop is running, then close and reopen **MORagents** from desktop.
+
+
 ### macOS Intel (x86_64)
 *coming soon*
 
@@ -54,20 +58,17 @@
 >Assumes minimum 16GB RAM
 
 #### Steps
-1. Use Chrome to download [MORagentsWindowsInstaller.zip](https://drive.proton.me/urls/9BE8X1ZMTG#Oh1SfTeklH4W)
-    > SHA256 0a5f5e3a288d45854c83994fa4afa4c713019229d99d67f28442fc56a5de1b20 MORagentsWindowsInstaller.zip
-2. Go to downloaded **MORagentsWindowsInstaller(.zip)** file and click to "Extract All"
-3. Open Extracted Folder **MORagentsWindowsInstaller**
-   1. You may need to disable your anti-virus software before proceeding
+1. Use Chrome to download [MORagentsSetupWindows009.zip](https://drive.proton.me/urls/8X58WAH80G#ib5r3K4WalDA)
+    > SHA256 6b8bd78571df2f5e8c6e516102aa05b1121d0214fdfb75a2be16146c22e0d2c52 MORagentsSetupWindows009.zip
+2. Go to downloaded **MORagentsSetupWindows009(.zip)** file and double click to open"
+3. Double click **MORagentsSetup.exe**
+   1. You may need to click "More info" -> "Run anyway"
+   2. If that still doesn't work, try temporarily disabling your anti-virus and open the .exe again
 4. Click and Run **MORagentsSetup.exe**
-   1. This will auto-install Docker Desktop dependency
-5. Open **MORagents** from Desktop
-6. Accept Docker's EULA
-   1. Surveys are optional, can skip
-7. Wait for Docker engine to start...
-8. Open **MORagents** App from Desktop
-    1. First time installation requires some extra time to load agent's image
-    2. If anything hangs for >10min, please try opening the MORagents app again from the Desktop
+   1. This will auto-install Docker and Ollama dependencies. Those will ask you for confirmation.
+5. Open **MORagents** from Desktop 
+   1. Wait for Docker engine to start...
+   2. If you see any errors or if anything hangs for >10min, please try opening the MORagents app again from the Desktop
 
 #### Troubleshooting
 If the app shows connections errors in connecting to agents. Please ensure Docker Desktop is running, then close and reopen **MORagents** from desktop.

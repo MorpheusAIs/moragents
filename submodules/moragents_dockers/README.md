@@ -20,11 +20,20 @@ Pull the required models in ollama
 
 Docker compose will build and run two containers.  One will be for the agents, the other will be for the UI. 
 
-```docker-compose up```
+1. Ensure you're in the submodules/moragents_dockers folder
+    ```sh
+    $ cd submodules/moragents_dockers
+    ```
 
-or for Apple silicon
-
-```docker-compose -f docker-compose-apple.yml up```
+2. Build Images and Launch Containers:
+   1. For Intel / AMD / x86_64  
+        ```sh 
+        docker-compose up
+        ```
+   2. For Apple silicon (M1, M2, M3, etc)
+        ```sh
+        docker-compose -f docker-compose-apple.yml up
+        ```
 
 Open in the browser: ```http://localhost:3333/```
 
