@@ -11,18 +11,18 @@ transaction.
 
 ### Current Projects:
 1. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
-   1. Local Docker install
-   2. (pending) [HideNSeek](https://github.com/MorpheusAIs/HideNSeek): An algorithm for verifying and fingerprinting which model a compute provider is actually running
-      1. Note: this repo will be made public under an MIT license following the publishing of a paper by the same name which is currently in the works
+   1. Local install architecture
 2. **IODmitri, SanatSharma, LachsBagel on GitHhub**
-   3. [HideNSeek](https://github.com/MorpheusAIs/HideNSeek): An algorithm for verifying and fingerprinting which model a compute provider is actually running
-      4. Link to Paper [Hide and Seek: Fingerprinting Large Language Models with Evolutionary Learning](https://www.arxiv.org/abs/2408.02871)
+   1. [HideNSeek](https://github.com/MorpheusAIs/HideNSeek): An algorithm for verifying and fingerprinting which model a compute provider is actually running
+      1. Link to Paper [Hide and Seek: Fingerprinting Large Language Models with Evolutionary Learning](https://www.arxiv.org/abs/2408.02871)
+   2. (pending) A follow-on paper exploring parameter size estimation is in the works.
 3. **artfuljars on Discord**:
    1. Windows Build (EXE version of .app)
    2. Two installation wizards:
       1. Windows
       2. (pending) macOS
-   3. (pending) CICD builds for Windows, Linux, and macOS
+   3. CICD build for Windows
+   4. (pending) CICD builds for Linux and macOS
    4. (pending) Vulnerability scanning of dependencies and code
 4. GenLayer
    1. (pending) [FeedBuzz](https://github.com/yeagerai/feedbuzz-contracts) - AI filtered logging system to surface user demand and failure modes for new functionality  
@@ -56,4 +56,4 @@ Pending Lumerin's work. Eventually Agent Builders will be able to permission-les
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: August 16, 2024*
+*Last Updated: August 18, 2024*
