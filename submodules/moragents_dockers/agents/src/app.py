@@ -3,8 +3,16 @@ from flask import Flask, request, jsonify
 from config import Config
 from swap_agent.src import agent as swap_agent
 from data_agent.src import agent as data_agent
+from rag_agent.src import agent as rag_agent
 from llama_cpp import Llama
 from llama_cpp.llama_tokenizer import LlamaHFTokenizer
+import os 
+import logging
+from langchain_community.llms import Ollama
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_core.prompts import ChatPromptTemplate
+from rag_agent.src.config import Config as ollama_config
+
 
 
 def load_llm():
@@ -23,6 +31,32 @@ llm=load_llm()
 
 app = Flask(__name__)
 CORS(app)
+
+upload_state=False
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = ollama_config.MAX_LENGTH
+
+llm_ollama = Ollama(model="llama3",base_url=ollama_config.URL) 
+embeddings = OllamaEmbeddings(model="nomic-embed-text",base_url=ollama_config.URL)
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+agent =  None
+messages=[]
+prompt = ChatPromptTemplate.from_template(
+    """
+            Answer the following question only based on the given context
+                                                    
+            <context>
+            {context}
+            </context>
+                                                    
+            Question: {input}
+"""
+)
 
 @app.route('/swap_agent/', methods=['POST'])
 def swap_agent_chat():
@@ -66,6 +100,23 @@ def data_agent_messages():
 @app.route('/data_agent/clear_messages', methods=['GET'])
 def data_agent_clear_messages():
     return data_agent.clear_messages()
+
+@app.route('/rag_agent/upload', methods=['POST'])
+def rag_agent_upload():
+    global llm_ollama,UPLOAD_FOLDER,embeddings
+    return rag_agent.upload_file(request, UPLOAD_FOLDER, llm_ollama, embeddings,ollama_config.MAX_FILE_SIZE)
+
+@app.route('/rag_agent/', methods=['POST'])
+def rag_agent_chat():
+    return rag_agent.chat(request)
+
+@app.route('/rag_agent/messages', methods=['GET'])
+def rag_agent_messages():
+    return rag_agent.get_messages()
+
+@app.route('/rag_agent/clear_messages', methods=['GET'])
+def rag_agent_clear_messages():
+    return rag_agent.clear_messages()
 
     
 if __name__ == '__main__':

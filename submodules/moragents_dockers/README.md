@@ -3,14 +3,37 @@
 This repo contains multiple agents and a dapp that enables you to interact with the agents, all running locally and containerized with Docker.
 
 
-## Usage
+
+## Dependencies 
+
+* Docker
+* Ollama
+
+Pull the required models in ollama
+
+```ollama pull llama3```
+
+```ollama pull nomic-embed-text```
+
+
+## Installation
+
 Docker compose will build and run two containers.  One will be for the agents, the other will be for the UI. 
 
-```docker-compose up```
+1. Ensure you're in the submodules/moragents_dockers folder
+    ```sh
+    $ cd submodules/moragents_dockers
+    ```
 
-or for Apple silicon
-
-```docker-compose -f docker-compose-apple.yml up```
+2. Build Images and Launch Containers:
+   1. For Intel / AMD / x86_64  
+        ```sh 
+        docker-compose up
+        ```
+   2. For Apple silicon (M1, M2, M3, etc)
+        ```sh
+        docker-compose -f docker-compose-apple.yml up
+        ```
 
 Open in the browser: ```http://localhost:3333/```
 
@@ -44,6 +67,6 @@ A typical flow looks like this:
 - If the user accepts the quote, the swap may proceed.  The back-end will generate transactions which will be sent to the front-end to be signed by the user's wallet.
 - If the allowance for the token being sold is too low, an approval transaction will be generated first
 
+### RAG Agent
 
-
-
+This agent will answer questions about an uploaded PDF file. 
