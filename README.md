@@ -60,10 +60,10 @@ If the app shows connections errors in connecting to agents. Please ensure Docke
 #### Steps
 1. Use Chrome to download [MORagentsSetupWindows009.zip](https://drive.proton.me/urls/8X58WAH80G#ib5r3K4WalDA)
     > SHA256 6b8bd78571df2f5e8c6e516102aa05b1121d0214fdfb75a2be16146c22e0d2c52 MORagentsSetupWindows009.zip
-2. Go to downloaded **MORagentsSetupWindows009(.zip)** file and double click to open"
+2. Go to downloaded **MORagentsSetupWindows009(.zip)** file and double click to open
 3. Double click **MORagentsSetup.exe**
    1. You may need to click "More info" -> "Run anyway"
-   2. If that still doesn't work, try temporarily disabling your anti-virus and open the .exe again
+   2. If that still doesn't work, try temporarily disabling your antivirus and open the .exe again
 4. Click and Run **MORagentsSetup.exe**
    1. This will auto-install Docker and Ollama dependencies. Those will ask you for confirmation.
 5. Open **MORagents** from Desktop 
