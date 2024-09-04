@@ -1,123 +1,260 @@
+import json
+import os
+import logging
+import time
+from functools import wraps
+from config import Config
+from llama_cpp import Llama
 from flask_cors import CORS
 from flask import Flask, request, jsonify
-from config import Config
-from swap_agent.src import agent as swap_agent
-from data_agent.src import agent as data_agent
-from rag_agent.src import agent as rag_agent
-from llama_cpp import Llama
-from llama_cpp.llama_tokenizer import LlamaHFTokenizer
-import os 
-import logging
 from langchain_community.llms import Ollama
+from delegator import Delegator
+from llama_cpp.llama_tokenizer import LlamaHFTokenizer
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain_core.prompts import ChatPromptTemplate
-from rag_agent.src.config import Config as ollama_config
+
+# Constants
+INITIAL_MESSAGE = {
+    "role": "assistant",
+    "content": "This highly experimental chatbot is not intended for making important decisions, and its responses are generated based on incomplete data and algorithms that may evolve rapidly. By using this chatbot, you acknowledge that you use it at your own discretion and assume all risks associated with its limitations and potential errors.",
+}
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    filename="app.log",
+    filemode="a",
+)
+logger = logging.getLogger(__name__)
+
+# Add console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# Concise response instruction
+CONCISE_INSTRUCTION = (
+    "Please provide a concise response without unnecessary elaboration."
+)
 
 
+class TimeoutError(Exception):
+    pass
 
+
+def timeout(seconds=10, error_message="Function call timed out"):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                logger.error(f"Function call failed: {str(e)}")
+                raise TimeoutError(error_message)
+
+        return wrapper
+
+    return decorator
+
+
+# @timeout(30)
+# def load_llm():
+#     logger.info("Loading LLM model")
+#     try:
+#         llm = Llama(
+#             model_path=Config.MODEL_PATH,
+#             chat_format="functionary-v2",
+#             tokenizer=LlamaHFTokenizer.from_pretrained(
+#                 "meetkai/functionary-small-v2.4-GGUF"
+#             ),
+#             n_gpu_layers=0,
+#             n_batch=4000,
+#             n_ctx=4000,
+#             f16_kv=True,
+#             verbose=True,
+#         )
+#         logger.info("LLM model loaded successfully")
+#         return llm
+#     except Exception as e:
+#         logger.error(f"Error loading LLM model: {str(e)}")
+#         raise
+
+
+@timeout(30)
 def load_llm():
-    llm = Llama(
-        model_path=Config.MODEL_PATH,
-        chat_format="functionary-v2",
-        tokenizer=LlamaHFTokenizer.from_pretrained("meetkai/functionary-small-v2.4-GGUF"),
-        n_gpu_layers=0,
-        n_batch=4000,
-        n_ctx=4000
-    )
-    return llm
+    logger.info("Loading LLM model with Apple Metal acceleration")
+    try:
+        llm = Llama(
+            model_path=Config.MODEL_PATH,
+            chat_format="functionary-v2",
+            tokenizer=LlamaHFTokenizer.from_pretrained(
+                "meetkai/functionary-small-v2.4-GGUF"
+            ),
+            n_gpu_layers=-1,  # Use all layers on GPU
+            n_batch=512,  # Reduced batch size for GPU
+            n_ctx=4000,
+            f16_kv=True,
+            verbose=True,
+            use_mlock=True,  # Optionally use mlock to prevent memory from being swapped
+            use_mmap=True,  # Optionally use mmap for faster loading
+        )
+        logger.info("LLM model loaded successfully with Apple Metal")
+        return llm
+    except Exception as e:
+        logger.error(f"Error loading LLM model: {str(e)}")
+        raise
 
-
-llm=load_llm()
 
 app = Flask(__name__)
 CORS(app)
 
-upload_state=False
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
+upload_state = False
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = ollama_config.MAX_LENGTH
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = Config.MAX_UPLOAD_LENGTH
 
-llm_ollama = Ollama(model="llama3",base_url=ollama_config.URL) 
-embeddings = OllamaEmbeddings(model="nomic-embed-text",base_url=ollama_config.URL)
+try:
+    llm = load_llm()
+except TimeoutError:
+    logger.error("LLM loading timed out")
+    llm = None
+except Exception as e:
+    logger.error(f"Failed to load LLM: {str(e)}")
+    llm = None
 
-logging.basicConfig(level=logging.DEBUG)
+llm_ollama = Ollama(model="llama3", base_url=Config.OLLAMA_URL)
+embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Config.OLLAMA_URL)
+
+delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)
+messages = [INITIAL_MESSAGE]
+next_turn_agent = None
 
 
-agent =  None
-messages=[]
-prompt = ChatPromptTemplate.from_template(
-    """
-            Answer the following question only based on the given context
-                                                    
-            <context>
-            {context}
-            </context>
-                                                    
-            Question: {input}
-"""
-)
+def format_input(prompt):
+    logger.info(f"Formatting input: {prompt}")
+    if not isinstance(prompt, dict) or "content" not in prompt:
+        raise ValueError("Prompt must be a dictionary with a 'content' key")
+    if not isinstance(prompt["content"], str):
+        raise ValueError("Prompt content must be a string")
+    # prompt["content"] = f"{prompt['content'].strip()} {CONCISE_INSTRUCTION}"
+    logger.info(f"Formatted input: {prompt}")
+    return prompt
 
-@app.route('/swap_agent/', methods=['POST'])
-def swap_agent_chat():
-    global llm
-    return swap_agent.chat(request, llm)
 
-@app.route('/swap_agent/tx_status', methods=['POST'])
+@app.route("/", methods=["POST"])
+@timeout(60, "Chat request timed out")
+def chat():
+    global next_turn_agent, messages
+    data = request.get_json()
+    logger.info(f"Received chat request: {data}")
+    try:
+        cleaned_prompt = None
+        if "prompt" in data:
+            raw_prompt = data["prompt"]
+            cleaned_prompt = format_input(raw_prompt)
+            messages.append(cleaned_prompt)
+            logger.info(f"Cleaned prompt: {cleaned_prompt}")
+
+        if not next_turn_agent:
+            logger.info("No next turn agent, getting delegator response")
+            start_time = time.time()
+            result = delegator.get_delegator_response(cleaned_prompt, upload_state)
+            end_time = time.time()
+            logger.info(f"Delegator response time: {end_time - start_time:.2f} seconds")
+            logger.info(f"Delegator response: {result}")
+
+            if "next" not in result:
+                logger.error(f"Missing 'next' key in delegator response: {result}")
+                raise ValueError("Invalid delegator response: missing 'next' key")
+
+            next_agent = result["next"]
+            response_swap = delegator.delegate_chat(next_agent, request)
+            next_turn_agent = response_swap.get("next_turn_agent")
+            response = {
+                "role": response_swap["role"],
+                "content": response_swap["content"],
+            }
+        else:
+            logger.info(f"Delegating chat to next turn agent: {next_turn_agent}")
+            response_swap = delegator.delegate_chat(next_turn_agent, request)
+            next_turn_agent = response_swap.get("next_turn_agent")
+            response = {
+                "role": response_swap["role"],
+                "content": response_swap["content"],
+            }
+
+        messages.append(response)
+
+        # Add agentName to the response if available
+        response_with_agent = response.copy()
+        if next_agent:
+            response_with_agent["agentName"] = next_agent
+
+        logger.info(f"Sending response: {response_with_agent}")
+        return jsonify(response_with_agent)
+    except TimeoutError:
+        logger.error("Chat request timed out")
+        return jsonify({"error": "Request timed out"}), 504
+    except ValueError as ve:
+        logger.error(f"Input formatting error: {str(ve)}")
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        logger.error(f"Error in chat route: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/tx_status", methods=["POST"])
 def swap_agent_tx_status():
-    return swap_agent.tx_status(request)
+    logger.info("Received tx_status request")
+    response = delegator.delegate_route("crypto swap agent", request, "tx_status")
+    messages.append(response)
+    return jsonify(response)
 
-@app.route('/swap_agent/messages', methods=['GET'])
-def swap_agent_messages():
-    return swap_agent.get_messages()
-    
-@app.route('/swap_agent/clear_messages', methods=['GET'])
-def swap_agent_clear_messages():
-    return swap_agent.clear_messages()
-       
-@app.route('/swap_agent/allowance', methods=['POST'])
+
+@app.route("/messages", methods=["GET"])
+def get_messages():
+    logger.info("Received get_messages request")
+    return jsonify({"messages": messages})
+
+
+@app.route("/clear_messages", methods=["GET"])
+def clear_messages():
+    global messages
+    logger.info("Clearing message history")
+    messages = [INITIAL_MESSAGE]
+    return jsonify({"response": "successfully cleared message history"})
+
+
+@app.route("/allowance", methods=["POST"])
 def swap_agent_allowance():
-    return swap_agent.get_allowance(request)
-    
-@app.route('/swap_agent/approve', methods=['POST'])
+    logger.info("Received allowance request")
+    return delegator.delegate_route("crypto swap agent", request, "get_allowance")
+
+
+@app.route("/approve", methods=["POST"])
 def swap_agent_approve():
-    return swap_agent.approve(request)
-    
-@app.route('/swap_agent/swap', methods=['POST'])
-def swap_agent_swap():   
-    return swap_agent.swap(request)
-
-@app.route('/data_agent/', methods=['POST'])
-def data_agent_chat():
-    global llm
-    return data_agent.chat(request, llm)
+    logger.info("Received approve request")
+    return delegator.delegate_route("crypto swap agent", request, "approve")
 
 
-@app.route('/data_agent/messages', methods=['GET'])
-def data_agent_messages():
-    return data_agent.get_messages()
+@app.route("/swap", methods=["POST"])
+def swap_agent_swap():
+    logger.info("Received swap request")
+    return delegator.delegate_route("crypto swap agent", request, "swap")
 
-@app.route('/data_agent/clear_messages', methods=['GET'])
-def data_agent_clear_messages():
-    return data_agent.clear_messages()
 
-@app.route('/rag_agent/upload', methods=['POST'])
+@app.route("/upload", methods=["POST"])
 def rag_agent_upload():
-    global llm_ollama,UPLOAD_FOLDER,embeddings
-    return rag_agent.upload_file(request, UPLOAD_FOLDER, llm_ollama, embeddings,ollama_config.MAX_FILE_SIZE)
+    global messages, upload_state
+    logger.info("Received upload request")
+    response = delegator.delegate_route("rag agent", request, "upload_file")
+    messages.append(response)
+    upload_state = True
+    return jsonify(response)
 
-@app.route('/rag_agent/', methods=['POST'])
-def rag_agent_chat():
-    return rag_agent.chat(request)
 
-@app.route('/rag_agent/messages', methods=['GET'])
-def rag_agent_messages():
-    return rag_agent.get_messages()
-
-@app.route('/rag_agent/clear_messages', methods=['GET'])
-def rag_agent_clear_messages():
-    return rag_agent.clear_messages()
-
-    
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, info=True)

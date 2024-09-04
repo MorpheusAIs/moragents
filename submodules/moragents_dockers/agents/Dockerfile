@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.10-bullseye
+FROM python:3.10-slim-buster
 
 # Set the working directory in the container
 WORKDIR /app
@@ -27,6 +27,7 @@ EXPOSE 5000
 
 # Set the environment variable for Flask
 ENV FLASK_APP=src/app.py
+
 
 # Run the application
 CMD ["flask", "run", "--host", "0.0.0.0"]

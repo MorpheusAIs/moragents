@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   agents:
-    image: lachsbagel/moragents_dockers-agents:amd64-0.0.9
     build:
       dockerfile: Dockerfile
       context: ./agents
@@ -11,21 +10,15 @@ services:
     restart: always
     volumes:
       - agents_data:/var/lib/agents
-      - ./agents/src:/app/src
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    environment:
-      - BASE_URL=http://host.docker.internal:11434
+      - ./agents/src:/app/src  # Volume for swapagent src
 
   nginx:
-    image: lachsbagel/moragents_dockers-nginx:amd64-0.0.9
     build:
       context: ./frontend
       dockerfile: Dockerfile
       target: nginx
     ports:
       - '3333:80'
-
 
 
 volumes:

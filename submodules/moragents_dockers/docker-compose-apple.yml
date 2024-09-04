@@ -1,8 +1,7 @@
-version: '3.8'
+version: "3.8"
 
 services:
   agents:
-    image: lachsbagel/moragents_dockers-agents:apple-0.0.9
     build:
       dockerfile: Dockerfile-apple
       context: ./agents
@@ -11,21 +10,23 @@ services:
     restart: always
     volumes:
       - agents_data:/var/lib/agents
-      - ./agents/src:/app/src
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ./agents/src:/app/src # Volume for swapagent src
     environment:
-      - BASE_URL=http://host.docker.internal:11434
+      - FLASK_DEBUG=1
+      - PYTHONUNBUFFERED=1
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
 
   nginx:
-    image: lachsbagel/moragents_dockers-nginx:apple-0.0.9
     build:
       context: ./frontend
       dockerfile: Dockerfile
       target: nginx
     ports:
-      - '3333:80'
-
+      - "3333:80"
 
 volumes:
   agents_data:
