@@ -56,3 +56,6 @@ resources/*
 ## installer
 MORagentsWindowsInstaller
 MORagentsWindowsInstaller.zip
+
+# Model files
+submodules/moragents_dockers/agents/model/
