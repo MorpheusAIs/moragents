@@ -13,3 +13,4 @@ faiss-cpu==1.8.0.post1
 langchain-text-splitters==0.2.2
 langchain-core==0.2.24
 langchain-community==0.2.10
+torch

@@ -4,7 +4,6 @@
 This project is a Flask-based AI chat application featuring intelligent responses from various language models and embeddings. It includes file uploading, cryptocurrency swapping, and a delegator system to manage multiple agents. The application, along with a dApp for agent interaction, runs locally and is containerized with Docker.
 
 
-
 ## Pre-requisites
 * [Download Ollama](https://ollama.com/ )for your operating system
 * Then after finishing installation pull these two models:
@@ -65,7 +64,6 @@ A typical flow looks like this:
 - If the user accepts the quote, the swap may proceed. The back-end will generate transactions which will be sent to the front-end to be signed by the user's wallet.
 - If the allowance for the token being sold is too low, an approval transaction will be generated first
 
-
 ## RAG Agent
 This agent will answer questions about an uploaded PDF file.
 
@@ -98,6 +96,37 @@ The Delegator handles user queries by analyzing the prompt and delegating it to 
    - Endpoint: `POST /upload`
    - Handles file uploads for RAG (Retrieval-Augmented Generation) purposes.
 
+## RAG Agent
+This agent will answer questions about an uploaded PDF file.
+
+
+# Delegator
+The Delegator handles user queries by analyzing the prompt and delegating it to the appropriate agent.
+
+## API Endpoints
+
+1. **Chat Functionality**
+   - Endpoint: `POST /`
+   - Handles chat interactions, delegating to appropriate agents when necessary.
+
+2. **Message History**
+   - Endpoint: `GET /messages`
+   - Retrieves chat message history.
+
+3. **Clear Messages**
+   - Endpoint: `GET /clear_messages`
+   - Clears the chat message history.
+
+4. **Swap Operations**
+   - Endpoints:
+     - `POST /tx_status`: Check transaction status
+     - `POST /allowance`: Get allowance
+     - `POST /approve`: Approve transaction
+     - `POST /swap`: Perform swap
+
+5. **File Upload**
+   - Endpoint: `POST /upload`
+   - Handles file uploads for RAG (Retrieval-Augmented Generation) purposes.
 
 
 # Adding a New Agent

@@ -3,17 +3,20 @@ import logging
 # Logging configuration
 logging.basicConfig(level=logging.INFO)
 
+
 # Configuration object
 class Config:
+
     # Model configuration
     MODEL_NAME = "meetkai/functionary-small-v2.4-GGUF"
     MODEL_REVISION = "functionary-small-v2.4.Q4_0.gguf"
-    MODEL_PATH = "model/"+MODEL_REVISION
+    MODEL_PATH = "model/" + MODEL_REVISION
     DOWNLOAD_DIR = "model"
     OLLAMA_URL = "http://host.docker.internal:11434"
     MAX_UPLOAD_LENGTH = 16 * 1024 * 1024
     DELEGATOR_CONFIG = {
-            "agents": [
+        "agents": [
+
             {
                 "path": "rag_agent.src.agent",
                 "class": "RagAgent",
@@ -34,6 +37,20 @@ class Config:
                 "description": "if the prompt is related with swapping crypto currencies choose crypto swap agent. like if it is swap 4 eth or swap 4 eth to usdc choose crypto swap agent and if the query is about swapping crypto currencies always choose crypto swap agent",
                 "name": "crypto swap agent",
                 "upload_required": False
+            },
+            {
+                "path": "claim_agent.src.agent",
+                "class": "ClaimAgent",
+                "description": "if the prompt is related to claiming rewards or tokens or claiming MOR rewards, choose claim agent. Example - if a user mentions that they want to claim their rewards from pool 1 to a receiver address",
+                "name": "claim agent",
+                "upload_required": False
+            },
+            {
+                "path": "reward_agent.src.agent",
+                "class": "RewardAgent",
+                "description": "if the prompt is related to checking or querying user's MOR rewards, choose reward agent. Example - if a user mentions that they want to check the amount of MOR Rewards or Tokens they have accrued in one of the pools",
+                "name": "reward agent",
+                "upload_required": False
             }
-            ]
-        }
+        ]
+    }
