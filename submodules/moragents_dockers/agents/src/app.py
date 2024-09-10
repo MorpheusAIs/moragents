@@ -132,6 +132,14 @@ delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)
 messages = [INITIAL_MESSAGE]
 next_turn_agent = None
 
+delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)
+messages = [
+    {
+        "role": "assistant",
+        "content": "This highly experimental chatbot is not intended for making important decisions, and its responses are generated based on incomplete data and algorithms that may evolve rapidly. By using this chatbot, you acknowledge that you use it at your own discretion and assume all risks associated with its limitations and potential errors.",
+    }
+]
+
 
 def format_input(prompt):
     logger.info(f"Formatting input: {prompt}")
@@ -257,4 +265,4 @@ def rag_agent_upload():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, info=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
