@@ -5,6 +5,12 @@ log_message() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
+# Check if running on Intel Mac
+if [ "$(uname -m)" != "x86_64" ]; then
+    log_message "Error: This script is for Intel-based Macs only."
+    exit 1
+fi
+
 # Function to check if an application is running
 is_app_running() {
     app_name=$1

@@ -4,6 +4,7 @@ import webbrowser
 
 from runtime_setup_macos import main as macos_setup
 from runtime_setup_windows import main as windows_setup
+from runtime_setup_linux import main as linux_setup
 from utils.logger_config import setup_logger
 from utils.host_utils import get_os_and_arch
 
@@ -21,9 +22,7 @@ if __name__ == '__main__':
         elif os_name == "Windows":
             windows_setup()
         elif os_name == "Linux":
-            raise RuntimeError(
-                f"MORagents needs Linux support! Would you like to help?\n"
-                f"https://github.com/MorpheusAIs/moragents/issues/27")
+            linux_setup()
 
     except Exception as e:
         logging.critical(f"Error during Docker setup: {str(e)}")
