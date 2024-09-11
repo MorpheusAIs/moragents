@@ -6,6 +6,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Configuration object
 class Config:
+
     # Model configuration
     MODEL_NAME = "bartowski/functionary-small-v3.2-GGUF"
     MODEL_REVISION = "functionary-small-v3.2-Q6_K_L.gguf"
@@ -41,6 +42,20 @@ class Config:
                 "path": "tweet_sizzler_agent.src.agent",
                 "class": "TweetSizzlerAgent",
                 "description": "If the prompt is related to writing about a particular topic, choose the tweet sizzler agent. This agent can generate trendy, engaging tweets based on current topics or user input, and can directly post these tweets to Twitter/X. It's capable of crafting tweets that are likely to go viral, incorporating hashtags, and understanding the latest social media trends.",
+                "upload_required": False,
+            },
+            {
+                "path": "claim_agent.src.agent",
+                "class": "ClaimAgent",
+                "description": "if the prompt is related to claiming rewards or tokens or claiming MOR rewards, choose claim agent. Example - if a user mentions that they want to claim their rewards from pool 1 to a receiver address",
+                "name": "claim agent",
+                "upload_required": False,
+            },
+            {
+                "path": "reward_agent.src.agent",
+                "class": "RewardAgent",
+                "description": "if the prompt is related to checking or querying user's MOR rewards, choose reward agent. Example - if a user mentions that they want to check the amount of MOR Rewards or Tokens they have accrued in one of the pools",
+                "name": "reward agent",
                 "upload_required": False,
             },
         ]

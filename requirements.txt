@@ -4,3 +4,4 @@ customtkinter
 requests
 setuptools
 pyinstaller
+torch

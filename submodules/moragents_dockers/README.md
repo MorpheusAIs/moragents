@@ -95,6 +95,43 @@ The Delegator handles user queries by analyzing the prompt and delegating it to 
    - Endpoint: `POST /upload`
    - Handles file uploads for RAG (Retrieval-Augmented Generation) purposes.
 
+## RAG Agent
+
+This agent will answer questions about an uploaded PDF file.
+
+# Delegator
+
+The Delegator handles user queries by analyzing the prompt and delegating it to the appropriate agent.
+
+## API Endpoints
+
+1. **Chat Functionality**
+
+   - Endpoint: `POST /`
+   - Handles chat interactions, delegating to appropriate agents when necessary.
+
+2. **Message History**
+
+   - Endpoint: `GET /messages`
+   - Retrieves chat message history.
+
+3. **Clear Messages**
+
+   - Endpoint: `GET /clear_messages`
+   - Clears the chat message history.
+
+4. **Swap Operations**
+
+   - Endpoints:
+     - `POST /tx_status`: Check transaction status
+     - `POST /allowance`: Get allowance
+     - `POST /approve`: Approve transaction
+     - `POST /swap`: Perform swap
+
+5. **File Upload**
+   - Endpoint: `POST /upload`
+   - Handles file uploads for RAG (Retrieval-Augmented Generation) purposes.
+
 # Adding a New Agent
 
 ## Overview

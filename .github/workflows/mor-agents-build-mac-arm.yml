@@ -1,0 +1,54 @@
+name: MOR Agents Build macOS ARM
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --windowed --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
+    
+    - name: Move .app to expected location
+      run: |
+        mv dist/MORagents.app build_assets/macOS/
+    
+    - name: Install Packages app
+      run: |
+        wget http://s.sudre.free.fr/files/Packages_1211_dev.dmg
+        hdiutil attach Packages_1211_dev.dmg
+        sudo installer -pkg /Volumes/Packages\ 1.2.11/packages/Packages.pkg -target /
+        hdiutil detach /Volumes/Packages\ 1.2.11
+    
+    - name: Create installer package
+      run: |
+        cd build_assets/macOS
+        /usr/local/bin/packagesbuild --verbose --project MorpheusPackagesSudre.pkgproj
+    
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: MORagentsSetup-macOS
+        path: ./build_assets/macOS/MORAgentsInstaller.pkg
