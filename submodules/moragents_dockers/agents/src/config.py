@@ -8,8 +8,8 @@ logging.basicConfig(level=logging.INFO)
 class Config:
 
     # Model configuration
-    MODEL_NAME = "bartowski/functionary-small-v3.2-GGUF"
-    MODEL_REVISION = "functionary-small-v3.2-Q6_K_L.gguf"
+    MODEL_NAME = "meetkai/functionary-small-v2.4-GGUF"
+    MODEL_REVISION = "functionary-small-v2.4.Q4_0.gguf"
     MODEL_PATH = "model/" + MODEL_REVISION
     DOWNLOAD_DIR = "model"
     OLLAMA_URL = "http://host.docker.internal:11434"
@@ -19,21 +19,21 @@ class Config:
             {
                 "path": "rag_agent.src.agent",
                 "class": "RagAgent",
-                "description": "If the prompt is not a greeting or does not need the other agents always call rag agent.if the prompt requires a background knowledge or context call rag agent, if the question is not related to crypto call rag agent, if the prompt is a question that needs context call rag agent",
+                "description": "Handles general queries, information retrieval, and context-based questions. Use for any query that doesn't explicitly match other agents' specialties.",
                 "name": "rag agent",
                 "upload_required": True,
             },
             {
                 "path": "data_agent.src.agent",
                 "class": "DataAgent",
-                "description": "if the prompt is a question like (price, market cap, fdv) of crypto currencies choose crypto data agent",
+                "description": "Provides real-time cryptocurrency data such as price, market cap, and fully diluted valuation (FDV).",
                 "name": "crypto data agent",
                 "upload_required": False,
             },
             {
                 "path": "swap_agent.src.agent",
                 "class": "SwapAgent",
-                "description": "if the prompt is related with swapping crypto currencies choose crypto swap agent. like if it is swap 4 eth or swap 4 eth to usdc choose crypto swap agent and if the query is about swapping crypto currencies always choose crypto swap agent",
+                "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
                 "name": "crypto swap agent",
                 "upload_required": False,
             },
@@ -41,20 +41,20 @@ class Config:
                 "name": "tweet_sizzler",
                 "path": "tweet_sizzler_agent.src.agent",
                 "class": "TweetSizzlerAgent",
-                "description": "If the prompt is related to writing about a particular topic, choose the tweet sizzler agent. This agent can generate trendy, engaging tweets based on current topics or user input, and can directly post these tweets to Twitter/X. It's capable of crafting tweets that are likely to go viral, incorporating hashtags, and understanding the latest social media trends.",
+                "description": "Generates and posts engaging tweets. Use when the query explicitly mentions Twitter, tweeting, or X platform.",
                 "upload_required": False,
             },
             {
                 "path": "claim_agent.src.agent",
                 "class": "ClaimAgent",
-                "description": "if the prompt is related to claiming rewards or tokens or claiming MOR rewards, choose claim agent. Example - if a user mentions that they want to claim their rewards from pool 1 to a receiver address",
+                "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
                 "name": "claim agent",
                 "upload_required": False,
             },
             {
                 "path": "reward_agent.src.agent",
                 "class": "RewardAgent",
-                "description": "if the prompt is related to checking or querying user's MOR rewards, choose reward agent. Example - if a user mentions that they want to check the amount of MOR Rewards or Tokens they have accrued in one of the pools",
+                "description": "Provides information about user's accrued MOR rewards or tokens. Use when the query is about checking or querying reward balances.",
                 "name": "reward agent",
                 "upload_required": False,
             },
