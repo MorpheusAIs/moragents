@@ -10,9 +10,9 @@ elif os_name == "Windows":
     # Run as bundled executable if condition is met, else run as regular Python script
     repo_root = sys._MEIPASS if getattr(sys, 'frozen', False) else os.path.dirname(__file__)
 elif os_name == "Linux":
-    raise RuntimeError(
-        f"MORagents needs Linux support! Would you like to help?\n"
-        f"https://github.com/MorpheusAIs/moragents/issues/27")
+    repo_root = os.path.dirname(__file__)
+else:
+    raise RuntimeError(f"Unsupported OS: {os_name}")
 
 class AgentDockerConfig:
     MACOS_IMAGE_NAMES = [
@@ -23,6 +23,10 @@ class AgentDockerConfig:
         "lachsbagel/moragents_dockers-nginx:amd64-0.0.9",
         "lachsbagel/moragents_dockers-agents:amd64-0.0.9"
     ]
+    LINUX_IMAGE_NAMES = [
+        "lachsbagel/moragents_dockers-nginx:amd64-0.0.9",
+        "lachsbagel/moragents_dockers-agents:amd64-0.0.9"
+    ]
     
     @staticmethod
     def get_current_image_names():
@@ -30,6 +34,8 @@ class AgentDockerConfig:
             return AgentDockerConfig.MACOS_IMAGE_NAMES
         elif os_name == "Windows":
             return AgentDockerConfig.WINDOWS_IMAGE_NAMES
+        elif os_name == "Linux":
+            return AgentDockerConfig.LINUX_IMAGE_NAMES
         else:
             raise RuntimeError(f"Unsupported OS: {os_name}")
 
