@@ -1,7 +1,6 @@
-import json
 import logging
 import tweepy
-from flask import jsonify
+from .config import Config
 
 # Configure logging
 logging.basicConfig(
@@ -25,18 +24,16 @@ class TweetSizzlerAgent:
         messages = [
             {
                 "role": "system",
-                "content": (
-                    "You are a witty and engaging tweet generator. Your task is to create spicy, "
-                    "attention-grabbing tweets based on the user's prompt. Keep the tweets within "
-                    "280 characters and make them as engaging as possible."
-                ),
+                "content": Config.TWEET_GENERATION_PROMPT,
             },
             {"role": "user", "content": f"Generate a spicy tweet about: {prompt}"},
         ]
 
         try:
             result = self.llm.create_chat_completion(
-                messages=messages, max_tokens=280, temperature=0.7
+                messages=messages,
+                max_tokens=Config.LLM_MAX_TOKENS,
+                temperature=Config.LLM_TEMPERATURE,
             )
             self.current_tweet = result["choices"][0]["message"]["content"]
             logger.info(f"Tweet generated successfully: {self.current_tweet}")
@@ -52,13 +49,11 @@ class TweetSizzlerAgent:
 
         if not tweet_content:
             logger.warning("Attempted to post tweet without providing content")
-            return {"error": "No tweet content provided"}, 400
+            return {"error": Config.ERROR_NO_TWEET_CONTENT}, 400
 
         if not self.twitter_client:
-            logger.error(
-                "Twitter client not initialized. Please set X API credentials first."
-            )
-            return {"error": "Twitter client not initialized"}, 400
+            logger.error(Config.ERROR_TWITTER_CLIENT_NOT_INITIALIZED)
+            return {"error": Config.ERROR_TWITTER_CLIENT_NOT_INITIALIZED}, 400
 
         try:
             response = self.twitter_client.create_tweet(text=tweet_content)
@@ -100,7 +95,7 @@ class TweetSizzlerAgent:
             logger.warning(
                 "Attempted to set X API credentials without providing all required keys"
             )
-            return {"error": "Missing required X API credentials"}, 400
+            return {"error": Config.ERROR_MISSING_API_CREDENTIALS}, 400
 
     def chat(self, request):
         try:
@@ -108,7 +103,7 @@ class TweetSizzlerAgent:
             logger.info(f"Received chat request: {data}")
             if "prompt" in data:
                 prompt = data["prompt"]
-                action = data.get("action", "generate")
+                action = data.get("action", Config.DEFAULT_ACTION)
                 logger.debug(f"Extracted prompt: {prompt}, action: {action}")
 
                 if action == "generate":
@@ -125,10 +120,10 @@ class TweetSizzlerAgent:
                     return result, status_code
                 else:
                     logger.error(f"Invalid action received: {action}")
-                    return {"error": "Invalid action"}, 400
+                    return {"error": Config.ERROR_INVALID_ACTION}, 400
             else:
                 logger.error("Missing 'prompt' in chat request data")
-                return {"error": "Missing required parameters"}, 400
+                return {"error": Config.ERROR_MISSING_PARAMETERS}, 400
         except Exception as e:
             logger.exception(f"Unexpected error in chat method: {str(e)}")
             return {"Error": str(e)}, 500

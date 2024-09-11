@@ -28,17 +28,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Add console handler
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
-
-# Concise response instruction
-CONCISE_INSTRUCTION = (
-    "Please provide a concise response without unnecessary elaboration."
-)
 
 
 class TimeoutError(Exception):
@@ -60,32 +54,9 @@ def timeout(seconds=10, error_message="Function call timed out"):
     return decorator
 
 
-# @timeout(30)
-# def load_llm():
-#     logger.info("Loading LLM model")
-#     try:
-#         llm = Llama(
-#             model_path=Config.MODEL_PATH,
-#             chat_format="functionary-v2",
-#             tokenizer=LlamaHFTokenizer.from_pretrained(
-#                 "meetkai/functionary-small-v2.4-GGUF"
-#             ),
-#             n_gpu_layers=0,
-#             n_batch=4000,
-#             n_ctx=4000,
-#             f16_kv=True,
-#             verbose=True,
-#         )
-#         logger.info("LLM model loaded successfully")
-#         return llm
-#     except Exception as e:
-#         logger.error(f"Error loading LLM model: {str(e)}")
-#         raise
-
-
 @timeout(30)
 def load_llm():
-    logger.info("Loading LLM model with Apple Metal acceleration")
+    logger.info("Loading LLM model")
     try:
         llm = Llama(
             model_path=Config.MODEL_PATH,
@@ -93,15 +64,15 @@ def load_llm():
             tokenizer=LlamaHFTokenizer.from_pretrained(
                 "meetkai/functionary-small-v2.4-GGUF"
             ),
-            n_gpu_layers=-1,  # Use all layers on GPU
-            n_batch=512,  # Reduced batch size for GPU
+            n_gpu_layers=-1,
+            n_batch=512,
             n_ctx=4000,
             f16_kv=True,
             verbose=True,
-            use_mlock=True,  # Optionally use mlock to prevent memory from being swapped
-            use_mmap=True,  # Optionally use mmap for faster loading
+            use_mlock=True,
+            use_mmap=True,
         )
-        logger.info("LLM model loaded successfully with Apple Metal")
+        logger.info("LLM model loaded successfully")
         return llm
     except Exception as e:
         logger.error(f"Error loading LLM model: {str(e)}")
@@ -131,14 +102,6 @@ embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Config.OLLAMA_U
 delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)
 messages = [INITIAL_MESSAGE]
 next_turn_agent = None
-
-delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)
-messages = [
-    {
-        "role": "assistant",
-        "content": "This highly experimental chatbot is not intended for making important decisions, and its responses are generated based on incomplete data and algorithms that may evolve rapidly. By using this chatbot, you acknowledge that you use it at your own discretion and assume all risks associated with its limitations and potential errors.",
-    }
-]
 
 
 def format_input(prompt):

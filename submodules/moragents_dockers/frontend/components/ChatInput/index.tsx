@@ -49,7 +49,9 @@ export const ChatInput: FC<ChatInputProps> = ({
               cursor: "pointer",
             }}
             onClick={() =>
-              document.querySelector('input[type="file"]')?.click()
+              document
+                .querySelector('input[type="file"]')
+                ?.dispatchEvent(new MouseEvent("click"))
             }
           >
             <input
