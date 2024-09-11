@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye
+FROM --platform=linux/arm64 python:3.10-bullseye
 
 # Set the working directory in the container
 WORKDIR /app
@@ -19,16 +19,14 @@ COPY model_config.py .
 
 RUN python3 download_model.py
 
-COPY . .
+copy . .
 
 # Expose the port your application listens on
 EXPOSE 5000
 
-# Set the environment variables for Flask debug mode
+
+# Set the environment variable for Flask
 ENV FLASK_APP=src/app.py
-ENV FLASK_ENV=development
-ENV FLASK_DEBUG=1
-ENV PYTHONUNBUFFERED=1
 
 # Run the application
 CMD ["flask", "run", "--host", "0.0.0.0"]
