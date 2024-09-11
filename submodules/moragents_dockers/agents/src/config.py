@@ -38,10 +38,10 @@ class Config:
                 "upload_required": False,
             },
             {
-                "name": "tweet_sizzler",
                 "path": "tweet_sizzler_agent.src.agent",
                 "class": "TweetSizzlerAgent",
                 "description": "Generates and posts engaging tweets. Use when the query explicitly mentions Twitter, tweeting, or X platform.",
+                "name": "tweet sizzler agent",
                 "upload_required": False,
             },
             {

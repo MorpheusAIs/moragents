@@ -111,12 +111,22 @@ class Delegator:
             return {"next": available_agents[0]}
 
     def delegate_chat(self, agent_name, request):
+        logger.info(f"Attempting to delegate chat to agent: {agent_name}")
         agent = self.agents.get(agent_name)
         if agent:
-            logger.info("Delegating chat to agent: %s", agent_name)
-            return agent.chat(request)
-        logger.warning("Attempted to delegate to non-existent agent: %s", agent_name)
-        return {"error": "No such agent registered"}
+            logger.info(f"Successfully found agent: {agent_name}")
+            logger.info(f"Request data for {agent_name}: {request}")
+            try:
+                result = agent.chat(request)
+                logger.info(f"Chat delegation to {agent_name} completed successfully")
+                logger.info(f"Response from {agent_name}: {result}")
+                return agent_name, result
+            except Exception as e:
+                logger.error(f"Error during chat delegation to {agent_name}: {str(e)}")
+                return {"error": f"Chat delegation to {agent_name} failed"}, 500
+        else:
+            logger.warning(f"Attempted to delegate to non-existent agent: {agent_name}")
+            return {"error": f"No such agent registered: {agent_name}"}, 400
 
     def delegate_route(self, agent_name, request, method_name):
         agent = self.agents.get(agent_name)

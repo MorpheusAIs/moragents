@@ -1,6 +1,6 @@
 import json
-import requests
 import logging
+import tweepy
 from flask import jsonify
 
 # Configure logging
@@ -17,6 +17,7 @@ class TweetSizzlerAgent:
         self.config = config
         self.x_api_key = None
         self.current_tweet = None
+        self.twitter_client = None
         logger.info("TweetSizzlerAgent initialized")
 
     def generate_tweet(self, prompt):
@@ -44,43 +45,62 @@ class TweetSizzlerAgent:
             logger.error(f"Error generating tweet: {str(e)}")
             raise
 
-    def post_tweet(self):
-        if not self.current_tweet:
-            logger.warning("Attempted to post tweet without generating one first")
-            return {"error": "No tweet generated yet"}, 400
+    def post_tweet(self, request):
+        data = request.get_json()
+        tweet_content = data.get("post_content")
+        logger.info(f"Received tweet content: {tweet_content}")
 
-        if not self.x_api_key:
-            logger.warning("Attempted to post tweet without setting X API key")
-            return {"error": "X API key not set", "action": "request_api_key"}, 400
+        if not tweet_content:
+            logger.warning("Attempted to post tweet without providing content")
+            return {"error": "No tweet content provided"}, 400
+
+        if not self.twitter_client:
+            logger.error(
+                "Twitter client not initialized. Please set X API credentials first."
+            )
+            return {"error": "Twitter client not initialized"}, 400
 
         try:
-            tweet_data = self._make_x_api_call(self.current_tweet)
+            response = self.twitter_client.create_tweet(text=tweet_content)
+            tweet_data = response.data
             logger.info(f"Tweet posted successfully: {tweet_data}")
             return {
                 "success": "Tweet posted successfully",
-                "tweet": tweet_data["data"]["text"],
-                "tweet_id": tweet_data["data"]["id"],
+                "tweet": tweet_data["text"],
+                "tweet_id": tweet_data["id"],
             }, 200
-        except requests.exceptions.RequestException as e:
+        except tweepy.TweepError as e:
             logger.error(f"Error posting tweet: {str(e)}")
             return {"error": f"Failed to post tweet: {str(e)}"}, 500
 
-    def _make_x_api_call(self, tweet_text):
-        url = "https://api.x.com/2/tweets"
-        headers = {
-            "Authorization": f"Bearer {self.x_api_key}",
-            "Content-Type": "application/json",
-        }
-        payload = {"text": tweet_text}
-
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        return response.json()
-
-    def set_x_api_key(self, api_key):
-        self.x_api_key = api_key
-        logger.info("X API key set successfully")
-        return {"success": "X API key set successfully"}, 200
+    def set_x_api_key(self, request):
+        data = request.get_json()
+        if all(
+            key in data
+            for key in [
+                "consumer_key",
+                "consumer_secret",
+                "access_token",
+                "access_token_secret",
+            ]
+        ):
+            try:
+                self.twitter_client = tweepy.Client(
+                    consumer_key=data["consumer_key"],
+                    consumer_secret=data["consumer_secret"],
+                    access_token=data["access_token"],
+                    access_token_secret=data["access_token_secret"],
+                )
+                logger.info("X API credentials set successfully")
+                return {"success": "X API credentials set successfully"}, 200
+            except Exception as e:
+                logger.error(f"Error setting X API credentials: {str(e)}")
+                return {"error": f"Failed to set X API credentials: {str(e)}"}, 500
+        else:
+            logger.warning(
+                "Attempted to set X API credentials without providing all required keys"
+            )
+            return {"error": "Missing required X API credentials"}, 400
 
     def chat(self, request):
         try:
@@ -98,16 +118,9 @@ class TweetSizzlerAgent:
                     return {"role": "assistant", "content": tweet}
                 elif action == "post":
                     logger.info("Attempting to post tweet")
-                    result, status_code = self.post_tweet()
+                    result, status_code = self.post_tweet(request)
                     logger.info(
                         f"Posted tweet result: {result}, status code: {status_code}"
-                    )
-                    return result, status_code
-                elif action == "set_api_key":
-                    logger.info("Attempting to set API key")
-                    result, status_code = self.set_x_api_key(prompt["content"])
-                    logger.info(
-                        f"Set API key result: {result}, status code: {status_code}"
                     )
                     return result, status_code
                 else:

@@ -159,6 +159,7 @@ def chat():
     data = request.get_json()
     logger.info(f"Received chat request: {data}")
     try:
+        current_agent = None
         cleaned_prompt = None
         if "prompt" in data:
             raw_prompt = data["prompt"]
@@ -179,30 +180,36 @@ def chat():
                 raise ValueError("Invalid delegator response: missing 'next' key")
 
             next_agent = result["next"]
-            response_swap = delegator.delegate_chat(next_agent, request)
-            next_turn_agent = response_swap.get("next_turn_agent")
-            response = {
-                "role": response_swap["role"],
-                "content": response_swap["content"],
-            }
+            current_agent, response_swap = delegator.delegate_chat(next_agent, request)
         else:
             logger.info(f"Delegating chat to next turn agent: {next_turn_agent}")
-            response_swap = delegator.delegate_chat(next_turn_agent, request)
+            current_agent, response_swap = delegator.delegate_chat(
+                next_turn_agent, request
+            )
+
+        # Handle both dictionary and tuple returns from delegate_chat
+        if isinstance(response_swap, tuple):
+            response, status_code = response_swap
+            next_turn_agent = None  # Reset next_turn_agent if we got an error response
+        else:
+            response = response_swap
             next_turn_agent = response_swap.get("next_turn_agent")
-            response = {
-                "role": response_swap["role"],
-                "content": response_swap["content"],
-            }
+            status_code = 200
 
-        messages.append(response)
+        if isinstance(response, dict) and "role" in response and "content" in response:
+            # Add agentName to the response if available
+            response_with_agent = response.copy()
+            if current_agent:
+                response_with_agent["agentName"] = current_agent
 
-        # Add agentName to the response if available
-        response_with_agent = response.copy()
-        if next_agent:
-            response_with_agent["agentName"] = next_agent
+            messages.append(response_with_agent)
 
-        logger.info(f"Sending response: {response_with_agent}")
-        return jsonify(response_with_agent)
+            logger.info(f"Sending response: {response_with_agent}")
+            return jsonify(response_with_agent), status_code
+        else:
+            logger.error(f"Invalid response format: {response}")
+            return jsonify({"error": "Invalid response format"}), 500
+
     except TimeoutError:
         logger.error("Chat request timed out")
         return jsonify({"error": "Request timed out"}), 504
@@ -262,6 +269,19 @@ def rag_agent_upload():
     messages.append(response)
     upload_state = True
     return jsonify(response)
+
+
+@app.route("/post_tweet", methods=["POST"])
+def post_tweet():
+    logger.info("Received x post request")
+    return delegator.delegate_route("tweet sizzler agent", request, "post_tweet")
+
+
+# TODO: Persist the X API key in the database (once we set this up)
+@app.route("/set_x_api_key", methods=["POST"])
+def set_x_api_key():
+    logger.info("Received set X API key request")
+    return delegator.delegate_route("tweet sizzler agent", request, "set_x_api_key")
 
 
 if __name__ == "__main__":

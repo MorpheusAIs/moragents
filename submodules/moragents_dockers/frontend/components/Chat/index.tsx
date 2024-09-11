@@ -15,6 +15,10 @@ import {
 import { MessageList } from "../MessageList";
 import { ChatInput } from "../ChatInput";
 import { LoadingIndicator } from "../LoadingIndicator";
+import {
+  UserOrAssistantMessage,
+  SwapMessage,
+} from "../../services/backendClient";
 
 export type ChatProps = {
   onSubmitMessage: (message: string, file: File | null) => Promise<boolean>;
@@ -35,7 +39,6 @@ export const Chat: FC<ChatProps> = ({
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string>("");
   const [approveTxHash, setApproveTxHash] = useState<string>("");
-  const [callbackSent, setCallbackSent] = useState<boolean>(false);
 
   const { address } = useAccount();
   const chainId = useChainId();
@@ -53,96 +56,71 @@ export const Chat: FC<ChatProps> = ({
     setMessagesData([...messages]);
   }, [messages]);
 
-  useEffect(() => {
-    if (approveTxHash === "") {
-      return;
-    }
+  const handleSwapStatus = useCallback(
+    async (status: string, hash: string, isApprove: number) => {
+      try {
+        const response: ChatMessage = await sendSwapStatus(
+          getHttpClient(selectedAgent),
+          chainId,
+          address?.toLowerCase() || "0x",
+          status,
+          hash,
+          isApprove
+        );
 
+        if (
+          response.role === "assistant" &&
+          typeof response.content === "string"
+        ) {
+          setMessagesData((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: response.content,
+            } as UserOrAssistantMessage,
+          ]);
+        } else if (response.role === "swap") {
+          setMessagesData((prev) => [...prev, response as SwapMessage]);
+        }
+
+        if (isApprove) {
+          setApproveTxHash("");
+        } else {
+          setTxHash("");
+        }
+        setShowSpinner(false);
+      } catch (error) {
+        console.log(
+          `Error sending ${isApprove ? "approve" : "swap"} status: ${error}`
+        );
+        onBackendError();
+        if (isApprove) {
+          setApproveTxHash("");
+        } else {
+          setTxHash("");
+        }
+        setShowSpinner(false);
+      }
+    },
+    [selectedAgent, chainId, address, onBackendError]
+  );
+
+  useEffect(() => {
     if (
-      approveTxHash !== "" &&
+      approveTxHash &&
       approveConfirmations.data &&
       approveConfirmations.data >= 1
     ) {
-      sendSwapStatus(
-        getHttpClient(selectedAgent),
-        chainId,
-        address?.toLowerCase() || "0x",
-        SWAP_STATUS.SUCCESS,
-        approveTxHash,
-        1
-      )
-        .then((response: ChatMessage) => {
-          setMessagesData([
-            ...messagesData,
-            {
-              role: "assistant",
-              content: response.content,
-              agentName: response.agentName,
-            } as UserOrAssistantMessage,
-          ]);
-
-          setApproveTxHash("");
-        })
-        .catch((error) => {
-          setApproveTxHash("");
-          console.log(`Error sending approve status: ${error}`);
-
-          onBackendError();
-        });
+      handleSwapStatus(SWAP_STATUS.SUCCESS, approveTxHash, 1);
     }
-  }, [
-    approveTxHash,
-    approveConfirmations,
-    selectedAgent,
-    chainId,
-    address,
-    messagesData,
-    onBackendError,
-  ]);
+  }, [approveTxHash, approveConfirmations.data, handleSwapStatus]);
 
   useEffect(() => {
-    if (!callbackSent && confirmatons.data && confirmatons.data >= 1) {
-      setCallbackSent(true);
+    if (txHash && confirmatons.data && confirmatons.data >= 1) {
       setShowSpinner(true);
-      sendSwapStatus(
-        getHttpClient(selectedAgent),
-        chainId,
-        address?.toLowerCase() || "0x",
-        SWAP_STATUS.SUCCESS,
-        txHash,
-        0
-      )
-        .then((response: ChatMessage) => {
-          setMessagesData([
-            ...messagesData,
-            {
-              role: "assistant",
-              content: response.content,
-              agentName: "tweet_sizzler",
-            } as UserOrAssistantMessage,
-          ]);
-
-          setTxHash("");
-          setCallbackSent(false);
-          setShowSpinner(false);
-        })
-        .catch((error) => {
-          console.log(`Error sending swap status: ${error}`);
-          setTxHash("");
-          setCallbackSent(false);
-          setShowSpinner(false);
-          onBackendError();
-        });
+      handleSwapStatus(SWAP_STATUS.SUCCESS, txHash, 0);
     }
-  }, [
-    confirmatons,
-    callbackSent,
-    chainId,
-    selectedAgent,
-    address,
-    messagesData,
-    onBackendError,
-  ]);
+  }, [txHash, confirmatons.data, handleSwapStatus]);
 
   const handleSubmit = async (message: string, file: File | null) => {
     setShowSpinner(true);
@@ -163,51 +141,16 @@ export const Chat: FC<ChatProps> = ({
         {
           onSuccess: (hash) => {
             setTxHash(hash);
-            sendSwapStatus(
-              getHttpClient(selectedAgent),
-              chainId,
-              address?.toLowerCase() || "0x",
-              SWAP_STATUS.INIT,
-              hash,
-              0
-            )
-              .then((response: ChatMessage) => {
-                setMessagesData([...messagesData, response]);
-              })
-              .catch((error) => {
-                console.log(`Error sending swap status: ${error}`);
-                onBackendError();
-              });
+            handleSwapStatus(SWAP_STATUS.INIT, hash, 0);
           },
           onError: (error) => {
             console.log(`Error sending transaction: ${error}`);
-            sendSwapStatus(
-              getHttpClient(selectedAgent),
-              chainId,
-              address?.toLowerCase() || "0x",
-              SWAP_STATUS.FAIL,
-              "",
-              0
-            )
-              .then((response: ChatMessage) => {
-                setMessagesData([...messagesData, response]);
-              })
-              .catch((error) => {
-                console.log(`Error sending swap status: ${error}`);
-                onBackendError();
-              });
+            handleSwapStatus(SWAP_STATUS.FAIL, "", 0);
           },
         }
       );
     },
-    [
-      address,
-      chainId,
-      messagesData,
-      onBackendError,
-      selectedAgent,
-      sendTransaction,
-    ]
+    [address, handleSwapStatus, sendTransaction]
   );
 
   return (

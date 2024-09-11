@@ -1,5 +1,4 @@
 import axios, { Axios } from "axios";
-import { CANCELLED } from "dns";
 import { availableAgents } from "../config";
 
 export type ChatMessageBase = {
@@ -185,6 +184,7 @@ export const getMessagesHistory = async (
     return {
       role: message.role,
       content: message.content,
+      agentName: message.agentName,
     } as ChatMessage;
   });
 };
@@ -228,4 +228,23 @@ export const writeMessage = async (
   }
 
   return await getMessagesHistory(backendClient);
+};
+
+export const postTweet = async (
+  backendClient: Axios,
+  content: string
+): Promise<void> => {
+  const xApiKey = localStorage.getItem("xApiKey");
+  if (!xApiKey) {
+    throw new Error("X API key not found. Please set it in the settings.");
+  }
+  try {
+    await backendClient.post("/post_tweet", {
+      post_content: content,
+      x_api_key: xApiKey,
+    });
+  } catch (error) {
+    console.error("Error posting tweet:", error);
+    throw error; // Rethrow the error so it can be handled by the component
+  }
 };

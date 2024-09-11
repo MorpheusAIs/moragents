@@ -14,3 +14,4 @@ langchain-text-splitters==0.2.2
 langchain-core==0.2.24
 langchain-community==0.2.10
 torch
+tweepy
