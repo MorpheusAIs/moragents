@@ -21,6 +21,7 @@ import { SwapMessage } from "../SwapMessage";
 import { UserOrAssistantMessage } from "../../services/backendClient";
 import { FaPaperPlane, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { postTweet, getHttpClient } from "../../services/backendClient";
+import styles from "./index.module.css";
 
 type MessageItemProps = {
   message: ChatMessage;
@@ -71,11 +72,7 @@ export const MessageItem: FC<MessageItemProps> = ({
           "avatar message"
         `}
         templateColumns={"0fr 3fr"}
-        bg={"#020804"}
-        color={"white"}
-        borderRadius={4}
-        mb={2}
-        gap={2}
+        className={styles.messageGrid}
       >
         <GridItem area="avatar">
           <Avatar
@@ -86,15 +83,7 @@ export const MessageItem: FC<MessageItemProps> = ({
           />
         </GridItem>
         <GridItem area="name">
-          <Text
-            sx={{
-              fontSize: "16px",
-              fontWeight: "bold",
-              lineHeight: "125%",
-              mt: 1,
-              ml: 2,
-            }}
-          >
+          <Text className={styles.nameText}>
             {message.role === "user"
               ? "Me"
               : availableAgents[selectedAgent]?.name || "Undefined Agent"}
@@ -108,18 +97,7 @@ export const MessageItem: FC<MessageItemProps> = ({
                 <Textarea
                   value={tweetContent}
                   onChange={(e) => setTweetContent(e.target.value)}
-                  sx={{
-                    fontSize: "16px",
-                    lineHeight: "125%",
-                    mt: 4,
-                    mb: 2,
-                    ml: 2,
-                    color: "white",
-                    backgroundColor: "#111613",
-                    border: "none",
-                    resize: "vertical",
-                    cursor: "text",
-                  }}
+                  className={styles.textarea}
                 />
                 <Button
                   leftIcon={<FaPaperPlane />}
@@ -128,23 +106,13 @@ export const MessageItem: FC<MessageItemProps> = ({
                   loadingText="Tweeting..."
                   colorScheme="twitter"
                   size="sm"
-                  mb={3}
+                  className={styles.tweetButton}
                 >
                   Tweet
                 </Button>
               </Flex>
             ) : (
-              <Text
-                sx={{
-                  fontSize: "16px",
-                  lineHeight: "125%",
-                  mt: 4,
-                  mb: 5,
-                  ml: 2,
-                }}
-              >
-                {message.content}
-              </Text>
+              <Text className={styles.messageText}>{message.content}</Text>
             )
           ) : (
             <SwapMessage
