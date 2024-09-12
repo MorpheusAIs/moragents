@@ -8,8 +8,8 @@ logging.basicConfig(level=logging.INFO)
 class Config:
 
     # Model configuration
-    MODEL_NAME = "meetkai/functionary-small-v2.5-GGUF"
-    MODEL_REVISION = "functionary-small-v2.5.Q4_0.gguf"
+    MODEL_NAME = "meetkai/functionary-small-v2.4-GGUF"
+    MODEL_REVISION = "functionary-small-v2.4.Q4_0.gguf"
     MODEL_PATH = "model/" + MODEL_REVISION
     DOWNLOAD_DIR = "model"
     OLLAMA_URL = "http://host.docker.internal:11434"
@@ -20,13 +20,13 @@ class Config:
                 "path": "rag_agent.src.agent",
                 "class": "RagAgent",
                 "description": "Handles general queries, information retrieval, and context-based questions. Use for any query that doesn't explicitly match other agents' specialties.",
-                "name": "rag agent",
+                "name": "general purpose and context-based rag agent",
                 "upload_required": True,
             },
             {
                 "path": "data_agent.src.agent",
                 "class": "DataAgent",
-                "description": "Provides real-time cryptocurrency data such as price, market cap, and fully diluted valuation (FDV).",
+                "description": "Crypto-specific. Provides real-time cryptocurrency data such as price, market cap, and fully diluted valuation (FDV).",
                 "name": "crypto data agent",
                 "upload_required": False,
             },

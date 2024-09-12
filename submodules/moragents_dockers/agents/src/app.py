@@ -109,36 +109,23 @@ messages = [INITIAL_MESSAGE]
 next_turn_agent = None
 
 
-def format_input(prompt):
-    logger.info(f"Formatting input: {prompt}")
-    if not isinstance(prompt, dict) or "content" not in prompt:
-        raise ValueError("Prompt must be a dictionary with a 'content' key")
-    if not isinstance(prompt["content"], str):
-        raise ValueError("Prompt content must be a string")
-    # prompt["content"] = f"{prompt['content'].strip()} {CONCISE_INSTRUCTION}"
-    logger.info(f"Formatted input: {prompt}")
-    return prompt
-
-
 @app.route("/", methods=["POST"])
 @timeout(60, "Chat request timed out")
 def chat():
     global next_turn_agent, messages
     data = request.get_json()
     logger.info(f"Received chat request: {data}")
+    print("data", data)
     try:
         current_agent = None
-        cleaned_prompt = None
         if "prompt" in data:
-            raw_prompt = data["prompt"]
-            cleaned_prompt = format_input(raw_prompt)
-            messages.append(cleaned_prompt)
-            logger.info(f"Cleaned prompt: {cleaned_prompt}")
+            prompt = data["prompt"]
+            messages.append(prompt)
 
         if not next_turn_agent:
             logger.info("No next turn agent, getting delegator response")
             start_time = time.time()
-            result = delegator.get_delegator_response(cleaned_prompt, upload_state)
+            result = delegator.get_delegator_response(prompt, upload_state)
             end_time = time.time()
             logger.info(f"Delegator response time: {end_time - start_time:.2f} seconds")
             logger.info(f"Delegator response: {result}")
@@ -233,7 +220,9 @@ def swap_agent_swap():
 def rag_agent_upload():
     global messages, upload_state
     logger.info("Received upload request")
-    response = delegator.delegate_route("rag agent", request, "upload_file")
+    response = delegator.delegate_route(
+        "general purpose and context-based rag agent", request, "upload_file"
+    )
     messages.append(response)
     upload_state = True
     return jsonify(response)

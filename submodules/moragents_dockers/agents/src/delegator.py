@@ -115,7 +115,6 @@ class Delegator:
         agent = self.agents.get(agent_name)
         if agent:
             logger.info(f"Successfully found agent: {agent_name}")
-            logger.info(f"Request data for {agent_name}: {request}")
             try:
                 result = agent.chat(request)
                 logger.info(f"Chat delegation to {agent_name} completed successfully")

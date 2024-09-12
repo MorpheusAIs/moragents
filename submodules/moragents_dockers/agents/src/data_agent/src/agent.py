@@ -1,8 +1,5 @@
 import json
-import logging
 from data_agent.src import tools
-
-logger = logging.getLogger(__name__)
 
 
 class DataAgent:
@@ -25,63 +22,37 @@ class DataAgent:
             }
         ]
         messages.extend(message)
-        try:
-            result = self.llm.create_chat_completion(
-                messages=messages, tools=self.tools_provided, tool_choice="auto"
-            )
-
-            if not result["choices"]:
-                logger.error("No choices in LLM response")
+        result = self.llm.create_chat_completion(
+            messages=messages, tools=self.tools_provided, tool_choice="auto"
+        )
+        if "tool_calls" in result["choices"][0]["message"].keys():
+            func = result["choices"][0]["message"]["tool_calls"][0]["function"]
+            if func["name"] == "get_price":
+                args = json.loads(func["arguments"])
+                return tools.get_coin_price_tool(args["coin_name"]), "assistant"
+            elif func["name"] == "get_floor_price":
+                args = json.loads(func["arguments"])
+                return tools.get_nft_floor_price_tool(args["nft_name"]), "assistant"
+            elif func["name"] == "get_fdv":
+                args = json.loads(func["arguments"])
                 return (
-                    "I'm sorry, but I couldn't generate a response. Please try again.",
+                    tools.get_fully_diluted_valuation_tool(args["coin_name"]),
                     "assistant",
                 )
-
-            choice = result["choices"][0]["message"]
-
-            if "tool_calls" in choice:
-                func = choice["tool_calls"][0]["function"]
+            elif func["name"] == "get_tvl":
                 args = json.loads(func["arguments"])
-
-                if func["name"] == "get_price":
-                    return tools.get_coin_price_tool(args["coin_name"]), "assistant"
-                elif func["name"] == "get_floor_price":
-                    return tools.get_nft_floor_price_tool(args["nft_name"]), "assistant"
-                elif func["name"] == "get_fdv":
-                    return (
-                        tools.get_fully_diluted_valuation_tool(args["coin_name"]),
-                        "assistant",
-                    )
-                elif func["name"] == "get_tvl":
-                    return (
-                        tools.get_protocol_total_value_locked_tool(
-                            args["protocol_name"]
-                        ),
-                        "assistant",
-                    )
-                elif func["name"] == "get_market_cap":
-                    return (
-                        tools.get_coin_market_cap_tool(args["coin_name"]),
-                        "assistant",
-                    )
-
-            return (
-                choice.get(
-                    "content",
-                    "I'm sorry, but I couldn't generate a response. Please try again.",
-                ),
-                "assistant",
-            )
-
-        except Exception as e:
-            logger.error(f"Error in get_response: {str(e)}")
-            return (
-                "I'm sorry, but an error occurred while processing your request. Please try again.",
-                "assistant",
-            )
+                return (
+                    tools.get_protocol_total_value_locked_tool(args["protocol_name"]),
+                    "assistant",
+                )
+            elif func["name"] == "get_market_cap":
+                args = json.loads(func["arguments"])
+                return tools.get_coin_market_cap_tool(args["coin_name"]), "assistant"
+        return result["choices"][0]["message"]["content"], "assistant"
 
     def generate_response(self, prompt):
-        return self.get_response([prompt])
+        response, role = self.get_response([prompt])
+        return response, role
 
     def chat(self, request):
         try:
@@ -93,8 +64,4 @@ class DataAgent:
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(f"Error in chat: {str(e)}")
-            return {
-                "role": "assistant",
-                "content": "I'm sorry, but an error occurred while processing your request. Please try again.",
-            }
+            return {"Error": str(e)}, 500
