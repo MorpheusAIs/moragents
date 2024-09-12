@@ -1,0 +1,16 @@
+.headerBar {
+  background-color: var(--header-bg-color);
+  padding: 10px;
+  border-bottom: 1px solid #313137;
+  z-index: 1401;
+  font-family: inherit;
+}
+
+.logo {
+  margin-right: 200px;
+}
+
+.buttonContainer {
+  display: flex;
+  align-items: center;
+}

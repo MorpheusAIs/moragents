@@ -12,7 +12,7 @@ from utils.host_utils import get_os_and_arch
 logger = setup_logger(__name__)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     try:
         os_name, arch = get_os_and_arch()
@@ -30,5 +30,5 @@ if __name__ == '__main__':
 
     time.sleep(7)
 
-    url = 'http://localhost:3333/'
+    url = "http://localhost:3333/"
     webbrowser.open(url)

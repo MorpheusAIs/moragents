@@ -16,41 +16,47 @@ class Config:
     MAX_UPLOAD_LENGTH = 16 * 1024 * 1024
     DELEGATOR_CONFIG = {
         "agents": [
-
             {
                 "path": "rag_agent.src.agent",
                 "class": "RagAgent",
-                "description": "If the prompt is not a greeting or does not need the other agents always call rag agent.if the prompt requires a background knowledge or context call rag agent, if the question is not related to crypto call rag agent, if the prompt is a question that needs context call rag agent",
-                "name": "rag agent",
-                "upload_required": True
+                "description": "Handles general queries, information retrieval, and context-based questions. Use for any query that doesn't explicitly match other agents' specialties.",
+                "name": "general purpose and context-based rag agent",
+                "upload_required": True,
             },
             {
                 "path": "data_agent.src.agent",
                 "class": "DataAgent",
-                "description": "if the prompt is a question like (price, market cap, fdv) of crypto currencies choose crypto data agent",
+                "description": "Crypto-specific. Provides real-time cryptocurrency data such as price, market cap, and fully diluted valuation (FDV).",
                 "name": "crypto data agent",
-                "upload_required": False
+                "upload_required": False,
             },
             {
                 "path": "swap_agent.src.agent",
                 "class": "SwapAgent",
-                "description": "if the prompt is related with swapping crypto currencies choose crypto swap agent. like if it is swap 4 eth or swap 4 eth to usdc choose crypto swap agent and if the query is about swapping crypto currencies always choose crypto swap agent",
+                "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
                 "name": "crypto swap agent",
-                "upload_required": False
+                "upload_required": False,
+            },
+            {
+                "path": "tweet_sizzler_agent.src.agent",
+                "class": "TweetSizzlerAgent",
+                "description": "Generates and posts engaging tweets. Use when the query explicitly mentions Twitter, tweeting, or X platform.",
+                "name": "tweet sizzler agent",
+                "upload_required": False,
             },
             {
                 "path": "claim_agent.src.agent",
                 "class": "ClaimAgent",
-                "description": "if the prompt is related to claiming rewards or tokens or claiming MOR rewards, choose claim agent. Example - if a user mentions that they want to claim their rewards from pool 1 to a receiver address",
+                "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
                 "name": "claim agent",
-                "upload_required": False
+                "upload_required": False,
             },
             {
                 "path": "reward_agent.src.agent",
                 "class": "RewardAgent",
-                "description": "if the prompt is related to checking or querying user's MOR rewards, choose reward agent. Example - if a user mentions that they want to check the amount of MOR Rewards or Tokens they have accrued in one of the pools",
+                "description": "Provides information about user's accrued MOR rewards or tokens. Use when the query is about checking or querying reward balances.",
                 "name": "reward agent",
-                "upload_required": False
-            }
+                "upload_required": False,
+            },
         ]
     }
