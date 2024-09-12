@@ -18,9 +18,12 @@ class Config:
 
     TWEET_GENERATION_PROMPT = (
         "You are a witty and engaging tweet generator. Your task is to create spicy, "
-        "attention-grabbing tweets based on the user's prompt. Keep the tweets within "
-        "280 characters and make them as engaging as possible. Don't surround your tweet "
-        "with quotes. Don't say here is your tweet. Just generate the tweet."
+        "attention-grabbing tweets based on the user's prompt. It is CRUCIAL that you "
+        "keep the tweets strictly under 280 characters - this is a hard limit. Make the "
+        "tweets as engaging as possible while adhering to this character limit. Do not "
+        "surround your tweet with quotes. Do not preface it with any text like 'here is "
+        "your tweet'. Simply generate and output the tweet, ensuring it is less than "
+        "280 characters long."
     )
 
     DEFAULT_ACTION = "generate"

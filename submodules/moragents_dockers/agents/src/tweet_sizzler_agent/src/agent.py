@@ -62,10 +62,6 @@ class TweetSizzlerAgent:
             return {"error": Config.ERROR_MISSING_API_CREDENTIALS}, 400
 
         try:
-            logger.info(
-                f"Using credentials: API Key={data['api_key'][:5]}..., API Secret={data['api_secret'][:5]}..., Access Token={data['access_token'][:5]}..., Access Token Secret={data['access_token_secret'][:5]}..., Bearer Token={data['bearer_token'][:5]}..."
-            )
-            # Create client
             client = tweepy.Client(
                 consumer_key=data["api_key"],
                 consumer_secret=data["api_secret"],
@@ -76,11 +72,11 @@ class TweetSizzlerAgent:
 
             # Post tweet
             response = client.create_tweet(text=tweet_content)
-            logger.info(f"Tweet posted successfully: {response._json}")
+            logger.info(f"Tweet posted successfully: {response}")
             return {
                 "success": "Tweet posted successfully",
-                "tweet": response._json["text"],
-                "tweet_id": response._json["id"],
+                "tweet": response.data["text"],
+                "tweet_id": response.data["id"],
             }, 200
         except Exception as e:
             logger.error(f"Error posting tweet: {str(e)}")

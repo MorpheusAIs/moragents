@@ -3,7 +3,7 @@ import logging
 import time
 from functools import wraps
 from config import Config
-from llama_cpp import Llama
+from llama_cpp import Llama, LLAMA_FTYPE_MOSTLY_Q4_0
 from flask_cors import CORS
 from flask import Flask, request, jsonify
 from langchain_community.llms import Ollama
@@ -59,17 +59,23 @@ def load_llm():
     try:
         llm = Llama(
             model_path=Config.MODEL_PATH,
-            chat_format="functionary-v3.2",
+            chat_format="functionary-v2",
             tokenizer=LlamaHFTokenizer.from_pretrained(
-                "meetkai/functionary-small-v3.2-GGUF"
+                "meetkai/functionary-small-v2.5-GGUF"
             ),
-            n_gpu_layers=-1,
-            n_batch=512,
-            n_ctx=4000,
-            f16_kv=True,
-            verbose=True,
-            use_mlock=True,
-            use_mmap=True,
+            n_gpu_layers=-1,  # Use all available GPU layers
+            n_batch=1024,  # Increase batch size for faster processing
+            n_ctx=1024,  # Increase context size for better performance
+            f16_kv=True,  # Use half-precision for key/value cache
+            verbose=False,  # Disable verbose output for speed
+            use_mlock=True,  # Lock memory to prevent swapping
+            use_mmap=True,  # Use memory mapping for faster loading
+            n_threads=16,  # Increase number of threads for more parallel processing
+            logits_all=False,  # Disable computing logits for all tokens
+            embedding=False,  # Disable embedding computation
+            rope_scaling_type=1,  # Use linear RoPE scaling for faster computation
+            n_gqa=8,  # Increase grouped-query attention for better performance
+            offload_kqv=False,  # Disable offloading to GPU to avoid errors
         )
         logger.info("LLM model loaded successfully")
         return llm

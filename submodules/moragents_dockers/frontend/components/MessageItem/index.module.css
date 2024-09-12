@@ -21,22 +21,3 @@
   margin-bottom: 20px;
   margin-left: 8px;
 }
-
-.textarea {
-  font-size: 16px;
-  line-height: 125%;
-  margin-top: 16px;
-  margin-bottom: 8px;
-  margin-left: 8px;
-  color: white;
-  background-color: #111613;
-  border: none;
-  resize: vertical;
-  cursor: text;
-  min-height: 100px;
-  height: auto;
-}
-
-.tweetButton {
-  margin-bottom: 12px;
-}
