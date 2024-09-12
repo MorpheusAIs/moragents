@@ -61,21 +61,15 @@ def load_llm():
             model_path=Config.MODEL_PATH,
             chat_format="functionary-v2",
             tokenizer=LlamaHFTokenizer.from_pretrained(
-                "meetkai/functionary-small-v2.5-GGUF"
+                "meetkai/functionary-small-v2.4-GGUF"
             ),
             n_gpu_layers=-1,  # Use all available GPU layers
             n_batch=1024,  # Increase batch size for faster processing
             n_ctx=1024,  # Increase context size for better performance
-            f16_kv=True,  # Use half-precision for key/value cache
             verbose=False,  # Disable verbose output for speed
             use_mlock=True,  # Lock memory to prevent swapping
             use_mmap=True,  # Use memory mapping for faster loading
             n_threads=16,  # Increase number of threads for more parallel processing
-            logits_all=False,  # Disable computing logits for all tokens
-            embedding=False,  # Disable embedding computation
-            rope_scaling_type=1,  # Use linear RoPE scaling for faster computation
-            n_gqa=8,  # Increase grouped-query attention for better performance
-            offload_kqv=False,  # Disable offloading to GPU to avoid errors
         )
         logger.info("LLM model loaded successfully")
         return llm
