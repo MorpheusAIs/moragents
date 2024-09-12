@@ -69,7 +69,7 @@ except Exception as e:
     logger.error(f"Failed to load LLM: {str(e)}")
     llm = None
 
-llm_ollama = Ollama(model="llama3", base_url=Config.OLLAMA_URL)
+llm_ollama = Ollama(model="llama3.1", base_url=Config.OLLAMA_URL)
 embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Config.OLLAMA_URL)
 
 delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)

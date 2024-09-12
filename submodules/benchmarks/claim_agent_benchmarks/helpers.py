@@ -1,4 +1,4 @@
-from config import Config
+from submodules.benchmarks.claim_agent_benchmarks.config import Config
 from adapters.claim_adapter import ClaimAdapter
 
 claim_adapter = ClaimAdapter(Config.URL, Config.HEADERS)

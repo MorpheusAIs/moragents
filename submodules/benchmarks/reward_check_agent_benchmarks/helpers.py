@@ -1,8 +1,7 @@
 import requests
-import json
 import re
 from web3 import Web3
-from config import Config
+from submodules.benchmarks.reward_check_agent_benchmarks.config import Config
 
 url = 'http://127.0.0.1:5000/'
 

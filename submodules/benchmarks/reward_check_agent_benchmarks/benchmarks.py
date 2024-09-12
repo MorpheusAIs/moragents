@@ -1,5 +1,5 @@
 from helpers import ask_claim_agent, get_current_user_reward, extract_reward_value_from_response
-from config import test_cases, reward_check_prompts
+from submodules.benchmarks.reward_check_agent_benchmarks.config import test_cases, reward_check_prompts
 
 
 def run_reward_check_tests():

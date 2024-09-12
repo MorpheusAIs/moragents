@@ -8,7 +8,7 @@ This project is a Flask-based AI chat application featuring intelligent response
 * [Download Ollama](https://ollama.com/ )for your operating system
 * Then after finishing installation pull these two models:
 
-```ollama pull llama3```
+```ollama pull llama3.1```
 
 ```ollama pull nomic-embed-text```
 

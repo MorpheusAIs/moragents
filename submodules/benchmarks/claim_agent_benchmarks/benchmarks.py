@@ -1,6 +1,6 @@
 import pytest
 from helpers import request_claim, provide_receiver_address, confirm_transaction
-from config import Config
+from submodules.benchmarks.claim_agent_benchmarks.config import Config
 
 
 def test_claim_process():

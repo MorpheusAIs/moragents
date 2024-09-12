@@ -152,18 +152,18 @@ jobs:
 
         # Pull Ollama models
         echo -e "\${YELLOW}Pulling Ollama models...${NC}"
-        pull_ollama_model llama3
+        pull_ollama_model llama3.1
         pull_ollama_model nomic-embed-text
 
         # Pull necessary Docker images
         echo -e "\${YELLOW}Pulling Docker images...${NC}"
-        sudo docker pull lachsbagel/moragents_dockers-nginx:amd64-0.0.9
-        sudo docker pull lachsbagel/moragents_dockers-agents:amd64-0.0.9
+        sudo docker pull lachsbagel/moragents_dockers-nginx:amd64-0.1.0
+        sudo docker pull lachsbagel/moragents_dockers-agents:amd64-0.1.0
 
         # Start Docker containers
         echo -e "\${YELLOW}Starting Docker containers...${NC}"
-        sudo docker run -d --name agents -p 8080:5000 --restart always -v /var/lib/agents -v /app/src lachsbagel/moragents_dockers-agents:amd64-0.0.9
-        sudo docker run -d --name nginx -p 3333:80 lachsbagel/moragents_dockers-nginx:amd64-0.0.9
+        sudo docker run -d --name agents -p 8080:5000 --restart always -v /var/lib/agents -v /app/src lachsbagel/moragents_dockers-agents:amd64-0.1.0
+        sudo docker run -d --name nginx -p 3333:80 lachsbagel/moragents_dockers-nginx:amd64-0.1.0
 
         echo -e "\${GREEN}Setup complete!${NC}"
         EOF
