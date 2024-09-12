@@ -1,8 +1,8 @@
-version: '3.8'
+version: "3.8"
 
 services:
   agents:
-    image: lachsbagel/moragents_dockers-agents:amd64-0.0.9
+    image: lachsbagel/moragents_dockers-agents:amd64-0.1.0
     build:
       dockerfile: Dockerfile
       context: ./agents
@@ -18,15 +18,13 @@ services:
       - BASE_URL=http://host.docker.internal:11434
 
   nginx:
-    image: lachsbagel/moragents_dockers-nginx:amd64-0.0.9
+    image: lachsbagel/moragents_dockers-nginx:amd64-0.1.0
     build:
       context: ./frontend
       dockerfile: Dockerfile
       target: nginx
     ports:
-      - '3333:80'
-
-
+      - "3333:80"
 
 volumes:
   agents_data:

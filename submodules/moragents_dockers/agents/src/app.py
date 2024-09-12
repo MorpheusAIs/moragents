@@ -1,4 +1,3 @@
-import json
 import os
 import logging
 import time
@@ -60,9 +59,9 @@ def load_llm():
     try:
         llm = Llama(
             model_path=Config.MODEL_PATH,
-            chat_format="functionary-v2",
+            chat_format="functionary-v3.2",
             tokenizer=LlamaHFTokenizer.from_pretrained(
-                "meetkai/functionary-small-v2.4-GGUF"
+                "meetkai/functionary-small-v3.2-GGUF"
             ),
             n_gpu_layers=-1,
             n_batch=512,

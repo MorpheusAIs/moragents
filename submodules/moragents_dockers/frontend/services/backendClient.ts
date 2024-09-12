@@ -234,14 +234,32 @@ export const postTweet = async (
   backendClient: Axios,
   content: string
 ): Promise<void> => {
-  const xApiKey = localStorage.getItem("xApiKey");
-  if (!xApiKey) {
-    throw new Error("X API key not found. Please set it in the settings.");
+  const apiKey = localStorage.getItem("apiKey");
+  const apiSecret = localStorage.getItem("apiSecret");
+  const accessToken = localStorage.getItem("accessToken");
+  const accessTokenSecret = localStorage.getItem("accessTokenSecret");
+  const bearerToken = localStorage.getItem("bearerToken");
+
+  if (
+    !apiKey ||
+    !apiSecret ||
+    !accessToken ||
+    !accessTokenSecret ||
+    !bearerToken
+  ) {
+    throw new Error(
+      "X API credentials not found. Please set them in the settings."
+    );
   }
+
   try {
     await backendClient.post("/post_tweet", {
       post_content: content,
-      x_api_key: xApiKey,
+      api_key: apiKey,
+      api_secret: apiSecret,
+      access_token: accessToken,
+      access_token_secret: accessTokenSecret,
+      bearer_token: bearerToken,
     });
   } catch (error) {
     console.error("Error posting tweet:", error);

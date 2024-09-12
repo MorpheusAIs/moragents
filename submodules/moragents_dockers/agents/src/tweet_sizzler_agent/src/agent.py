@@ -17,7 +17,6 @@ class TweetSizzlerAgent:
         self.x_api_key = None
         self.current_tweet = None
         self.twitter_client = None
-        logger.info("TweetSizzlerAgent initialized")
 
     def generate_tweet(self, prompt):
         logger.info(f"Generating tweet for prompt: {prompt}")
@@ -26,7 +25,7 @@ class TweetSizzlerAgent:
                 "role": "system",
                 "content": Config.TWEET_GENERATION_PROMPT,
             },
-            {"role": "user", "content": f"Generate a spicy tweet about: {prompt}"},
+            {"role": "user", "content": f"Generate a tweet for: {prompt}"},
         ]
 
         try:
@@ -51,51 +50,61 @@ class TweetSizzlerAgent:
             logger.warning("Attempted to post tweet without providing content")
             return {"error": Config.ERROR_NO_TWEET_CONTENT}, 400
 
-        if not self.twitter_client:
-            logger.error(Config.ERROR_TWITTER_CLIENT_NOT_INITIALIZED)
-            return {"error": Config.ERROR_TWITTER_CLIENT_NOT_INITIALIZED}, 400
+        required_keys = [
+            "api_key",
+            "api_secret",
+            "access_token",
+            "access_token_secret",
+            "bearer_token",
+        ]
+        if not all(key in data for key in required_keys):
+            logger.warning("Missing required API credentials")
+            return {"error": Config.ERROR_MISSING_API_CREDENTIALS}, 400
 
         try:
-            response = self.twitter_client.create_tweet(text=tweet_content)
-            tweet_data = response.data
-            logger.info(f"Tweet posted successfully: {tweet_data}")
+            logger.info(
+                f"Using credentials: API Key={data['api_key'][:5]}..., API Secret={data['api_secret'][:5]}..., Access Token={data['access_token'][:5]}..., Access Token Secret={data['access_token_secret'][:5]}..., Bearer Token={data['bearer_token'][:5]}..."
+            )
+            # Create client
+            client = tweepy.Client(
+                consumer_key=data["api_key"],
+                consumer_secret=data["api_secret"],
+                access_token=data["access_token"],
+                access_token_secret=data["access_token_secret"],
+                bearer_token=data["bearer_token"],
+            )
+
+            # Post tweet
+            response = client.create_tweet(text=tweet_content)
+            logger.info(f"Tweet posted successfully: {response._json}")
             return {
                 "success": "Tweet posted successfully",
-                "tweet": tweet_data["text"],
-                "tweet_id": tweet_data["id"],
+                "tweet": response._json["text"],
+                "tweet_id": response._json["id"],
             }, 200
-        except tweepy.TweepError as e:
+        except Exception as e:
             logger.error(f"Error posting tweet: {str(e)}")
             return {"error": f"Failed to post tweet: {str(e)}"}, 500
 
     def set_x_api_key(self, request):
         data = request.get_json()
-        if all(
-            key in data
-            for key in [
-                "consumer_key",
-                "consumer_secret",
-                "access_token",
-                "access_token_secret",
-            ]
-        ):
-            try:
-                self.twitter_client = tweepy.Client(
-                    consumer_key=data["consumer_key"],
-                    consumer_secret=data["consumer_secret"],
-                    access_token=data["access_token"],
-                    access_token_secret=data["access_token_secret"],
-                )
-                logger.info("X API credentials set successfully")
-                return {"success": "X API credentials set successfully"}, 200
-            except Exception as e:
-                logger.error(f"Error setting X API credentials: {str(e)}")
-                return {"error": f"Failed to set X API credentials: {str(e)}"}, 500
-        else:
-            logger.warning(
-                "Attempted to set X API credentials without providing all required keys"
-            )
+        required_keys = [
+            "api_key",
+            "api_secret",
+            "access_token",
+            "access_token_secret",
+            "bearer_token",
+        ]
+
+        if not all(key in data for key in required_keys):
+            logger.warning("Missing required API credentials")
             return {"error": Config.ERROR_MISSING_API_CREDENTIALS}, 400
+
+        # Save these credentials to local storage
+        for key in required_keys:
+            self.flask_app.config[key] = data[key]
+
+        return {"success": "API credentials saved successfully"}, 200
 
     def chat(self, request):
         try:

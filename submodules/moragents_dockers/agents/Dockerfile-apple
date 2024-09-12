@@ -28,5 +28,8 @@ EXPOSE 5000
 # Set the environment variable for Flask
 ENV FLASK_APP=src/app.py
 
+# Install tweepy
+RUN python3 -m pip install tweepy
+
 # Run the application
 CMD ["flask", "run", "--host", "0.0.0.0"]
