@@ -21,3 +21,17 @@
   margin-top: -12px;
   margin-bottom: 4px;
 }
+
+.regenerateIcon {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.regenerateIcon:hover {
+  opacity: 1;
+}
+
+.regenerateButton {
+  margin-top: -4px;
+  margin-right: 8px;
+}

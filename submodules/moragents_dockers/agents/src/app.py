@@ -27,33 +27,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
 
-
-class TimeoutError(Exception):
-    pass
-
-
-def timeout(seconds=10, error_message="Function call timed out"):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                logger.error(f"Function call failed: {str(e)}")
-                raise TimeoutError(error_message)
-
-        return wrapper
-
-    return decorator
-
-
-@timeout(30)
 def load_llm():
     logger.info("Loading LLM model")
     try:
@@ -104,7 +78,6 @@ next_turn_agent = None
 
 
 @app.route("/", methods=["POST"])
-@timeout(60, "Chat request timed out")
 def chat():
     global next_turn_agent, messages
     data = request.get_json()
@@ -222,6 +195,12 @@ def rag_agent_upload():
     messages.append(response)
     upload_state = True
     return jsonify(response)
+
+
+@app.route("/regenerate_tweet", methods=["POST"])
+def regenerate_tweet():
+    logger.info("Received generate tweet request")
+    return delegator.delegate_route("tweet sizzler agent", None, "generate_tweet")
 
 
 @app.route("/post_tweet", methods=["POST"])

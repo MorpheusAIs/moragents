@@ -15,17 +15,26 @@ class TweetSizzlerAgent:
         self.flask_app = flask_app
         self.config = config
         self.x_api_key = None
-        self.current_tweet = None
+        self.last_prompt_content = None
         self.twitter_client = None
 
-    def generate_tweet(self, prompt):
-        logger.info(f"Generating tweet for prompt: {prompt}")
+    def generate_tweet(self, prompt_content=None):
+        # State management for tweet regeneration purposes
+        if prompt_content is not None:
+            self.last_prompt_content = prompt_content
+        elif self.last_prompt_content is None:
+            logger.warning("No prompt content available for tweet generation")
+            return "Tweet generation failed. Please provide a prompt."
+        else:
+            prompt_content = self.last_prompt_content
+
+        logger.info(f"Generating tweet for prompt_content: {prompt_content}")
         messages = [
             {
                 "role": "system",
                 "content": Config.TWEET_GENERATION_PROMPT,
             },
-            {"role": "user", "content": f"Generate a tweet for: {prompt}"},
+            {"role": "user", "content": f"Generate a tweet for: {prompt_content}"},
         ]
 
         try:
@@ -34,9 +43,9 @@ class TweetSizzlerAgent:
                 max_tokens=Config.LLM_MAX_TOKENS,
                 temperature=Config.LLM_TEMPERATURE,
             )
-            self.current_tweet = result["choices"][0]["message"]["content"]
-            logger.info(f"Tweet generated successfully: {self.current_tweet}")
-            return self.current_tweet
+            tweet = result["choices"][0]["message"]["content"]
+            logger.info(f"Tweet generated successfully: {tweet}")
+            return tweet
         except Exception as e:
             logger.error(f"Error generating tweet: {str(e)}")
             raise

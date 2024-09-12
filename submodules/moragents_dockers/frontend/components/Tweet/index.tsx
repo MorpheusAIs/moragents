@@ -12,9 +12,19 @@ import {
   useDisclosure,
   Text,
   Box,
+  IconButton,
 } from "@chakra-ui/react";
-import { FaPaperPlane, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import { postTweet, getHttpClient } from "../../services/backendClient";
+import {
+  FaPaperPlane,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaSync,
+} from "react-icons/fa";
+import {
+  postTweet,
+  getHttpClient,
+  regenerateTweet,
+} from "../../services/backendClient";
 import styles from "./index.module.css";
 
 type TweetProps = {
@@ -27,15 +37,19 @@ const MAX_TWEET_LENGTH = 280;
 export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
   const [tweetContent, setTweetContent] = useState(initialContent);
   const [isTweeting, setIsTweeting] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [charactersLeft, setCharactersLeft] = useState(
     MAX_TWEET_LENGTH - initialContent.length
   );
-
   useEffect(() => {
-    setCharactersLeft(MAX_TWEET_LENGTH - tweetContent.length);
+    if (tweetContent !== null && tweetContent !== undefined) {
+      setCharactersLeft(MAX_TWEET_LENGTH - tweetContent.length);
+    } else {
+      setCharactersLeft(MAX_TWEET_LENGTH);
+    }
   }, [tweetContent]);
 
   const handleTweet = async () => {
@@ -53,6 +67,20 @@ export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
     } finally {
       setIsTweeting(false);
       onOpen();
+    }
+  };
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    const backendClient = getHttpClient(selectedAgent);
+
+    try {
+      const newTweet = await regenerateTweet(backendClient);
+      setTweetContent(newTweet);
+    } catch (error) {
+      console.error("Error regenerating tweet:", error);
+    } finally {
+      setIsRegenerating(false);
     }
   };
 
@@ -81,18 +109,34 @@ export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
               {charactersLeft} characters left
             </Text>
           </Box>
-          <Button
-            leftIcon={<FaPaperPlane />}
-            onClick={handleTweet}
-            isLoading={isTweeting}
-            loadingText="Tweeting..."
-            colorScheme="twitter"
-            size="sm"
-            className={styles.tweetButton}
-            isDisabled={charactersLeft < 0 || tweetContent.length === 0}
-          >
-            Tweet
-          </Button>
+          <Flex alignItems="center">
+            <Button
+              leftIcon={<FaSync />}
+              onClick={handleRegenerate}
+              isLoading={isRegenerating}
+              aria-label="Try again"
+              size="sm"
+              className={styles.regenerateButton}
+            >
+              <Text fontSize="sm" ml={2}>
+                Try again
+              </Text>
+            </Button>
+            <Button
+              leftIcon={<FaPaperPlane />}
+              onClick={handleTweet}
+              isLoading={isTweeting}
+              loadingText="Tweeting..."
+              colorScheme="twitter"
+              size="sm"
+              className={styles.tweetButton}
+              isDisabled={
+                charactersLeft < 0 || !tweetContent || tweetContent.length === 0
+              }
+            >
+              Tweet
+            </Button>
+          </Flex>
         </Flex>
       </Flex>
 

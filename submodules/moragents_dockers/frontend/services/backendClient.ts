@@ -263,6 +263,18 @@ export const postTweet = async (
     });
   } catch (error) {
     console.error("Error posting tweet:", error);
-    throw error; // Rethrow the error so it can be handled by the component
+    throw error;
+  }
+};
+
+export const regenerateTweet = async (
+  backendClient: Axios
+): Promise<string> => {
+  try {
+    const response = await backendClient.post("/regenerate_tweet");
+    return response.data;
+  } catch (error) {
+    console.error("Error regenerating tweet:", error);
+    throw error;
   }
 };
