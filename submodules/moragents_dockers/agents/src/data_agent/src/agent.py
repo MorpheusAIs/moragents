@@ -11,7 +11,6 @@ class DataAgent:
         self.flask_app = flask_app
         self.config = config
         self.tools_provided = tools.get_tools()
-        logger.info("DataAgent initialized with %d tools", len(self.tools_provided))
 
     def get_response(self, message):
         messages = [
@@ -58,12 +57,7 @@ class DataAgent:
         return result["choices"][0]["message"]["content"], "assistant"
 
     def generate_response(self, prompt):
-        logger.info(
-            "Generating response for prompt: %s",
-            prompt[:50] + "..." if len(prompt) > 50 else prompt,
-        )
         response, role = self.get_response([prompt])
-        logger.info("Generated response with role: %s", role)
         return response, role
 
     def chat(self, request):

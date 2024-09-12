@@ -4,6 +4,9 @@ import json
 
 logger = logging.getLogger(__name__)
 
+# Configurable default agent
+DEFAULT_AGENT = "general purpose and context-based rag agent"
+
 
 class Delegator:
     def __init__(self, config, llm, llm_ollama, embeddings, flask_app):
@@ -91,13 +94,14 @@ class Delegator:
         result = self.llm.create_chat_completion(
             messages=message_list,
             tools=tools,
-            tool_choice={"type": "function", "function": {"name": "route"}},
+            tool_choice="auto",
             temperature=0.3,
         )
         logger.info("Received response from LLM: %s", result)
 
         response = result["choices"][0]["message"]
-        if "tool_calls" in response and response["tool_calls"]:
+
+        if response.get("tool_calls"):
             try:
                 function_args = json.loads(
                     response["tool_calls"][0]["function"]["arguments"]
@@ -105,10 +109,12 @@ class Delegator:
                 return {"next": function_args["next"]}
             except (json.JSONDecodeError, KeyError) as e:
                 logger.error(f"Error parsing function call: {e}")
-                return {"next": available_agents[0]}
+                return {"next": DEFAULT_AGENT}
         else:
-            logger.warning("No tool calls in LLM response, defaulting to first agent")
-            return {"next": available_agents[0]}
+            logger.warning(
+                "No tool calls in LLM response, defaulting to general purpose agent"
+            )
+            return {"next": DEFAULT_AGENT}
 
     def delegate_chat(self, agent_name, request):
         logger.info(f"Attempting to delegate chat to agent: {agent_name}")
