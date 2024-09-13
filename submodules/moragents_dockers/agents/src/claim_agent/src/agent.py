@@ -23,30 +23,18 @@ class ClaimAgent:
             available_rewards = {pool: amount for pool, amount in rewards.items() if amount > 0}
 
             if available_rewards:
-                self.conversation_state[wallet_address]["available_rewards"] = available_rewards
-                self.conversation_state[wallet_address]["state"] = "awaiting_receiver"
-                pools_str = " and ".join([f"pool {pool}" for pool in available_rewards.keys()])
-                amounts_str = " and ".join(
-                    [f"{amount} MOR in pool {pool}" for pool, amount in available_rewards.items()])
-                return f"You have rewards available in {pools_str}: {amounts_str}. Please provide the receiver address on Arbitrum where you want to receive these rewards.", "assistant", self.agent_info["name"]
+                selected_pool = max(available_rewards, key=available_rewards.get)
+                self.conversation_state[wallet_address]["available_rewards"] = {selected_pool: available_rewards[selected_pool]}
+                self.conversation_state[wallet_address]["receiver_address"] = wallet_address
+                self.conversation_state[wallet_address]["state"] = "awaiting_confirmation"
+                return f"You have {available_rewards[selected_pool]} MOR rewards available in pool {selected_pool}. Would you like to proceed with claiming these rewards?", "assistant", self.agent_info["name"]
             else:
                 return f"No rewards found for your wallet address {wallet_address} in either pool. Claim cannot be processed.", "assistant", None
-
-        elif state == "awaiting_receiver":
-            if message[-1]['content'].startswith('0x') and len(message[-1]['content']) == 42:
-                receiver_address = message[-1]['content']
-                self.conversation_state[wallet_address]["receiver_address"] = receiver_address
-                self.conversation_state[wallet_address]["state"] = "awaiting_confirmation"
-                return self.prepare_transactions(wallet_address)
-            else:
-                return "Please provide a valid Ethereum address to receive your rewards.", "assistant", self.agent_info["name"]
 
         elif state == "awaiting_confirmation":
             user_input = message[-1]['content'].lower()
             if any(word in user_input for word in ['yes', 'proceed', 'confirm', 'claim']):
-                transactions = self.conversation_state[wallet_address]["transactions"]
-                tx_data_str = json.dumps(transactions, indent=2)
-                return f"Transaction data prepared for signing:\n\n{tx_data_str}", "assistant", None
+                return self.prepare_transactions(wallet_address)
             else:
                 return "Please confirm if you want to proceed with the claim by saying 'yes', 'proceed', 'confirm', or 'claim'.", "assistant", self.agent_info["name"]
 
@@ -65,7 +53,8 @@ class ClaimAgent:
                 return f"Error preparing transaction for pool {pool_id}: {str(e)}", "assistant", None
 
         self.conversation_state[wallet_address]["transactions"] = transactions
-        return f"Transactions prepared for claiming rewards from {len(transactions)} pool(s) to receiver address {receiver_address}. Please confirm if you want to proceed.", "assistant", self.agent_info["name"]
+        tx_data_str = json.dumps(transactions, indent=2)
+        return f"Transaction data prepared for signing:\n\n{tx_data_str}", "assistant", None
 
     def chat(self, request):
         try:
