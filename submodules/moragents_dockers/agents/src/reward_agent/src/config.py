@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 class Config:
 
     WEB3RPCURL = {
-        "1": "https://cloudflare-eth.com",
+        "1": "https://eth.llamarpc.com/",
     }
 
     DISTRIBUTION_PROXY_ADDRESS = "0x47176B2Af9885dC6C4575d4eFd63895f7Aaa4790"

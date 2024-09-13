@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 class Config:
 
     WEB3RPCURL = {
-        "1": "https://cloudflare-eth.com"
+        "1": "https://eth.llamarpc.com/"
     }
     MINT_FEE = 0.001  # in ETH
 
