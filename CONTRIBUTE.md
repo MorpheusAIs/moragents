@@ -1,10 +1,10 @@
 # Contributing and Future Interoperability of Agents
 
-**For contributors looking to build a local agent** please wait until a test agent being built by Dan Y. (mentioned in [AGENTABILITIES](./AGENTABILITIES.md)) concludes an integration with the new agent router in [Agent Router PR](https://github.com/MorpheusAIs/moragents/pull/45).
-Around September 2024 the release of v0.1.0 will incorporate the above.
-Release v0.1.0 will include new guides to easily and independently integrate your own local agent.
+**For contributors looking to build a local agent** please see [Agents README](submodules/moragents_dockers/README.md) section: "Steps to Add a New Agent".
+This will let you experiment with your agent locally.
 
-Beyond September, the router will expand to coordinate the decentralized agents along with local agents to provide for dynamic workflow construction to satisfy more complex user queries.
+Later in 2024/5 you will be able to publish your agent to the Morpheus registry.
+There will be a future router which will expand to coordinate the decentralized agents along with local agents to provide for dynamic workflow construction to satisfy more complex user queries.
 
 ---
 

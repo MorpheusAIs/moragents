@@ -22,7 +22,7 @@ transaction.
       1. Windows
       2. (pending) macOS
    3. CICD build for Windows
-   4. (pending) CICD builds for Linux and macOS
+   4. CICD builds for Linux and macOS (apple and intel)
    4. (pending) Vulnerability scanning of dependencies and code
 4. GenLayer
    1. (pending) [FeedBuzz](https://github.com/yeagerai/feedbuzz-contracts) - AI filtered logging system to surface user demand and failure modes for new functionality  
@@ -30,11 +30,17 @@ transaction.
    1. Developed a [price fetcher agent](submodules/moragents_dockers/agents/src/data_agent) using CoinGecko.
    2. A [web interface](submodules/moragents_dockers/frontend) which is served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
    EVM-based wallets.
-   3. A [swap agent](submodules/moragents_dockers/agents/src/swap_agent) which can iteratively ask users to provide needed details for disambiguation.
-   4. [A general-purpose agent](https://github.com/MorpheusAIs/moragents/pull/34) that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
-   5. (Pending Integration) [Delegating agent](https://github.com/MorpheusAIs/moragents/pull/45) which can maintain user's persona/interests as well as coordinating to task agents and tools.
-6. **Dan Y.**
-   1. (pending) X/Twitter Posting Agent - an agent which generates spicy tweets with an X integration for one-click posting.
+   3. [Swap agent](submodules/moragents_dockers/agents/src/swap_agent) which can iteratively ask users to provide needed details for disambiguation.
+   4. [General-purpose agent](https://github.com/MorpheusAIs/moragents/pull/34) that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
+   5. [Local delegating agent](https://github.com/MorpheusAIs/moragents/pull/45) which can maintain user's persona/interests as well as coordinating to task agents and tools.
+   6. (pending) Agent forge to allow devs to publish their custom agents to the Morpheus/Lumerin Agent Registry
+7. **Dan Y.**
+   1. [X/Twitter Posting Agent](https://github.com/MorpheusAIs/moragents/pull/57) - an agent which generates spicy tweets with an X integration for one-click posting.
+   2. (pending) Inter-agent Delegator which can coordinate between local and decentralized agents
+7. **Niveshi**
+   1. [MOR Rewards agent](https://github.com/MorpheusAIs/moragents/tree/main/submodules/moragents_dockers/agents/src/reward_agent/src). Lets you see how many MOR tokens are claimable for your wallet.
+8. **Dom**
+   1. (pending) Coinbase MPC enabled Agent on Base
 
 ### Decentralized Inference:
 #### Non-Local Installation Agents for Permission-less Compute
@@ -56,4 +62,4 @@ Pending Lumerin's work. Eventually Agent Builders will be able to permission-les
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: August 18, 2024*
+*Last Updated: September 14, 2024*
