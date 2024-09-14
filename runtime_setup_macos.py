@@ -16,6 +16,7 @@ def get_docker_path():
     logger.error("Docker executable not found in PATH.")
     return None
 
+
 def check_docker_installed(docker_path):
     try:
         subprocess.run([docker_path, "--version"],

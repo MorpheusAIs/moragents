@@ -1,4 +1,4 @@
-llama-cpp-python==0.2.65
+llama-cpp-python==0.2.90
 transformers==4.43.3
 sentencepiece==0.2.0
 protobuf==5.27.2
@@ -13,3 +13,5 @@ faiss-cpu==1.8.0.post1
 langchain-text-splitters==0.2.2
 langchain-core==0.2.24
 langchain-community==0.2.10
+torch
+tweepy

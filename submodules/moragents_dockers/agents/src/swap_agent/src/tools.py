@@ -1,8 +1,8 @@
 import requests
 import logging
 import time
-from config import Config
 from web3 import Web3
+from swap_agent.src.config import Config
 
 
 class InsufficientFundsError(Exception):

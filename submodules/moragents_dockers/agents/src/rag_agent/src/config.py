@@ -7,4 +7,3 @@ logging.basicConfig(level=logging.INFO)
 class Config:
     MAX_FILE_SIZE=5 * 1024 * 1024  # 5 MB
     MAX_LENGTH=16 * 1024 * 1024
-    URL="http://host.docker.internal:11434"

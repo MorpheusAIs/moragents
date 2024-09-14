@@ -1,0 +1,37 @@
+.textarea {
+  font-size: 16px;
+  line-height: 125%;
+  margin-top: 16px;
+  margin-left: 8px;
+  color: white;
+  background-color: #111613;
+  border: none;
+  resize: vertical;
+  cursor: text;
+  min-height: 100px;
+  height: auto;
+}
+
+.tweetButton {
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.charactersLeft {
+  margin-top: -12px;
+  margin-bottom: 4px;
+}
+
+.regenerateIcon {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.regenerateIcon:hover {
+  opacity: 1;
+}
+
+.regenerateButton {
+  margin-top: -4px;
+  margin-right: 8px;
+}
