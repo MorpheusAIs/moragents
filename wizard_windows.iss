@@ -27,7 +27,8 @@ Filename: "{tmp}\DockerDesktopInstaller.exe"; Parameters: "install"; StatusMsg: 
 Filename: "{tmp}\OllamaSetup.exe"; StatusMsg: "Installing Ollama..."; Flags: waituntilterminated
 Filename: "{app}\LICENSE.md"; Description: "View License Agreement"; Flags: postinstall shellexec skipifsilent
 Filename: "{app}\MORagents.exe"; Description: "Launch MORagents"; Flags: postinstall nowait skipifsilent unchecked
-Filename: "cmd.exe"; Parameters: "/c ollama pull llama3.1 && ollama pull nomic-embed-text"; StatusMsg: "Pulling Ollama models..."; Flags: runhidden waituntilterminated
+Filename: "cmd.exe"; Parameters: "/c ollama pull llama3.1"; StatusMsg: "Pulling llama3.1 model..."; Flags: runhidden waituntilterminated
+Filename: "cmd.exe"; Parameters: "/c ollama pull nomic-embed-text"; StatusMsg: "Pulling nomic-embed-text model..."; Flags: runhidden waituntilterminated
 
 [Code]
 var

@@ -36,7 +36,7 @@ Open in the browser: ```http://localhost:3333/```
 Docker build will download the model.  The first time that one of the agents are called, the model will be loaded into memory and this instance will be shared between all agents.
 
 ## Agents
-Three agents are included:
+Five agents are included:
 
 ### Data Agent
 
@@ -67,6 +67,14 @@ A typical flow looks like this:
 ## RAG Agent
 This agent will answer questions about an uploaded PDF file.
 
+## Tweet Sizzler Agent
+This agent will let you generate tweets, edit with a WSYWIG. 
+Provided you enter API creds in the Settings you can also directly post to your X account. 
+
+## MOR Rewards Agent
+Ask the agent to check your MOR rewards and it will retrieve claimable MOR stats from both capital and coder pools.
+
+---
 
 # Delegator
 The Delegator handles user queries by analyzing the prompt and delegating it to the appropriate agent.
@@ -95,45 +103,13 @@ The Delegator handles user queries by analyzing the prompt and delegating it to 
 5. **File Upload**
    - Endpoint: `POST /upload`
    - Handles file uploads for RAG (Retrieval-Augmented Generation) purposes.
-
-## RAG Agent
-This agent will answer questions about an uploaded PDF file.
-
-
-# Delegator
-The Delegator handles user queries by analyzing the prompt and delegating it to the appropriate agent.
-
-## API Endpoints
-
-1. **Chat Functionality**
-   - Endpoint: `POST /`
-   - Handles chat interactions, delegating to appropriate agents when necessary.
-
-2. **Message History**
-   - Endpoint: `GET /messages`
-   - Retrieves chat message history.
-
-3. **Clear Messages**
-   - Endpoint: `GET /clear_messages`
-   - Clears the chat message history.
-
-4. **Swap Operations**
-   - Endpoints:
-     - `POST /tx_status`: Check transaction status
-     - `POST /allowance`: Get allowance
-     - `POST /approve`: Approve transaction
-     - `POST /swap`: Perform swap
-
-5. **File Upload**
-   - Endpoint: `POST /upload`
-   - Handles file uploads for RAG (Retrieval-Augmented Generation) purposes.
-
 
 # Adding a New Agent
 
 ## Overview
 
-Each agent is configured in the `config.py` file, which specifies the agent's path, class, and other details.
+Each agent is configured in the [agents/src/config.py](agents/src/config.py) file, which specifies the agent's path, class, and other details.
+This allows the delegator to delegate to the correct task agent based on the user's query.
 
 ## Steps to Add a New Agent
 
