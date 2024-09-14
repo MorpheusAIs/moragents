@@ -15,9 +15,13 @@ else:
     raise RuntimeError(f"Unsupported OS: {os_name}")
 
 class AgentDockerConfig:
-    MACOS_IMAGE_NAMES = [
+    MACOS_APPLE_IMAGE_NAMES = [
         "lachsbagel/moragents_dockers-nginx:apple-0.1.0",
         "lachsbagel/moragents_dockers-agents:apple-0.1.0"
+    ]
+    MACOS_INTEL_IMAGE_NAMES = [
+        "lachsbagel/moragents_dockers-nginx:amd64-0.1.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.1.0"
     ]
     WINDOWS_IMAGE_NAMES = [
         "lachsbagel/moragents_dockers-nginx:amd64-0.1.0",
@@ -30,8 +34,10 @@ class AgentDockerConfig:
 
     @staticmethod
     def get_current_image_names():
-        if os_name == "macOS":
-            return AgentDockerConfig.MACOS_IMAGE_NAMES
+        if os_name == "macOS" and arch == "ARM64":
+            return AgentDockerConfig.MACOS_APPLE_IMAGE_NAMES
+        elif os_name == "macOS" and arch == "x86_64":
+            return AgentDockerConfig.MACOS_INTEL_IMAGE_NAMES
         elif os_name == "Windows":
             return AgentDockerConfig.WINDOWS_IMAGE_NAMES
         elif os_name == "Linux":
