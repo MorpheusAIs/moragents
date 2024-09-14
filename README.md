@@ -1,7 +1,9 @@
 ![morpheus ecosystem](images/morpheus-ecosystem@3x_green.png)
 # MORagents
 
-## Morpheus Install for Local Web3 Agent Interaction
+## Local Agents Built with the Friendliest of Dev Tooling
+Python for AI Agents, JS for UI. Runs in your favorite browser. Made possible by Docker.
+Fully Extensible! Add your own agents and have them automatically invoked based on user intent.
 
 ![UI 1](images/tweet_sizzler.png)
 
@@ -21,6 +23,7 @@
   - "What's the main point of the document?"
 #### Swap ERC Compatible Tokens 🪙 -> 🪙
   - "Swap 0.01 ETH for USDC"
+  - **Works with your favorite wallet extensions in your existing browser**
 #### Fetch Price, Market Cap, and TVL of coins and tokens supported on CoinGecko 📈
   - "What's the price of ETH?"
   - "What's the market cap of BTC?"
@@ -28,12 +31,10 @@
   - "How many MOR rewards do I have?"
 #### Write Sizzling Tweets 🌶️ No Content Moderation 😅
   - "Write a based tweet about Crypto and AI"
-  
-**Works with your favorite wallet extensions in your existing browser**
 
 ---
 
-## Install
+## Easy Install
 ### macOS
 >Assumes minimum 16GB RAM
 
@@ -84,7 +85,6 @@ If the app shows connections errors in connecting to agents. Please ensure Docke
 
 #### Linux
 *Coming soon*
-
 
 ---
 # Adding a New Agent
