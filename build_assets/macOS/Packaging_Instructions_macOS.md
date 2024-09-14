@@ -28,17 +28,17 @@ Future usage only requires you to run MORagents from your searchbar.
 
 ## Signing
 ```sh 
-  productsign --sign "Developer ID Installer: Liquid Tensor LLC (ZQN244GMTD)" MORagents.pkg MORagents010.pkg
+  productsign --sign "Developer ID Installer: Liquid Tensor LLC (ZQN244GMTD)" MORagents.pkg MORagents010-[apple\|intel].pkg
 ```
 
 ## Notarize 
 ```sh 
-xcrun notarytool submit MORagents010.pkg --keychain-profile "NotaryProfile" --wait
+xcrun notarytool submit MORagents010-[apple\|intel].pkg --keychain-profile "NotaryProfile" --wait
 ```
 
 ## Staple
 ```sh 
-xcrun stapler staple MORagents010.pkg
+xcrun stapler staple MORagents010-[apple\|intel].pkg
 ```
 
 ---
