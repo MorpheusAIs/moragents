@@ -44,13 +44,13 @@ class Config:
                 "name": "tweet sizzler agent",
                 "upload_required": False,
             },
-            # {
-            #     "path": "claim_agent.src.agent",
-            #     "class": "ClaimAgent",
-            #     "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
-            #     "name": "claim agent",
-            #     "upload_required": False,
-            # },
+            {
+                "path": "claim_agent.src.agent",
+                "class": "ClaimAgent",
+                "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
+                "name": "claim agent",
+                "upload_required": False,
+            },
             {
                 "path": "reward_agent.src.agent",
                 "class": "RewardAgent",

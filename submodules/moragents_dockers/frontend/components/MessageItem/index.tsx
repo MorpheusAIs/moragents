@@ -4,10 +4,12 @@ import {
   ChatMessage,
   SwapMessagePayload,
   UserOrAssistantMessage,
+  ClaimMessagePayload,
 } from "../../services/backendClient";
 import { Avatar } from "../Avatar";
 import { availableAgents } from "../../config";
 import { SwapMessage } from "../SwapMessage";
+import { ClaimMessage } from "../ClaimMessage/ClaimMessage";
 import { Tweet } from "../Tweet";
 import styles from "./index.module.css";
 
@@ -21,7 +23,9 @@ type MessageItemProps = {
   selectedAgent: string;
   onCancelSwap: (fromAction: number) => void;
   onSwapSubmit: (swapTx: any) => void;
+  onClaimSubmit: (claimTx: any) => void;
   isLastSwapMessage: boolean;
+  isLastClaimMessage: boolean;
 };
 
 export const MessageItem: FC<MessageItemProps> = ({
@@ -29,7 +33,9 @@ export const MessageItem: FC<MessageItemProps> = ({
   selectedAgent,
   onCancelSwap,
   onSwapSubmit,
+  onClaimSubmit,
   isLastSwapMessage,
+  isLastClaimMessage,
 }) => {
   const agentName = availableAgents[selectedAgent]?.name || UNDEFINED_AGENT;
   const isUser = message.role === USER_ROLE;
@@ -52,6 +58,18 @@ export const MessageItem: FC<MessageItemProps> = ({
           fromMessage={content as SwapMessagePayload}
           onSubmitSwap={onSwapSubmit}
         />
+      );
+    }
+
+    if (message.role === "claim") {
+      console.log("MessageItem rendering ClaimMessage with content:", message.content);
+      return (
+        <ClaimMessage
+      isActive={isLastClaimMessage}
+      selectedAgent={selectedAgent}
+      fromMessage={message.content as ClaimMessagePayload}
+      onSubmitClaim={onClaimSubmit}
+    />
       );
     }
 

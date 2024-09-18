@@ -2,9 +2,14 @@ import React, { FC, useCallback, useEffect, useState } from "react";
 import { Box } from "@chakra-ui/react";
 import {
   ChatMessage,
+  ClaimMessage,
+  ClaimMessagePayload,
+  ClaimTransactionPayload,
+  sendClaimStatus,
   sendSwapStatus,
   getHttpClient,
   SWAP_STATUS,
+  CLAIM_STATUS
 } from "../../services/backendClient";
 import {
   useAccount,
@@ -153,14 +158,94 @@ export const Chat: FC<ChatProps> = ({
     [address, handleSwapStatus, sendTransaction]
   );
 
+
+  const handleClaimStatus = useCallback(
+  async (status: string, hash: string) => {
+    try {
+      const response: ChatMessage = await sendClaimStatus(
+        getHttpClient(selectedAgent),
+        chainId,
+        address?.toLowerCase() || "0x",
+        status,
+        hash
+      );
+
+      if (
+        response.role === "assistant" &&
+        typeof response.content === "string"
+      ) {
+        setMessagesData((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: response.content,
+          } as UserOrAssistantMessage,
+        ]);
+      } else if (response.role === "claim") {
+        setMessagesData((prev) => [...prev, response as ClaimMessage]);
+      }
+
+      setTxHash("");
+      setShowSpinner(false);
+    } catch (error) {
+      console.log(`Error sending claim status: ${error}`);
+      onBackendError();
+      setTxHash("");
+      setShowSpinner(false);
+    }
+  },
+  [selectedAgent, chainId, address, onBackendError]
+);
+
+  // Add this near your other useTransactionConfirmations hooks
+const claimConfirmations = useTransactionConfirmations({
+  hash: (txHash || "0x") as `0x${string}`,
+});
+
+// Add this effect to watch for claim transaction confirmations
+useEffect(() => {
+  if (txHash && claimConfirmations.data && claimConfirmations.data >= 1) {
+    handleClaimStatus(CLAIM_STATUS.SUCCESS, txHash);
+  }
+}, [txHash, claimConfirmations.data, handleClaimStatus]);
+
+// Modify handleClaimSubmit to use the same txHash state
+const handleClaimSubmit = useCallback(
+  (claimTx: ClaimTransactionPayload) => {
+    setTxHash("");
+    console.log("Claim transaction to be sent:", claimTx);
+    sendTransaction(
+      {
+        account: address,
+        data: claimTx.data as `0x${string}`,
+        to: claimTx.to as `0x${string}`,
+        value: BigInt(claimTx.value),
+        chainId: parseInt(claimTx.chainId),
+      },
+      {
+        onSuccess: (hash) => {
+          setTxHash(hash);
+          handleClaimStatus(CLAIM_STATUS.INIT, hash);
+        },
+        onError: (error) => {
+          console.log(`Error sending transaction: ${error}`);
+          handleClaimStatus(CLAIM_STATUS.FAIL, "");
+        },
+      }
+    );
+  },
+  [address, handleClaimStatus, sendTransaction]
+);
+
   return (
     <Box width="65%">
       <MessageList
-        messages={messagesData}
-        selectedAgent={selectedAgent}
-        onCancelSwap={onCancelSwap}
-        onSwapSubmit={handleSwapSubmit}
-      />
+  messages={messagesData}
+  selectedAgent={selectedAgent}
+  onCancelSwap={onCancelSwap}
+  onSwapSubmit={handleSwapSubmit}
+  onClaimSubmit={handleClaimSubmit}
+/>
       {showSpinner && <LoadingIndicator selectedAgent={selectedAgent} />}
       <ChatInput
         onSubmit={handleSubmit}

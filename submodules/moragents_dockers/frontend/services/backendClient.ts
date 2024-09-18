@@ -2,8 +2,9 @@ import axios, { Axios } from "axios";
 import { availableAgents } from "../config";
 
 export type ChatMessageBase = {
-  role: "user" | "assistant" | "swap";
+  role: "user" | "assistant" | "swap" | "claim";
 };
+
 
 export type UserOrAssistantMessage = ChatMessageBase & {
   role: "user" | "assistant";
@@ -13,6 +14,12 @@ export type UserOrAssistantMessage = ChatMessageBase & {
 
 export const SWAP_STATUS = {
   CANCELLED: "cancelled",
+  SUCCESS: "success",
+  FAIL: "failed",
+  INIT: "initiated",
+};
+
+export const CLAIM_STATUS = {
   SUCCESS: "success",
   FAIL: "failed",
   INIT: "initiated",
@@ -58,7 +65,32 @@ export type SystemMessage = ChatMessageBase & {
   content: string;
 };
 
-export type ChatMessage = UserOrAssistantMessage | SwapMessage | SystemMessage;
+export type ClaimTransactionPayload = {
+  to: string;
+  data: string;
+  value: string;
+  gas: string;
+  chainId: string;
+};
+
+export type ClaimMessagePayload = {
+  content: {
+    transactions: {
+      pool: number;
+      transaction: ClaimTransactionPayload;
+    }[];
+    claim_tx_cb: string;
+  };
+  role: "claim";
+};
+
+export type ClaimMessage = ChatMessageBase & {
+  role: "claim";
+  content: ClaimMessagePayload;
+};
+
+// Update the ChatMessage type to include ClaimMessage
+export type ChatMessage = UserOrAssistantMessage | SwapMessage | SystemMessage | ClaimMessage;
 
 export type ChatsListItem = {
   index: number; //  index at chats array
@@ -277,4 +309,33 @@ export const regenerateTweet = async (
     console.error("Error regenerating tweet:", error);
     throw error;
   }
+};
+
+export const getClaimTxPayload = async (
+  backendClient: Axios,
+  transactions: ClaimTransactionPayload[]
+): Promise<ClaimTransactionPayload[]> => {
+  const response = await backendClient.post("/claim", { transactions });
+  return response.data.transactions;
+};
+
+export const sendClaimStatus = async (
+  backendClient: Axios,
+  chainId: number,
+  walletAddress: string,
+  claimStatus: string,
+  txHash?: string
+): Promise<ChatMessage> => {
+  const responseBody = await backendClient.post("/tx_status", {
+    chain_id: chainId,
+    wallet_address: walletAddress,
+    status: claimStatus,
+    tx_hash: txHash || "",
+    tx_type: "claim",
+  });
+
+  return {
+    role: responseBody.data.role,
+    content: responseBody.data.content,
+  } as ChatMessage;
 };

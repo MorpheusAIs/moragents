@@ -63,10 +63,9 @@ test_cases = [
 ]
 
 reward_check_prompts = [
-    "Check MOR rewards for wallet_address: {} in pool_id {}",
-    "Check the MOR rewards for address: {} in pool_id {}",
-    "Check my MOR Rewards for address: {} for pool_id {}",
-    "Check the MOR rewards accrued for wallet_address: {} in pool_id {}"
-    "Check the MOR rewards assigned to wallet_address: {} in pool_id {}",
-
+    "i want to check my mor rewards",
+    "check my mor rewards",
+    "check my rewards",
+    "please check my mor rewards",
+    "hi, check my mor rewards",
 ]
