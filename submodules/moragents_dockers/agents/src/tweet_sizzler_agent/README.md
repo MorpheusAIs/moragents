@@ -62,7 +62,7 @@ To use the Tweet Sizzler Agent, you need to set up a developer account and creat
 
 6. Enter the consumer keys and authentication tokens from this page into the settings modal of the Morpheus app.
 
-![X Developer Portal Dashboard](images/tweet_sizzler_auth_setup.png)
+![X Developer Portal Dashboard](../../../../../images/tweet_sizzler_auth_setup.png)
 _Figure 1: X Developer Portal Dashboard_
 
 Note: For the Tweet Sizzler agent to work correctly, you need to ensure that your app permissions are set to "Read and write" or "Read, write, and Direct Messages" as shown in the image above. This level of permission is necessary for the agent to post tweets on your behalf.
