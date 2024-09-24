@@ -7,7 +7,7 @@ from cdp import Wallet, Cdp
 class GaslessTransactionAgent:
     def __init__(self, agent_info: Dict[str, Any], llm: Any, llm_ollama: Any, embeddings: Any, flask_app):
         """
-        Initialize the GaslessTransactionAgent.
+        Initialize the GaslessTransactionAgent for sending gasless usdc transactions.
 
         Parameters:
         - agent_info (dict): Configuration details for the agent.
@@ -28,7 +28,7 @@ class GaslessTransactionAgent:
 
     def chat(self, request: Dict[str, Any], user_id: str) -> tuple[str, str]:
         """
-        Process a chat request and schedule a gasless transfer.
+        Process a chat request and schedule a gasless usdc transfer.
 
         Parameters:
         - request (dict): The user's request containing transfer details.
@@ -81,24 +81,24 @@ class GaslessTransactionAgent:
         print(f"Wallet successfully created for user {user_id}: {wallet}")
         return wallet
 
-    def schedule_transfer(self, from_user_id: str, to_user_id: str, token: str, amount: float) -> str:
+    def schedule_transfer(self, from_wallet: Wallet, to_wallet: Wallet, token: str, amount: float) -> str:
         """
         Schedule a gasless transfer task.
 
         Parameters:
-        - from_user_id (str): The user ID of the sender.
-        - to_user_id (str): The user ID of the recipient.
+        - from_wallet (Wallet): The wallet of the sender.
+        - to_wallet (Wallet): The wallet of the recipient.
         - token (str): The token to transfer.
         - amount (float): The amount to transfer.
 
         Returns:
         - str: The unique task ID for the scheduled transfer.
         """
-        task_id = f"{from_user_id}_to_{to_user_id}_{datetime.utcnow().timestamp()}"
+        task_id = f"{from_wallet.address}_to_{to_wallet.address}_{datetime.utcnow().timestamp()}"
 
         def task():
             try:
-                self.execute_transfer(from_user_id, to_user_id, token, amount)
+                self.execute_transfer(from_wallet, to_wallet, token, amount)
             except Exception as e:
                 print(f"Error executing transfer: {str(e)}")
 
@@ -109,13 +109,13 @@ class GaslessTransactionAgent:
 
         return task_id
 
-    def execute_transfer(self, from_user_id: str, to_user_id: str, token: str, amount: float) -> None:
+    def execute_transfer(self, from_wallet: Wallet, to_wallet: Wallet, token: str, amount: float) -> None:
         """
         Execute a single gasless transfer transaction.
 
         Parameters:
-        - from_user_id (str): The user ID of the sender.
-        - to_user_id (str): The user ID of the recipient.
+        - from_wallet (Wallet): The wallet of the sender.
+        - to_wallet (Wallet): The wallet of the recipient.
         - token (str): The token to transfer.
         - amount (float): The amount to transfer.
 
@@ -123,8 +123,8 @@ class GaslessTransactionAgent:
         - Exception: If the transfer fails or an error occurs.
         """
         try:
-            from_wallet = self.wallets.get(from_user_id)
-            to_wallet = self.wallets.get(to_user_id)
+            from_wallet = self.wallets.get(from_wallet)
+            to_wallet = self.wallets.get(to_wallet)
 
             if not from_wallet or not to_wallet:
                 raise ValueError("Both sender and recipient must have created wallets.")
