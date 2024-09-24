@@ -1,3 +1,8 @@
+import logging
+
+# Logging configuration
+logging.basicConfig(level=logging.INFO)
+
 DELEGATOR_CONFIG = {
     "agents": [
         {
