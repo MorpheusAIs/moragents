@@ -2,7 +2,7 @@ import threading
 import time
 from datetime import datetime
 from typing import Dict, Any
-from cdp import Wallet
+from cdp import Wallet, Cdp
 
 class GaslessTransactionAgent:
     def __init__(self, agent_info: Dict[str, Any], llm: Any, llm_ollama: Any, embeddings: Any, flask_app):
@@ -23,6 +23,8 @@ class GaslessTransactionAgent:
         self.flask_app = flask_app
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
         self.wallets: Dict[str, Wallet] = {}
+        self.config = Config()
+        self.cdp = Cdp(self.config.CDP_API_KEY, self.config.CDP_API_SECRET)
 
     def chat(self, request: Dict[str, Any], user_id: str) -> tuple[str, str]:
         """
