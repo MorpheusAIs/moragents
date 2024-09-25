@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import { Grid, GridItem, Text } from "@chakra-ui/react";
+import ReactMarkdown from "react-markdown";
 import {
   ChatMessage,
   SwapMessagePayload,
@@ -40,7 +41,10 @@ export const MessageItem: FC<MessageItemProps> = ({
       if ((message as UserOrAssistantMessage).agentName === TWEET_AGENT) {
         return <Tweet initialContent={content} selectedAgent={selectedAgent} />;
       }
-      return <Text className={styles.messageText}>{content}</Text>;
+
+      return (
+        <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
+      );
     }
 
     if ((message as UserOrAssistantMessage).agentName === SWAP_AGENT) {
