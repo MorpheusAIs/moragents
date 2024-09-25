@@ -53,8 +53,15 @@ class ClaimAgent:
                 return f"Error preparing transaction for pool {pool_id}: {str(e)}", "assistant", None
 
         self.conversation_state[wallet_address]["transactions"] = transactions
-        tx_data_str = json.dumps(transactions, indent=2)
-        return f"Transaction data prepared for signing:\n\n{tx_data_str}", "assistant", None
+
+        # Return a structured response
+        return {
+            "role": "claim",
+            "content": {
+                "transactions": transactions,
+                "claim_tx_cb": "/claim"
+            }
+        }, "claim", None
 
     def chat(self, request):
         try:
@@ -68,3 +75,52 @@ class ClaimAgent:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
             return {"Error": str(e)}, 500
+
+
+    def claim(self, request):
+        try:
+            data = request.get_json()
+            wallet_address = data['wallet_address']
+            transactions = self.conversation_state[wallet_address]["transactions"]
+            return jsonify({"transactions": transactions})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    def claim_status(self, request):
+        try:
+            data = request.get_json()
+            wallet_address = data.get('wallet_address')
+            transaction_hash = data.get('transaction_hash')
+            status = data.get('status')
+
+            if not all([wallet_address, transaction_hash, status]):
+                return jsonify({"error": "Missing required parameters"}), 400
+
+            # Generate and return the status message
+            response = self.get_status(status, transaction_hash, "claim")
+            return jsonify(response), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+
+    def get_status(self, flag, tx_hash, tx_type):
+        response = ''
+
+        if flag == "cancelled":
+            response = f"The claim transaction has been cancelled."
+        elif flag == "success":
+            response = f"The claim transaction was successful."
+        elif flag == "failed":
+            response = f"The claim transaction has failed."
+        elif flag == "initiated":
+            response = f"Claim transaction has been sent, please wait for it to be confirmed."
+
+        if tx_hash:
+            response = response + f" The transaction hash is {tx_hash}. " \
+                                  f"Here's the link to the Etherscan transaction: " \
+                                  f"https://etherscan.io/tx/{tx_hash}"
+
+        if flag != "initiated":
+            response = response + " Is there anything else I can help you with?"
+
+        return {"role": "assistant", "content": response}

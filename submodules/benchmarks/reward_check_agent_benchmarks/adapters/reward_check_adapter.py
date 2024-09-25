@@ -8,5 +8,7 @@ class RewardCheckAdapter:
     def name(self) -> str:
         return "RewardCheckAdapter"
 
-    def get_reward(self, pool_id: int, wallet_address: str) -> float:
-        return get_current_user_reward(wallet_address, pool_id)
+    def get_rewards(self, wallet_address: str) -> dict:
+        pool_0_reward = get_current_user_reward(wallet_address, 0)
+        pool_1_reward = get_current_user_reward(wallet_address, 1)
+        return {"pool_0_reward": pool_0_reward, "pool_1_reward": pool_1_reward}

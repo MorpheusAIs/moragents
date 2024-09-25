@@ -215,6 +215,14 @@ def set_x_api_key():
     logger.info("Received set X API key request")
     return delegator.delegate_route("tweet sizzler agent", request, "set_x_api_key")
 
+@app.route("/claim", methods=["POST"])
+def claim_agent_claim():
+    logger.info("Received claim request")
+    return delegator.delegate_route("claim agent", request, "claim")
+
+@app.route("/claim_status", methods=["POST"])
+def update_claim_status():
+    return claim_agent.claim_status(request)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

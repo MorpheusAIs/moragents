@@ -1,47 +1,42 @@
-from helpers import ask_claim_agent, get_current_user_reward, extract_reward_value_from_response
-from submodules.benchmarks.reward_check_agent_benchmarks.config import test_cases, reward_check_prompts
+import pytest
+from submodules.benchmarks.claim_agent_benchmarks.helpers import request_claim, confirm_transaction
+from submodules.benchmarks.claim_agent_benchmarks.config import Config
 
 
-def run_reward_check_tests():
-    total_tests = len(test_cases)
-    passed_tests = 0
+def test_claim_process():
+    for i, wallet_data in enumerate(Config.WALLET_ADDRESSES):
+        wallet_address = wallet_data["wallet"]
 
-    for i, test_case in enumerate(test_cases, 1):
-        pool_id = test_case["pool_id"]
-        wallet_address = test_case["wallet_address"]
+        print(f"Testing for wallet {wallet_address} (Test {i + 1})")
 
-        # Iterate over each prompt
-        for prompt_template in reward_check_prompts:
-            prompt = prompt_template.format(wallet_address, pool_id)
-            print("-" * 100)
-            print(f"Running test case {i}/{total_tests}: {prompt}")
+        # Step 1: Request to claim rewards
+        response = request_claim(wallet_address)
 
-            # Get the agent's response
-            agent_response = ask_claim_agent(prompt)
-            print(f"Agent response: {agent_response}")
+        # Check if the response contains the expected structure
+        assert 'role' in response
+        assert response['role'] == 'claim'
+        assert 'content' in response
+        assert isinstance(response['content'], dict)
+        assert 'content' in response['content']
+        assert 'transactions' in response['content']['content']
+        assert len(response['content']['content']['transactions']) > 0
 
-            # Extract the reward value from the agent's response
-            agent_reward_value = extract_reward_value_from_response(agent_response)
-            print(f"Agent Returned Reward Value: {agent_reward_value}")
+        transaction = response['content']['content']['transactions'][0]
+        assert 'pool' in transaction
+        assert 'transaction' in transaction
 
-            # Get the real reward value from the blockchain
-            blockchain_reward_value = float(get_current_user_reward(wallet_address, pool_id))
-            print(f"Blockchain Returned Reward Value: {blockchain_reward_value}")
+        tx_data = transaction['transaction']
+        assert all(key in tx_data for key in ['to', 'data', 'value', 'gas', 'chainId'])
 
-            # Compare the values with a tolerance of 10%
-            tolerance = 0.10
-            if abs(agent_reward_value - blockchain_reward_value) / blockchain_reward_value <= tolerance:
-                print(f"Test case {i} passed.")
-                passed_tests += 1
-                i += 1
-                print("-" * 100)
-            else:
-                print(f"Test case {i} failed. Agent returned {agent_reward_value}, expected {blockchain_reward_value}.")
-                print("-" * 100)
-                i += 1
+        # Additional specific checks
+        assert tx_data['to'] == '0x47176B2Af9885dC6C4575d4eFd63895f7Aaa4790', "Incorrect 'to' address"
+        assert tx_data['value'] == '1000000000000000', "Incorrect 'value'"
+        assert tx_data['chainId'] == '1', "Incorrect 'chainId'"
 
-    print(f"\n{passed_tests}/{total_tests} test cases passed.")
+        print(f"Step 1 passed for wallet {wallet_address}: Claim process triggered successfully")
+
+        print(f"All steps passed for wallet {wallet_address}")
 
 
 if __name__ == "__main__":
-    run_reward_check_tests()
+    pytest.main()
