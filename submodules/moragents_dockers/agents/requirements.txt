@@ -15,3 +15,7 @@ langchain-core==0.2.24
 langchain-community==0.2.10
 torch
 tweepy
+feedparser
+python-dateutil
+pytz
+pyshorteners
