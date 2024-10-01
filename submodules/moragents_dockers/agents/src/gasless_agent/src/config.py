@@ -16,3 +16,8 @@ DELEGATOR_CONFIG = {
         }
     ]
 }
+
+class Config:
+
+    CDP_API_KEY = "cdp_api_key"
+    CDP_API_SECRET = "cdp_api_secret"

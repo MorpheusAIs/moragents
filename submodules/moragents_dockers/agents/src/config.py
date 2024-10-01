@@ -48,14 +48,14 @@ class Config:
                 "path": "dca_agent.src.agent",
                 "class": "DCAAgent",
                 "description": "If the user wants to set up a dollar-cost averaging strategy for crypto purchases.",
-                "name": "DCA Agent",
+                "name": "dca agent",
                 "upload_required": False
             },
             {
                 "path": "gasless_agent.src.agent",
                 "class": "GaslessAgent",
                 "description": "If the user wants to create a gasless wallet and send a transaction.",
-                "name": "Gasless Agent",
+                "name": "gasless agent",
                 "upload_required": False
             },
             {

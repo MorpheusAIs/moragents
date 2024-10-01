@@ -22,7 +22,6 @@ class DCAAgent:
         self.embeddings = embeddings
         self.flask_app = flask_app
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
-        self.cdp = Cdp(self.config.CDP_API_KEY, self.config.CDP_API_SECRET)
 
     def chat(self, request: Dict[str, Any], user_id: str) -> tuple[str, str]:
         """

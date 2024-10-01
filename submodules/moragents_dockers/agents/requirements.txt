@@ -7,7 +7,7 @@ huggingface-hub==0.24.3
 flask==2.2.2
 Werkzeug==2.2.2
 flask-cors==4.0.1
-web3==6.20.1
+web3==7.2.0
 pymupdf==1.22.5
 faiss-cpu==1.8.0.post1
 langchain-text-splitters==0.2.2
@@ -15,4 +15,4 @@ langchain-core==0.2.24
 langchain-community==0.2.10
 torch
 tweepy
-cdp-sdk==0.0.1
+cdp-sdk

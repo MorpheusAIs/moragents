@@ -3,8 +3,7 @@ import time
 import logging
 from datetime import datetime
 from typing import Dict, Any
-from cdp import Wallet, Cdp
-
+from cdp import *
 from .config import Config
 
 # Configure logging
@@ -14,10 +13,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class GaslessTransactionAgent:
+class GaslessAgent:
     def __init__(self, agent_info: Dict[str, Any], llm: Any, llm_ollama: Any, embeddings: Any, flask_app):
         """
-        Initialize the GaslessTransactionAgent for sending gasless usdc transactions.
+        Initialize the GaslessAgent for sending gasless usdc transactions.
 
         Parameters:
         - agent_info (dict): Configuration details for the agent.
@@ -33,7 +32,6 @@ class GaslessTransactionAgent:
         self.flask_app = flask_app
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
         self.wallets: Dict[str, Wallet] = {}
-        self.cdp = Cdp(self.config.CDP_API_KEY, self.config.CDP_API_SECRET)
 
     def chat(self, request: Dict[str, Any], user_id: str) -> tuple[str, str]:
         """

@@ -44,9 +44,17 @@ const SettingsButton: React.FC = () => {
       cdpApiSecret: localStorage.getItem("cdpApiSecret") || "",
     };
     setCredentials(storedCredentials);
-    setDisplayCredentials(Object.fromEntries(
-      Object.entries(storedCredentials).map(([key, value]) => [key, obscureCredential(value)])
-    ) as Credentials);
+
+    setDisplayCredentials({
+      apiKey: obscureCredential(storedCredentials.apiKey),
+      apiSecret: obscureCredential(storedCredentials.apiSecret),
+      accessToken: obscureCredential(storedCredentials.accessToken),
+      accessTokenSecret: obscureCredential(storedCredentials.accessTokenSecret),
+      bearerToken: obscureCredential(storedCredentials.bearerToken),
+      cdpApiKey: obscureCredential(storedCredentials.cdpApiKey),
+      cdpApiSecret: obscureCredential(storedCredentials.cdpApiSecret),
+    });
+    
   }, []);
 
   const obscureCredential = (credential: string) => {
@@ -58,9 +66,7 @@ const SettingsButton: React.FC = () => {
     Object.entries(credentials).forEach(([key, value]) => {
       localStorage.setItem(key, value);
     });
-    setDisplayCredentials(Object.fromEntries(
-      Object.entries(credentials).map(([key, value]) => [key, obscureCredential(value)])
-    ) as Credentials);
+
     setIsOpen(false);
   };
 
