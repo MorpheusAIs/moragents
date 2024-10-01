@@ -45,19 +45,19 @@ class Config:
                 "upload_required": False,
             },
             {
-                "path": "dca_agent.agent",
+                "path": "dca_agent.src.agent",
                 "class": "DCAAgent",
                 "description": "If the user wants to set up a dollar-cost averaging strategy for crypto purchases.",
                 "name": "DCA Agent",
                 "upload_required": False
             },
-            # {
-            #     "path": "claim_agent.src.agent",
-            #     "class": "ClaimAgent",
-            #     "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
-            #     "name": "claim agent",
-            #     "upload_required": False,
-            # },
+            {
+                "path": "gasless_agent.src.agent",
+                "class": "GaslessAgent",
+                "description": "If the user wants to create a gasless wallet and send a transaction.",
+                "name": "Gasless Agent",
+                "upload_required": False
+            },
             {
                 "path": "reward_agent.src.agent",
                 "class": "RewardAgent",
