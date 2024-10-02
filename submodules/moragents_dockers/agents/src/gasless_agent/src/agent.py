@@ -1,9 +1,11 @@
+import json
 import threading
 import logging
-from cdp import Wallet, Cdp
+from cdp import Cdp, Wallet
 from datetime import datetime
 from typing import Dict, Any
 from .config import Config
+from gasless_agent.src import tools
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -30,58 +32,58 @@ class GaslessAgent:
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
         self.wallets: Dict[str, Wallet] = {}
 
-    def chat(self, request: Dict[str, Any], user_id: str) -> tuple[str, str]:
-        """
-        Process a chat request and handle gasless USDC transactions.
-
-        Parameters:
-        - request (dict): The user's request containing transfer details.
-        - user_id (str): The unique identifier for the user.
-
-        Returns:
-        - tuple: A response message and the next turn agent.
-        """
-        action = request.get('action', '').lower()
+    def chat(self, request):
         try:
-            if action == 'create_wallet':
-                wallet = self.create_wallet(user_id)
-                return f"Wallet created successfully. Address: {wallet.address}", self.agent_info["name"]
-
-            elif action == 'transfer':
-                return self.handle_transfer(request, user_id)
-
+            data = request.get_json()
+            if 'prompt' in data:
+                prompt = data['prompt']
+                wallet_address = data['wallet_address']
+                chain_id = data['chain_id']
+                response, role, next_turn_agent = self.handle_gasless_usdc_transfer_request(prompt, chain_id, wallet_address)
+                return {"role": role, "content": response, "next_turn_agent": next_turn_agent}
             else:
-                return "Invalid action. Available actions: create_wallet, transfer", self.agent_info["name"]
-
-        except ValueError as e:
-            logger.error(f"ValueError in chat: {e}")
-            return f"Error: {str(e)}", self.agent_info["name"]
+                return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(f"Unexpected error in chat: {e}")
-            return f"An unexpected error occurred: {str(e)}", self.agent_info["name"]
+            return {"Error": str(e)}, 500
 
-    def handle_transfer(self, request: Dict[str, Any], user_id: str) -> tuple[str, str]:
-        """
-        Handle gasless USDC transfers.
+    def handle_gasless_usdc_transfer_request(self, message, chain_id, wallet_address) -> tuple[str, str]:
 
-        Parameters:
-        - request (dict): The user's request containing transfer details.
-        - user_id (str): The unique identifier for the user.
+        prompt = [
+            {
+                "role": "system",
+                "content": (
+                    "You are a gasless agent that can transfer USDC to another user. You are given the amount, the recipient user ID, and the token. You need to transfer the USDC to the recipient user ID."
+                )
+            }
+        ]
 
-        Returns:
-        - tuple: A response message and the next agent.
-        """
-        token = request.get('token', 'USDC')
-        amount = float(request.get('amount', 0.00001))
-        to_user_id = request.get('to_user_id')
+        prompt.extend(message)
 
-        if not to_user_id:
-            raise ValueError("Recipient user ID is required.")
-        if amount <= 0:
-            raise ValueError("Transfer amount must be positive.")
+        result = self.llm.create_chat_completion(
+            messages=prompt,
+            tools=self.tools_provided,
+            tool_choice="auto",
+            temperature=0.01
+        )
 
-        task_id = self.schedule_transfer(user_id, to_user_id, token, amount)
-        return f"Scheduled a gasless transfer of {amount} {token} to user {to_user_id}. Task ID: {task_id}", self.agent_info["name"]
+        if "tool_calls" in result["choices"][0]["message"].keys():
+            func = result["choices"][0]["message"]["tool_calls"][0]['function']
+            if func["name"] == "gasless_usdc_transfer":
+                args = json.loads(func["arguments"])
+                toAddress = args["toAddress"]
+                amount = args["amount"]
+                try:
+                    res, role = tools.send_gasless_usdc_transfer(toAddress, amount)
+
+                except (tools.InsufficientFundsError) as e:
+                    self.context = []
+                    return str(e), "assistant", None
+                
+                return res, role, None
+            
+        self.context.append({"role": "assistant", "content": result["choices"][0]["message"]['content']})
+        
+        return f"Sent a gasless transfer of {amount} usdc to user {toAddress}", self.agent_info["name"]
 
     def set_cdp_api_key(self, request):
         """
@@ -105,27 +107,29 @@ class GaslessAgent:
 
         return {"success": "API credentials saved successfully"}, 200
 
-    def create_wallet(self, user_id: str) -> Wallet:
+    def create_wallet(self) -> Wallet:
         """
         Create a new wallet for the user.
-
-        Parameters:
-        - user_id (str): The unique identifier for the user.
 
         Returns:
         - Wallet: The created wallet object.
         """
         try:
             # Configure CDP client (should fetch keys securely, avoid hardcoding)
-            client = Cdp.configure('organizations/7281d7cc-3a36-4aea-a53f-c2c3f955139f/apiKeys/fbe1a6a8-b7e1-4572-a8cd-177f4d3a46ec', '-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIFJr0ZZWGg9nJuBzXombR1khs+h297HDu2QX9+pD1HS8oAoGCCqGSM49\nAwEHoUQDQgAELQl2Kuz5HSq6n9pf8EsUqaui26b/mSNbTExFzz6x7x1g4zGjVxyA\nTzxyxAGxP3CGrvWRzlzWwY8RWtH2BcTXdA==\n-----END EC PRIVATE KEY-----\n')
-            wallet = client.Wallet.create("base-mainnet")
-            self.wallets[user_id] = wallet
+            client = Cdp.configure()
+            
+            logger.info(f"Creating wallet on base-mainnet")
+            logger.info(f"CDP client: {client}")
+            
+            wallet1 = client.Wallet.create()
+            address = wallet1.default_address
 
-            logger.info(f"Wallet created for user {user_id}: {wallet.address}")
-            return wallet
+            logger.info(f"Wallet created: {address}")
+
+            return wallet1
 
         except Exception as e:
-            logger.error(f"Error creating wallet for user {user_id}: {str(e)}")
+            logger.error(f"Error creating wallet: {str(e)}")
             raise
 
     def schedule_transfer(self, from_user_id: str, to_user_id: str, token: str, amount: float) -> str:

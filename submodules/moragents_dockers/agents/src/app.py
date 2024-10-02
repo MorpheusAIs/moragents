@@ -209,12 +209,6 @@ def post_tweet():
     return delegator.delegate_route("tweet sizzler agent", request, "post_tweet")
 
 
-@app.route("/create_wallet", methods=["POST"])
-def create_wallet():
-    logger.info("Received create wallet request")
-    return delegator.delegate_route("gasless agent", request, "create_wallet")
-
-
 # TODO: Persist the X API key in the database (once we set this up)
 @app.route("/set_x_api_key", methods=["POST"])
 def set_x_api_key():
