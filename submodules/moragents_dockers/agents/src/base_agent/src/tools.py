@@ -12,7 +12,7 @@ class InsufficientFundsError(Exception):
 
 def send_gasless_usdc_transaction(toAddress, amount):
     
-    client = Cdp.configure(Config.CDP_API_KEY, Config.CDP_API_SECRET)
+    client = Cdp.configure('','')
 
     logger.info(f"Client successfully configured: {client}")
 
@@ -21,11 +21,15 @@ def send_gasless_usdc_transaction(toAddress, amount):
     logger.info(f"Wallet successfully created: {wallet1}")
     logger.info(f"Wallet address: {wallet1.default_address}")
 
-    faucet_tx = wallet1.faucet()
+    eth_faucet_tx = wallet1.faucet()
+    
+    usdc_faucet_tx = wallet1.faucet(asset_id="usdc")
 
-    logger.info(f"Faucet transaction successfully sent: {faucet_tx}")
+    logger.info(f"Faucet transaction successfully sent: {eth_faucet_tx}")
+    logger.info(f"Faucet transaction successfully sent: {usdc_faucet_tx}")
 
-    logger.info(f"Faucet transaction successfully completed: {faucet_tx}")
+    logger.info(f"Faucet transaction successfully completed: {eth_faucet_tx}")
+    logger.info(f"Faucet transaction successfully completed: {usdc_faucet_tx}")
 
     address = wallet1.default_address
 
@@ -43,7 +47,7 @@ def send_gasless_usdc_transaction(toAddress, amount):
 
 def send_eth_transaction(toAddress, amount):
     
-    client = Cdp.configure(Config.CDP_API_KEY, Config.CDP_API_SECRET)
+    client = Cdp.configure('','')
 
     logger.info(f"Client successfully configured: {client}")
 
