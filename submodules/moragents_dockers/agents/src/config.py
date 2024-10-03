@@ -52,10 +52,10 @@ class Config:
                 "upload_required": False
             },
             {
-                "path": "gasless_agent.src.agent",
-                "class": "GaslessAgent",
-                "description": "If the user wants to create a gasless wallet and send a transaction.",
-                "name": "gasless agent",
+                "path": "base_agent.src.agent",
+                "class": "BaseAgent",
+                "description": "If the user wants to send a transaction on Base.",
+                "name": "base agent",
                 "upload_required": False
             },
             {
