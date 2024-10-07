@@ -56,11 +56,13 @@ class RealtimeSearchAgent:
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant that synthesizes information from web search results to answer user queries.",
+                "content": """You are a helpful assistant that synthesizes information from web search results to answer user queries. 
+                    Do not preface your answer with 'Based on the search results, I can tell you that:' or anything similar. 
+                    Just provide the answer.""",
             },
             {
                 "role": "user",
-                "content": f"Based on the following search results for the query '{search_term}', provide a concise and informative answer:\n\n{search_results}",
+                "content": f"""Based on the following search results for the query '{search_term}', provide a concise and informative answer: {search_results}""",
             },
         ]
 

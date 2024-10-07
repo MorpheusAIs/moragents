@@ -3,7 +3,7 @@ import logging
 
 from src.agents.crypto_data import tools
 from src.models.messages import ChatRequest
-from src.agent_manager import agent_manager
+from src.stores import agent_manager
 
 logger = logging.getLogger(__name__)
 

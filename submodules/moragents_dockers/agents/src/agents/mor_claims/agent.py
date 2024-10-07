@@ -1,6 +1,6 @@
 from src.agents.mor_claims import tools
 from src.models.messages import ChatRequest
-from src.agent_manager import agent_manager
+from src.stores import agent_manager
 
 
 class MorClaimsAgent:

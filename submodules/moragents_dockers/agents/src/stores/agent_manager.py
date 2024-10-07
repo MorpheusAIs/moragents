@@ -10,6 +10,3 @@ class AgentManager:
 
     def clear_active_agent(self):
         self.active_agent = None
-
-
-agent_manager = AgentManager()

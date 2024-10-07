@@ -12,14 +12,10 @@ from langchain_community.embeddings import OllamaEmbeddings
 
 from src.config import Config
 from src.delegator import Delegator
-from src.agent_manager import agent_manager
+from src.stores import agent_manager, chat_manager
 from src.models.messages import ChatRequest
 
 # Constants
-INITIAL_MESSAGE = {
-    "role": "assistant",
-    "content": "This highly experimental chatbot is not intended for making important decisions, and its responses are generated based on incomplete data and algorithms that may evolve rapidly. By using this chatbot, you acknowledge that you use it at your own discretion and assume all risks associated with its limitations and potential errors.",
-}
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 
 # Configure logging
@@ -49,13 +45,12 @@ llm = ChatOllama(
 embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Config.OLLAMA_URL)
 
 delegator = Delegator(Config.DELEGATOR_CONFIG, llm, embeddings)
-messages = [INITIAL_MESSAGE]
 
 
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
     prompt = chat_request.prompt.dict()
-    messages.append(prompt)
+    chat_manager.add_message(prompt)
 
     try:
         active_agent = agent_manager.get_active_agent()
@@ -84,12 +79,10 @@ async def chat(chat_request: ChatRequest):
             raise HTTPException(status_code=status_code, detail=error_message)
 
         if isinstance(response, dict) and "role" in response and "content" in response:
-            response_with_agent = response.copy()
-            response_with_agent["agentName"] = current_agent or "Unknown"
-            messages.append(response_with_agent)
+            chat_manager.add_response(response, current_agent or "Unknown")
 
-            logger.info(f"Sending response: {response_with_agent}")
-            return response_with_agent
+            logger.info(f"Sending response: {response}")
+            return response
         else:
             logger.error(f"Invalid response format: {response}")
             raise HTTPException(status_code=500, detail="Invalid response format")
@@ -109,21 +102,20 @@ async def chat(chat_request: ChatRequest):
 async def swap_agent_tx_status(request: Request):
     logger.info("Received tx_status request")
     response = delegator.delegate_route("crypto swap agent", request, "tx_status")
-    messages.append(response)
+    chat_manager.add_message(response)
     return response
 
 
 @app.get("/messages")
 async def get_messages():
     logger.info("Received get_messages request")
-    return {"messages": messages}
+    return {"messages": chat_manager.get_messages()}
 
 
 @app.get("/clear_messages")
 async def clear_messages():
-    global messages
     logger.info("Clearing message history")
-    messages = [INITIAL_MESSAGE]
+    chat_manager.clear_messages()
     return {"response": "successfully cleared message history"}
 
 
@@ -147,12 +139,11 @@ async def swap_agent_swap(request: Request):
 
 @app.post("/upload")
 async def rag_agent_upload(file: UploadFile = File(...)):
-    global messages
     logger.info("Received upload request")
     response = delegator.delegate_route(
         "general purpose and context-based rag agent", {"file": file}, "upload_file"
     )
-    messages.append(response)
+    chat_manager.add_message(response)
     return response
 
 

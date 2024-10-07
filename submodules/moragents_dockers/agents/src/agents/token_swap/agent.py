@@ -5,7 +5,7 @@ import logging
 from src.agents.token_swap import tools
 from src.agents.token_swap.config import Config
 from src.models.messages import ChatRequest
-from src.agent_manager import agent_manager
+from src.stores import agent_manager
 
 logger = logging.getLogger(__name__)
 
@@ -72,15 +72,15 @@ class TokenSwapAgent:
 
             if result.tool_calls:
                 tool_call = result.tool_calls[0]
-                func_name = tool_call.name
-                args = tool_call.args
+                logger.info("Selected tool: %s", tool_call)
+                func_name = tool_call.get("name")
+                args = tool_call.get("args")
                 logger.info("LLM suggested using tool: %s", func_name)
 
                 if func_name == "swap_agent":
-                    args_dict = json.loads(args)
-                    tok1 = args_dict["token1"]
-                    tok2 = args_dict["token2"]
-                    value = args_dict["value"]
+                    tok1 = args["token1"]
+                    tok2 = args["token2"]
+                    value = args["value"]
                     try:
                         res, role = tools.swap_coins(
                             tok1, tok2, float(value), chain_id, wallet_address

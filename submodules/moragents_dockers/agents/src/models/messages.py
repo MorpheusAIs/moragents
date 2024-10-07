@@ -8,3 +8,5 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     prompt: ChatMessage
+    chain_id: str
+    wallet_address: str
