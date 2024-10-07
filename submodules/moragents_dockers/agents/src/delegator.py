@@ -1,12 +1,14 @@
 import importlib
 import logging
 import json
+from langchain_experimental.llms.ollama_functions import OllamaFunctions
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema import SystemMessage, HumanMessage
 
 logger = logging.getLogger(__name__)
 
 # Configurable default agent
 DEFAULT_AGENT = "general purpose and context-based rag agent"
-
 
 class Delegator:
     def __init__(self, config, llm, llm_ollama, embeddings, flask_app):
@@ -50,70 +52,64 @@ class Delegator:
         )
 
         prompt_text = (
-            "### Instruction: Your name is Morpheus. "
+            "Your name is Morpheus. "
             "Your primary function is to select the correct agent based on the user's input. "
-            "You MUST use the 'route' function to select an agent. "
+            "You MUST use the 'choose_appropriate_agent' function to select an agent. "
             "Available agents and their descriptions:\n"
             f"{agent_descriptions}\n"
             "Analyze the user's input and select the most appropriate agent. "
-            "Do not respond with any text other than calling the 'route' function. "
-            "###"
+            "Do not respond with any text other than calling the 'choose_appropriate_agent' function."
         )
 
+        # Define the tool in the format expected by OllamaFunctions
         tools = [
             {
-                "type": "function",
-                "function": {
-                    "name": "route",
-                    "description": "Choose which agent to run next",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "next": {
-                                "type": "string",
-                                "enum": available_agents,
-                                "description": "The name of the next agent to run",
-                            }
-                        },
-                        "required": ["next"],
+                "name": "choose_appropriate_agent",
+                "description": "Choose which agent to run next",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "next": {
+                            "type": "string",
+                            "enum": available_agents,
+                            "description": "The name of the next agent to run",
+                        }
                     },
+                    "required": ["next"],
                 },
             }
         ]
 
-        message_list = [
-            {"role": "system", "content": prompt_text},
-            prompt,
-            {
-                "role": "system",
-                "content": "Remember, you must use the 'route' function to select an agent.",
-            },
+        # Initialize the AI model with the correct tool format
+        model = OllamaFunctions(
+            model="llama3.2:3b", format="json", temperature=0, base_url="http://host.docker.internal:11434"
+        )
+        model = model.bind_tools(tools=tools, function_call={"name": "choose_appropriate_agent"})
+
+        # Create the messages for the AI model
+        print("prompt", prompt)
+        messages = [
+            SystemMessage(content=prompt_text),
+            HumanMessage(content=prompt),
         ]
 
-        logger.info("Sending prompt to LLM: %s", prompt)
-        result = self.llm.create_chat_completion(
-            messages=message_list,
-            tools=tools,
-            tool_choice="auto",
-            temperature=0.3,
-        )
-        logger.info("Received response from LLM: %s", result)
+        # Process the query
+        try:
+            result = model.invoke(messages)
+            logger.info(f"Model result: {result}")
 
-        response = result["choices"][0]["message"]
+            # Parse the result to extract the chosen agent
+            if hasattr(result, 'additional_kwargs') and 'function_call' in result.additional_kwargs:
+                function_call = result.additional_kwargs['function_call']
+                if function_call['name'] == 'choose_appropriate_agent':
+                    next_agent = json.loads(function_call['arguments'])['next']
+                    return {"next": next_agent}
+            
+            logger.warning("Unexpected response format, defaulting to general purpose agent")
+            return {"next": DEFAULT_AGENT}
 
-        if response.get("tool_calls"):
-            try:
-                function_args = json.loads(
-                    response["tool_calls"][0]["function"]["arguments"]
-                )
-                return {"next": function_args["next"]}
-            except (json.JSONDecodeError, KeyError) as e:
-                logger.error(f"Error parsing function call: {e}")
-                return {"next": DEFAULT_AGENT}
-        else:
-            logger.warning(
-                "No tool calls in LLM response, defaulting to general purpose agent"
-            )
+        except Exception as e:
+            logger.error(f"Error during model invocation: {e}")
             return {"next": DEFAULT_AGENT}
 
     def delegate_chat(self, agent_name, request):

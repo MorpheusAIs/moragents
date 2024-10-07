@@ -1,9 +1,7 @@
 llama-cpp-python==0.2.90
-transformers==4.43.3
 sentencepiece==0.2.0
 protobuf==5.27.2
 scikit-learn==1.5.1
-huggingface-hub==0.24.3
 flask==2.2.2
 Werkzeug==2.2.2
 flask-cors==4.0.1
@@ -13,5 +11,5 @@ faiss-cpu==1.8.0.post1
 langchain-text-splitters==0.2.2
 langchain-core==0.2.24
 langchain-community==0.2.10
-torch
-tweepy
+langchain_experimental==0.3.2
+tweepy==4.14.0

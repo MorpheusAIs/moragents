@@ -1,15 +1,20 @@
 import os
 import logging
 import time
-from functools import wraps
-from config import Config
-from llama_cpp import Llama
+
 from flask_cors import CORS
 from flask import Flask, request, jsonify
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+
 from langchain_community.llms import Ollama
-from delegator import Delegator
-from llama_cpp.llama_tokenizer import LlamaHFTokenizer
 from langchain_community.embeddings import OllamaEmbeddings
+
+from src.config import Config
+from src.delegator import Delegator
+from src.agent_manager import AgentManager
+from src.models.messages import ChatRequest
 
 # Constants
 INITIAL_MESSAGE = {
@@ -28,72 +33,48 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def load_llm():
-    logger.info("Loading LLM model")
-    try:
-        llm = Llama(
-            model_path=Config.MODEL_PATH,
-            chat_format="functionary-v2",
-            tokenizer=LlamaHFTokenizer.from_pretrained(
-                "meetkai/functionary-small-v2.4-GGUF"
-            ),
-            n_gpu_layers=-1,  # Use all available GPU layers
-            n_batch=1024,  # Increase batch size for faster processing
-            n_ctx=1024,  # Increase context size for better performance
-            verbose=False,  # Disable verbose output for speed
-            use_mlock=True,  # Lock memory to prevent swapping
-            use_mmap=True,  # Use memory mapping for faster loading
-            n_threads=16,  # Increase number of threads for more parallel processing
-        )
-        logger.info("LLM model loaded successfully")
-        return llm
-    except Exception as e:
-        logger.error(f"Error loading LLM model: {str(e)}")
-        raise
-
-
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 upload_state = False
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = Config.MAX_UPLOAD_LENGTH
 
-try:
-    llm = load_llm()
-except TimeoutError:
-    logger.error("LLM loading timed out")
-    llm = None
-except Exception as e:
-    logger.error(f"Failed to load LLM: {str(e)}")
-    llm = None
-
-llm_ollama = Ollama(model="llama3.1", base_url=Config.OLLAMA_URL)
+llm_ollama = Ollama(model="llama3.2", base_url=Config.OLLAMA_URL)
 embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Config.OLLAMA_URL)
 
-delegator = Delegator(Config.DELEGATOR_CONFIG, llm, llm_ollama, embeddings, app)
+delegator = Delegator(Config.DELEGATOR_CONFIG, llm_ollama, llm_ollama, embeddings, app)
+agent_manager = AgentManager()
 messages = [INITIAL_MESSAGE]
 next_turn_agent = None
 
 
-@app.route("/", methods=["POST"])
-def chat():
-    global next_turn_agent, messages
-    data = request.get_json()
-    logger.info(f"Received chat request: {data}")
+@app.post("/chat")
+async def chat(chat_request: ChatRequest):
+    user_id = chat_request.user_id
+    prompt = chat_request.prompt.dict()
+
+    logger.info(f"Received chat request for user {user_id}: {prompt}")
 
     try:
-        current_agent = None
-        if "prompt" in data:
-            prompt = data["prompt"]
-            messages.append(prompt)
+        active_agent = agent_manager.get_active_agent(user_id)
 
-        if not next_turn_agent:
-            logger.info("No next turn agent, getting delegator response")
+        if not active_agent:
+            logger.info(
+                f"No active agent for user {user_id}, getting delegator response"
+            )
 
             start_time = time.time()
-            result = delegator.get_delegator_response(prompt, upload_state)
+            result = delegator.get_delegator_response(
+                prompt["content"], False
+            )  # Assuming upload_state is False
             end_time = time.time()
             logger.info(f"Delegator response time: {end_time - start_time:.2f} seconds")
             logger.info(f"Delegator response: {result}")
@@ -102,47 +83,36 @@ def chat():
                 logger.error(f"Missing 'next' key in delegator response: {result}")
                 raise ValueError("Invalid delegator response: missing 'next' key")
 
-            next_agent = result["next"]
-            current_agent, response_swap = delegator.delegate_chat(next_agent, request)
-        else:
-            logger.info(f"Delegating chat to next turn agent: {next_turn_agent}")
-            current_agent, response_swap = delegator.delegate_chat(
-                next_turn_agent, request
-            )
+            active_agent = result["next"]
+            agent_manager.set_active_agent(user_id, active_agent)
 
-        # Handle both dictionary and tuple returns from delegate_chat
-        response, status_code = (
-            response_swap if isinstance(response_swap, tuple) else (response_swap, 200)
+        logger.info(
+            f"Delegating chat to active agent for user {user_id}: {active_agent}"
         )
-
-        # If response_swap is an error, reset next_turn_agent
-        next_turn_agent = (
-            response_swap.get("next_turn_agent")
-            if isinstance(response_swap, dict)
-            else None
-        )
+        current_agent, response = delegator.delegate_chat(active_agent, chat_request)
 
         if isinstance(response, dict) and "role" in response and "content" in response:
             response_with_agent = response.copy()
             response_with_agent["agentName"] = current_agent or "Unknown"
 
-            messages.append(response_with_agent)
-
-            logger.info("Sending response: %s", response_with_agent)
-            return jsonify(response_with_agent), status_code
+            logger.info(f"Sending response for user {user_id}: {response_with_agent}")
+            return response_with_agent
         else:
-            logger.error(f"Invalid response format: {response}")
-            return jsonify({"error": "Invalid response format"}), 500
+            logger.error(f"Invalid response format for user {user_id}: {response}")
+            raise HTTPException(status_code=500, detail="Invalid response format")
 
     except TimeoutError:
-        logger.error("Chat request timed out")
-        return jsonify({"error": "Request timed out"}), 504
+        logger.error(f"Chat request timed out for user {user_id}")
+        raise HTTPException(status_code=504, detail="Request timed out")
     except ValueError as ve:
-        logger.error(f"Input formatting error: {str(ve)}")
-        return jsonify({"error": str(ve)}), 400
+        logger.error(f"Input formatting error for user {user_id}: {str(ve)}")
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
-        logger.error(f"Error in chat route: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error in chat route for user {user_id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Example curl command for the / endpoint
 
 
 @app.route("/tx_status", methods=["POST"])
@@ -215,14 +185,16 @@ def set_x_api_key():
     logger.info("Received set X API key request")
     return delegator.delegate_route("tweet sizzler agent", request, "set_x_api_key")
 
+
 @app.route("/claim", methods=["POST"])
 def claim_agent_claim():
     logger.info("Received claim request")
     return delegator.delegate_route("claim agent", request, "claim")
 
-@app.route("/claim_status", methods=["POST"])
-def update_claim_status():
-    return claim_agent.claim_status(request)
+
+# @app.route("/claim_status", methods=["POST"])
+# def update_claim_status():
+#     return claim_agent.claim_status(request)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

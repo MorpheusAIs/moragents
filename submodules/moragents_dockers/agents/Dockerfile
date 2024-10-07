@@ -12,14 +12,8 @@ RUN apt-get update && apt-get install -y gcc g++ procps && rm -rf /var/lib/apt/l
 # Install Python dependencies
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
     python3 -m pip install --no-cache-dir --upgrade -r requirements.txt
-    
-COPY download_model.py .
 
-COPY model_config.py .
-
-RUN python3 download_model.py
-
-copy . .
+COPY . .
 
 # Expose the port your application listens on
 EXPOSE 5000

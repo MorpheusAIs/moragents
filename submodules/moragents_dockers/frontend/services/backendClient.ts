@@ -5,7 +5,6 @@ export type ChatMessageBase = {
   role: "user" | "assistant" | "swap" | "claim";
 };
 
-
 export type UserOrAssistantMessage = ChatMessageBase & {
   role: "user" | "assistant";
   content: string;
@@ -90,7 +89,11 @@ export type ClaimMessage = ChatMessageBase & {
 };
 
 // Update the ChatMessage type to include ClaimMessage
-export type ChatMessage = UserOrAssistantMessage | SwapMessage | SystemMessage | ClaimMessage;
+export type ChatMessage =
+  | UserOrAssistantMessage
+  | SwapMessage
+  | SystemMessage
+  | ClaimMessage;
 
 export type ChatsListItem = {
   index: number; //  index at chats array
