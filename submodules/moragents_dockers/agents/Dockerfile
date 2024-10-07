@@ -18,8 +18,5 @@ COPY . .
 # Expose the port your application listens on
 EXPOSE 5000
 
-# Set the environment variable for Flask
-ENV FLASK_APP=src/app.py
-
-# Run the application
-CMD ["flask", "run", "--host", "0.0.0.0"]
+# Run the application using uvicorn with auto-reload enabled
+CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]

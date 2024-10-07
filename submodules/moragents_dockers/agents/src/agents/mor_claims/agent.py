@@ -1,20 +1,25 @@
 from src.agents.mor_claims import tools
+from src.models.messages import ChatRequest
+from src.agent_manager import agent_manager
 
 
 class MorClaimsAgent:
-    def __init__(self, agent_info, llm, llm_ollama, embeddings, flask_app):
+    def __init__(self, agent_info, llm, embeddings):
         self.agent_info = agent_info
         self.llm = llm
+        self.embeddings = embeddings
         self.tools_provided = tools.get_tools()
         self.conversation_state = {}
 
-    def get_response(self, message, wallet_address):
+    def _get_response(self, message, wallet_address):
         if wallet_address not in self.conversation_state:
             self.conversation_state[wallet_address] = {"state": "initial"}
 
         state = self.conversation_state[wallet_address]["state"]
 
         if state == "initial":
+            agent_manager.set_active_agent(self.agent_info["name"])
+
             rewards = {
                 0: tools.get_current_user_reward(wallet_address, 0),
                 1: tools.get_current_user_reward(wallet_address, 1),
@@ -93,13 +98,13 @@ class MorClaimsAgent:
             None,
         )
 
-    def chat(self, request):
+    def chat(self, request: ChatRequest):
         try:
-            data = request.get_json()
+            data = request.dict()
             if "prompt" in data and "wallet_address" in data:
                 prompt = data["prompt"]
                 wallet_address = data["wallet_address"]
-                response, role, next_turn_agent = self.get_response(
+                response, role, next_turn_agent = self._get_response(
                     [prompt], wallet_address
                 )
                 return {
@@ -112,30 +117,31 @@ class MorClaimsAgent:
         except Exception as e:
             return {"Error": str(e)}, 500
 
-    def claim(self, request):
+    def claim(self, request: ChatRequest):
         try:
-            data = request.get_json()
+            data = request.dict()
             wallet_address = data["wallet_address"]
             transactions = self.conversation_state[wallet_address]["transactions"]
-            return jsonify({"transactions": transactions})
+            agent_manager.clear_active_agent()
+            return {"transactions": transactions}
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return {"error": str(e)}, 500
 
-    def claim_status(self, request):
+    def claim_status(self, request: ChatRequest):
         try:
-            data = request.get_json()
+            data = request.dict()
             wallet_address = data.get("wallet_address")
             transaction_hash = data.get("transaction_hash")
             status = data.get("status")
 
             if not all([wallet_address, transaction_hash, status]):
-                return jsonify({"error": "Missing required parameters"}), 400
+                return {"error": "Missing required parameters"}, 400
 
             # Generate and return the status message
             response = self.get_status(status, transaction_hash, "claim")
-            return jsonify(response), 200
+            return response, 200
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return {"error": str(e)}, 500
 
     def get_status(self, flag, tx_hash, tx_type):
         response = ""

@@ -7,5 +7,4 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    user_id: str
     prompt: ChatMessage

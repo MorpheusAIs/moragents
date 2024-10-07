@@ -1,12 +1,15 @@
 class AgentManager:
     def __init__(self):
-        self.active_agents = {}
+        self.active_agent = None
 
-    def get_active_agent(self, user_id):
-        return self.active_agents.get(user_id)
+    def get_active_agent(self):
+        return self.active_agent
 
-    def set_active_agent(self, user_id, agent_name):
-        self.active_agents[user_id] = agent_name
+    def set_active_agent(self, agent_name):
+        self.active_agent = agent_name
 
-    def clear_active_agent(self, user_id):
-        self.active_agents.pop(user_id, None)
+    def clear_active_agent(self):
+        self.active_agent = None
+
+
+agent_manager = AgentManager()

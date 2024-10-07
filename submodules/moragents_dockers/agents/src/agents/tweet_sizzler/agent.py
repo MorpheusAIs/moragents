@@ -1,6 +1,8 @@
 import logging
 import tweepy
-from .config import Config
+
+from src.agents.tweet_sizzler.config import Config
+from src.models.messages import ChatRequest
 
 # Configure logging
 logging.basicConfig(
@@ -10,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 
 class TweetSizzlerAgent:
-    def __init__(self, config, llm, llm_ollama, embeddings, flask_app):
-        self.llm = llm
-        self.flask_app = flask_app
+    def __init__(self, config, llm, embeddings):
         self.config = config
+        self.llm = llm
+        self.embeddings = embeddings
         self.x_api_key = None
         self.last_prompt_content = None
         self.twitter_client = None
@@ -38,12 +40,15 @@ class TweetSizzlerAgent:
         ]
 
         try:
-            result = self.llm.create_chat_completion(
-                messages=messages,
-                max_tokens=Config.LLM_MAX_TOKENS,
-                temperature=Config.LLM_TEMPERATURE,
-            )
-            tweet = result["choices"][0]["message"]["content"]
+            result = self.llm.invoke(messages)
+            logger.info(f"Received response from LLM: {result}")
+            tweet = result.content.strip()
+            tweet = " ".join(tweet.split())
+
+            # Remove any dictionary-like formatting, if present
+            if tweet.startswith("{") and tweet.endswith("}"):
+                tweet = tweet.strip("{}").split(":", 1)[-1].strip().strip('"')
+
             logger.info(f"Tweet generated successfully: {tweet}")
             return tweet
         except Exception as e:
@@ -111,33 +116,37 @@ class TweetSizzlerAgent:
 
         return {"success": "API credentials saved successfully"}, 200
 
-    def chat(self, request):
+    def chat(self, chat_request: ChatRequest):
         try:
-            data = request.get_json()
-            logger.info(f"Received chat request: {data}")
-            if "prompt" in data:
-                prompt = data["prompt"]
-                action = data.get("action", Config.DEFAULT_ACTION)
-                logger.debug(f"Extracted prompt: {prompt}, action: {action}")
+            prompt = chat_request.prompt.dict()
+            logger.info(f"Received chat request: {prompt}")
 
-                if action == "generate":
-                    logger.info(f"Generating tweet for prompt: {prompt['content']}")
-                    tweet = self.generate_tweet(prompt["content"])
-                    logger.info(f"Generated tweet: {tweet}")
-                    return {"role": "assistant", "content": tweet}
-                elif action == "post":
-                    logger.info("Attempting to post tweet")
-                    result, status_code = self.post_tweet(request)
-                    logger.info(
-                        f"Posted tweet result: {result}, status code: {status_code}"
-                    )
+            action = prompt.get("action", Config.DEFAULT_ACTION)
+            logger.debug(
+                f"Extracted prompt content: {prompt['content']}, action: {action}"
+            )
+
+            if action == "generate":
+                logger.info(f"Generating tweet for prompt: {prompt['content']}")
+                tweet = self.generate_tweet(prompt["content"])
+                logger.info(f"Generated tweet: {tweet}")
+                return {"role": "assistant", "content": tweet}
+            elif action == "post":
+                logger.info("Attempting to post tweet")
+                result, status_code = self.post_tweet(chat_request)
+                logger.info(
+                    f"Posted tweet result: {result}, status code: {status_code}"
+                )
+                if isinstance(result, dict) and "error" in result:
                     return result, status_code
-                else:
-                    logger.error(f"Invalid action received: {action}")
-                    return {"error": Config.ERROR_INVALID_ACTION}, 400
+                return {
+                    "role": "assistant",
+                    "content": f"Tweet posted successfully: {result.get('tweet', '')}",
+                }, status_code
             else:
-                logger.error("Missing 'prompt' in chat request data")
-                return {"error": Config.ERROR_MISSING_PARAMETERS}, 400
+                logger.error(f"Invalid action received: {action}")
+                return {"role": "assistant", "content": Config.ERROR_INVALID_ACTION}
+
         except Exception as e:
             logger.exception(f"Unexpected error in chat method: {str(e)}")
-            return {"Error": str(e)}, 500
+            return {"role": "assistant", "content": f"Error: {str(e)}"}

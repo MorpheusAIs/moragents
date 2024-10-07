@@ -56,5 +56,12 @@ class Config:
                 "name": "mor rewards agent",
                 "upload_required": False,
             },
+            {
+                "path": "src.agents.realtime_search.agent",
+                "class": "RealtimeSearchAgent",
+                "description": "Performs real-time web searches. Use when the query is about searching the web for real-time information.",
+                "name": "realtime search agent",
+                "upload_required": False,
+            },
         ]
     }

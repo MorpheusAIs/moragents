@@ -1,17 +1,16 @@
 import logging
 
 from src.agents.mor_rewards import tools
+from src.models.messages import ChatRequest
 
 logger = logging.getLogger(__name__)
 
 
 class MorRewardsAgent:
-    def __init__(self, agent_info, llm, llm_ollama, embeddings, flask_app):
+    def __init__(self, agent_info, llm, embeddings):
         self.agent_info = agent_info
         self.llm = llm
-        self.llm_ollama = llm_ollama
         self.embeddings = embeddings
-        self.flask_app = flask_app
         self.tools_provided = tools.get_tools()
 
     def get_response(self, message, wallet_address):
@@ -37,9 +36,9 @@ class MorRewardsAgent:
                 None,
             )
 
-    def chat(self, request):
+    def chat(self, request: ChatRequest):
         try:
-            data = request.get_json()
+            data = request.dict()
             if "prompt" in data and "wallet_address" in data:
                 prompt = data["prompt"]
                 wallet_address = data["wallet_address"]

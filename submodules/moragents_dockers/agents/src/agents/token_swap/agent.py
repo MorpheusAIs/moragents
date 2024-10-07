@@ -1,16 +1,20 @@
 import json
 import requests
-from flask import jsonify
+import logging
 
 from src.agents.token_swap import tools
-from src.config import Config
+from src.agents.token_swap.config import Config
+from src.models.messages import ChatRequest
+from src.agent_manager import agent_manager
+
+logger = logging.getLogger(__name__)
 
 
 class TokenSwapAgent:
-    def __init__(self, config, llm, llm_ollama, embeddings, flask_app):
-        self.llm = llm
-        self.flask_app = flask_app
+    def __init__(self, config, llm, embeddings):
         self.config = config
+        self.llm = llm
+        self.embeddings = embeddings
         self.tools_provided = tools.get_tools()
         self.context = []
 
@@ -45,52 +49,56 @@ class TokenSwapAgent:
         return swap_transaction
 
     def get_response(self, message, chain_id, wallet_address):
-        prompt = [
-            {
-                "role": "system",
-                "content": (
-                    "Don't make assumptions about the value of the arguments for the function "
-                    "they should always be supplied by the user and do not alter the value of the arguments. "
-                    "Don't make assumptions about what values to plug into functions. Ask for clarification if a user "
-                    "request is ambiguous. you only need the value of token1 we dont need the value of token2. After "
-                    "starting from scratch do not assume the name of token1 or token2"
-                ),
-            }
+        system_prompt = (
+            "Don't make assumptions about the value of the arguments for the function "
+            "they should always be supplied by the user and do not alter the value of the arguments. "
+            "Don't make assumptions about what values to plug into functions. Ask for clarification if a user "
+            "request is ambiguous. you only need the value of token1 we dont need the value of token2. After "
+            "starting from scratch do not assume the name of token1 or token2"
+        )
+
+        messages = [
+            {"role": "system", "content": system_prompt},
         ]
-        prompt.extend(message)
-        result = self.llm.create_chat_completion(
-            messages=prompt,
-            tools=self.tools_provided,
-            tool_choice="auto",
-            temperature=0.01,
-        )
-        if "tool_calls" in result["choices"][0]["message"].keys():
-            func = result["choices"][0]["message"]["tool_calls"][0]["function"]
-            if func["name"] == "swap_agent":
-                args = json.loads(func["arguments"])
-                tok1 = args["token1"]
-                tok2 = args["token2"]
-                value = args["value"]
-                try:
-                    res, role = tools.swap_coins(
-                        tok1, tok2, float(value), chain_id, wallet_address
-                    )
-                except (
-                    tools.InsufficientFundsError,
-                    tools.TokenNotFoundError,
-                    tools.SwapNotPossibleError,
-                ) as e:
-                    self.context = []
-                    return str(e), "assistant", None
-                return res, role, None
-        self.context.append(
-            {"role": "assistant", "content": result["choices"][0]["message"]["content"]}
-        )
-        return (
-            result["choices"][0]["message"]["content"],
-            "assistant",
-            "crypto swap agent",
-        )
+        messages.extend(message)
+
+        logger.info("Sending request to LLM with %d messages", len(messages))
+
+        llm_with_tools = self.llm.bind_tools(self.tools_provided)
+
+        try:
+            result = llm_with_tools.invoke(messages)
+            logger.info("Received response from LLM: %s", result)
+
+            if result.tool_calls:
+                tool_call = result.tool_calls[0]
+                func_name = tool_call.name
+                args = tool_call.args
+                logger.info("LLM suggested using tool: %s", func_name)
+
+                if func_name == "swap_agent":
+                    args_dict = json.loads(args)
+                    tok1 = args_dict["token1"]
+                    tok2 = args_dict["token2"]
+                    value = args_dict["value"]
+                    try:
+                        res, role = tools.swap_coins(
+                            tok1, tok2, float(value), chain_id, wallet_address
+                        )
+                    except (
+                        tools.InsufficientFundsError,
+                        tools.TokenNotFoundError,
+                        tools.SwapNotPossibleError,
+                    ) as e:
+                        self.context = []
+                        return str(e), "assistant", None
+                    return res, role, None
+            else:
+                logger.info("LLM provided a direct response without using tools")
+                return result.content, "assistant", "crypto swap agent"
+        except Exception as e:
+            logger.error(f"Error in get_response: {str(e)}")
+            return f"An error occurred: {str(e)}", "assistant", None
 
     def get_status(self, flag, tx_hash, tx_type):
         response = ""
@@ -128,9 +136,9 @@ class TokenSwapAgent:
         )
         return response, role, next_turn_agent
 
-    def chat(self, request):
+    def chat(self, request: ChatRequest):
+        data = request.dict()
         try:
-            data = request.get_json()
             if "prompt" in data:
                 prompt = data["prompt"]
                 wallet_address = data["wallet_address"]
@@ -148,9 +156,8 @@ class TokenSwapAgent:
         except Exception as e:
             return {"Error": str(e)}, 500
 
-    def tx_status(self, request):
+    def tx_status(self, data):
         try:
-            data = request.get_json()
             if "status" in data:
                 prompt = data["status"]
                 tx_hash = data.get("tx_hash", "")
@@ -162,44 +169,41 @@ class TokenSwapAgent:
         except Exception as e:
             return {"Error": str(e)}, 500
 
-    def get_allowance(self, request):
+    def get_allowance(self, request_data):
         try:
-            data = request.get_json()
-            if "tokenAddress" in data:
-                token = data["tokenAddress"]
-                wallet_address = data["walletAddress"]
-                chain_id = data["chain_id"]
+            if "tokenAddress" in request_data:
+                token = request_data["tokenAddress"]
+                wallet_address = request_data["walletAddress"]
+                chain_id = request_data["chain_id"]
                 res = self.check_allowance(token, wallet_address, chain_id)
-                return jsonify({"response": res})
+                return {"response": res}
             else:
-                return jsonify({"error": "Missing required parameters"}), 400
+                return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            return jsonify({"Error": str(e)}), 500
+            return {"Error": str(e)}, 500
 
-    def approve(self, request):
+    def approve(self, request_data):
         try:
-            data = request.get_json()
-            if "tokenAddress" in data:
-                token = data["tokenAddress"]
-                chain_id = data["chain_id"]
-                amount = data["amount"]
+            if "tokenAddress" in request_data:
+                token = request_data["tokenAddress"]
+                chain_id = request_data["chain_id"]
+                amount = request_data["amount"]
                 res = self.approve_transaction(token, chain_id, amount)
-                return jsonify({"response": res})
+                return {"response": res}
             else:
-                return jsonify({"error": "Missing required parameters"}), 400
+                return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            return jsonify({"Error": str(e)}), 500
+            return {"Error": str(e)}, 500
 
-    def swap(self, request):
+    def swap(self, request_data):
         try:
-            data = request.get_json()
-            if "src" in data:
-                token1 = data["src"]
-                token2 = data["dst"]
-                wallet_address = data["walletAddress"]
-                amount = data["amount"]
-                slippage = data["slippage"]
-                chain_id = data["chain_id"]
+            if "src" in request_data:
+                token1 = request_data["src"]
+                token2 = request_data["dst"]
+                wallet_address = request_data["walletAddress"]
+                amount = request_data["amount"]
+                slippage = request_data["slippage"]
+                chain_id = request_data["chain_id"]
                 swap_params = {
                     "src": token1,
                     "dst": token2,
@@ -212,6 +216,6 @@ class TokenSwapAgent:
                 swap_transaction = self.build_tx_for_swap(swap_params, chain_id)
                 return swap_transaction
             else:
-                return jsonify({"error": "Missing required parameters"}), 400
+                return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            return jsonify({"Error": str(e)}), 500
+            return {"Error": str(e)}, 500

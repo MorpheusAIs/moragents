@@ -21,9 +21,10 @@ class Config:
         "attention-grabbing tweets based on the user's prompt. It is CRUCIAL that you "
         "keep the tweets strictly under 280 characters - this is a hard limit. Make the "
         "tweets as engaging as possible while adhering to this character limit. Do not "
-        "surround your tweet with quotes. Do not preface it with any text like 'here is "
-        "your tweet'. Simply generate and output the tweet, ensuring it is less than "
-        "280 characters long."
+        "surround your tweet with quotes or any other formatting. Do not preface it with "
+        "any text like 'here is your tweet'. Simply generate and output the tweet, ensuring "
+        "it is less than 280 characters long. Use newlines sparingly. Do not surrounded with "
+        "quotes or braces. Do not use any other formatting."
     )
 
     DEFAULT_ACTION = "generate"

@@ -2,68 +2,81 @@ import json
 import logging
 
 from src.agents.crypto_data import tools
+from src.models.messages import ChatRequest
+from src.agent_manager import agent_manager
 
 logger = logging.getLogger(__name__)
 
 
 class CryptoDataAgent:
-    def __init__(self, config, llm, llm_ollama, embeddings, flask_app):
-        self.llm = llm
-        self.flask_app = flask_app
+    def __init__(self, config, llm, embeddings):
         self.config = config
+        self.llm = llm
+        self.embeddings = embeddings
         self.tools_provided = tools.get_tools()
 
     def get_response(self, message):
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "Don't make assumptions about the value of the arguments for the function "
-                    "they should always be supplied by the user and do not alter the value of the arguments. "
-                    "Don't make assumptions about what values to plug into functions. Ask for clarification if a user "
-                    "request is ambiguous."
-                ),
-            }
-        ]
-        messages.extend(message)
-        logger.info("Sending request to LLM with %d messages", len(messages))
-        result = self.llm.create_chat_completion(
-            messages=messages, tools=self.tools_provided, tool_choice="auto"
+        system_prompt = (
+            "Don't make assumptions about the value of the arguments for the function "
+            "they should always be supplied by the user and do not alter the value of the arguments. "
+            "Don't make assumptions about what values to plug into functions. Ask for clarification if a user "
+            "request is ambiguous."
         )
 
-        logger.info("Received response from LLM: %s", result)
+        messages = [
+            {"role": "system", "content": system_prompt},
+        ]
+        messages.extend(message)
 
-        if "tool_calls" in result["choices"][0]["message"].keys():
-            func = result["choices"][0]["message"]["tool_calls"][0]["function"]
-            logger.info("LLM suggested using tool: %s", func["name"])
-            args = json.loads(func["arguments"])
-            if func["name"] == "get_price":
-                return tools.get_coin_price_tool(args["coin_name"]), "assistant"
-            elif func["name"] == "get_floor_price":
-                return tools.get_nft_floor_price_tool(args["nft_name"]), "assistant"
-            elif func["name"] == "get_fdv":
-                return (
-                    tools.get_fully_diluted_valuation_tool(args["coin_name"]),
-                    "assistant",
-                )
-            elif func["name"] == "get_tvl":
-                return (
-                    tools.get_protocol_total_value_locked_tool(args["protocol_name"]),
-                    "assistant",
-                )
-            elif func["name"] == "get_market_cap":
-                return tools.get_coin_market_cap_tool(args["coin_name"]), "assistant"
-        else:
-            logger.info("LLM provided a direct response without using tools")
-        return result["choices"][0]["message"]["content"], "assistant"
+        logger.info("Sending request to LLM with %d messages", len(messages))
+
+        llm_with_tools = self.llm.bind_tools(self.tools_provided)
+
+        try:
+            result = llm_with_tools.invoke(messages)
+            logger.info("Received response from LLM: %s", result)
+
+            if result.tool_calls:
+                tool_call = result.tool_calls[0]
+                func_name = tool_call.get("name")
+                args = tool_call.get("args")
+                logger.info("LLM suggested using tool: %s", func_name)
+
+                if func_name == "get_price":
+                    return tools.get_coin_price_tool(args["coin_name"]), "assistant"
+                elif func_name == "get_floor_price":
+                    return tools.get_nft_floor_price_tool(args["nft_name"]), "assistant"
+                elif func_name == "get_fdv":
+                    return (
+                        tools.get_fully_diluted_valuation_tool(args["coin_name"]),
+                        "assistant",
+                    )
+                elif func_name == "get_tvl":
+                    return (
+                        tools.get_protocol_total_value_locked_tool(
+                            args["protocol_name"]
+                        ),
+                        "assistant",
+                    )
+                elif func_name == "get_market_cap":
+                    return (
+                        tools.get_coin_market_cap_tool(args["coin_name"]),
+                        "assistant",
+                    )
+            else:
+                logger.info("LLM provided a direct response without using tools")
+                return result.content, "assistant"
+        except Exception as e:
+            logger.error(f"Error in get_response: {str(e)}")
+            return f"An error occurred: {str(e)}", "assistant"
 
     def generate_response(self, prompt):
         response, role = self.get_response([prompt])
         return response, role
 
-    def chat(self, request):
+    def chat(self, request: ChatRequest):
         try:
-            data = request.get_json()
+            data = request.dict()
             if "prompt" in data:
                 prompt = data["prompt"]
                 logger.info(
