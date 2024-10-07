@@ -9,6 +9,7 @@ class Config:
 
     # Model configuration
     OLLAMA_MODEL = "llama3.2:3b"
+    OLLAMA_EMBEDDING_MODEL = "nomic-embed-text"
     OLLAMA_URL = "http://host.docker.internal:11434"
 
     MAX_UPLOAD_LENGTH = 16 * 1024 * 1024

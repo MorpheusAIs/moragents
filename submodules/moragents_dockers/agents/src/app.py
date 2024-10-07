@@ -39,10 +39,12 @@ app.add_middleware(
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 llm = ChatOllama(
-    model="llama3.2:3b",
-    base_url="http://host.docker.internal:11434",
+    model=Config.OLLAMA_MODEL,
+    base_url=Config.OLLAMA_URL,
 )
-embeddings = OllamaEmbeddings(model="nomic-embed-text", base_url=Config.OLLAMA_URL)
+embeddings = OllamaEmbeddings(
+    model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL
+)
 
 delegator = Delegator(Config.DELEGATOR_CONFIG, llm, embeddings)
 
