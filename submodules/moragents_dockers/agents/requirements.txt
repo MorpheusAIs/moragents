@@ -15,3 +15,4 @@ tweepy==4.14.0
 uvicorn==0.31.0
 python-multipart==0.0.12
 beautifulsoup4==4.12.3
+selenium==4.25.0
