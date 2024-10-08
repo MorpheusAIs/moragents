@@ -125,5 +125,6 @@ class Config:
      'EIGEN': 'Eigenlayer',
      'ORDI': 'ORDI',
      'CFX': 'Conflux',
-     'W': 'Wormhole'
+     'W': 'Wormhole',
+     'MOR': 'Morpheus AI'
      }

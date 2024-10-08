@@ -9,10 +9,10 @@ import pyshorteners
 logger = logging.getLogger(__name__)
 
 class NewsAgent:
-    def __init__(self, agent_info, llm, llm_ollama, embeddings, flask_app):
+    def __init__(self, agent_info, llm, embeddings):
         self.agent_info = agent_info
         self.llm = llm
-        self.flask_app = flask_app
+        self.embeddings = embeddings
         self.tools_provided = self.get_tools()
         self.url_shortener = pyshorteners.Shortener()
         logger.info("NewsAgent initialized")
@@ -44,12 +44,9 @@ class NewsAgent:
     def check_relevance_and_summarize(self, title, content, coin):
         logger.info(f"Checking relevance for {coin}: {title}")
         prompt = Config.RELEVANCE_PROMPT.format(coin=coin, title=title, content=content)
-        result = self.llm.create_chat_completion(
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=Config.LLM_MAX_TOKENS,
-            temperature=Config.LLM_TEMPERATURE
-        )
-        return result['choices'][0]['message']['content'].strip()
+        result = self.llm.invoke([{"role": "user", "content": prompt}])
+        result = " ".join(result.content.strip().split())
+        return result
 
     def process_rss_feed(self, feed_url, coin):
         logger.info(f"Processing RSS feed for {coin}: {feed_url}")
@@ -90,7 +87,7 @@ class NewsAgent:
 
     def chat(self, request):
         try:
-            data = request.get_json()
+            data = request.dict()
             if 'prompt' in data:
                 prompt = data['prompt']
                 if isinstance(prompt, dict) and 'content' in prompt:

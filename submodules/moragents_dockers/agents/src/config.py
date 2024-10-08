@@ -60,16 +60,16 @@ class Config:
             {
                 "path": "src.agents.realtime_search.agent",
                 "class": "RealtimeSearchAgent",
-                "description": "Performs real-time web searches. Use when the query is about searching the web for real-time information.",
+                "description": "Performs real-time web searches. Use when query is for searching web for real-time information or general news.",
                 "name": "realtime search agent",
                 "upload_required": False,
             },
-            {
-                "path": "src.agents.news_agent.agent",
-                "class": "NewsAgent",
-                "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
-                "name": "crypto news agent",
-                "upload_required": False,
-            }
+            # {
+            #     "path": "src.agents.news_agent.agent",
+            #     "class": "NewsAgent",
+            #     "description": "Fetches and analyzes cryptocurrency headlines for potential price impacts. Use when query is about project updates related to a token or cryptocurrency.",
+            #     "name": "crypto news agent",
+            #     "upload_required": False,
+            # }
         ]
     }
