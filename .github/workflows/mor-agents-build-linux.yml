@@ -157,13 +157,13 @@ jobs:
 
           # Pull necessary Docker images
           echo -e "\${YELLOW}Pulling Docker images...${NC}"
-          sudo docker pull lachsbagel/moragents_dockers-nginx:amd64-0.1.1
-          sudo docker pull lachsbagel/moragents_dockers-agents:amd64-0.1.1
+          sudo docker pull lachsbagel/moragents_dockers-nginx:amd64-0.2.0
+          sudo docker pull lachsbagel/moragents_dockers-agents:amd64-0.2.0
 
           # Start Docker containers
           echo -e "\${YELLOW}Starting Docker containers...${NC}"
-          sudo docker run -d --name agents -p 8080:5000 --restart always -v /var/lib/agents -v /app/src lachsbagel/moragents_dockers-agents:amd64-0.1.1
-          sudo docker run -d --name nginx -p 3333:80 lachsbagel/moragents_dockers-nginx:amd64-0.1.1
+          sudo docker run -d --name agents -p 8080:5000 --restart always -v /var/lib/agents -v /app/src lachsbagel/moragents_dockers-agents:amd64-0.2.0
+          sudo docker run -d --name nginx -p 3333:80 lachsbagel/moragents_dockers-nginx:amd64-0.2.0
 
           echo -e "\${GREEN}Setup complete!${NC}"
           EOF

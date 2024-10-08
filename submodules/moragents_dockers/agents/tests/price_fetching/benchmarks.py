@@ -1,7 +1,7 @@
 import time
 import argparse
 from helpers import ask_data_agent, compare_usd_values, extract_agent_usd_value
-from submodules.benchmarks.price_fetching.config import coins, price_prompts, mcap_prompts, price_error_tolerance, mcap_error_tolerance, loop_delay
+from submodules.moragents_dockers.agents.tests.price_fetching import coins, price_prompts, mcap_prompts, price_error_tolerance, mcap_error_tolerance, loop_delay
 from adapters.coingecko_adapter import CoingeckoAdapter
 from adapters.defillama_adapter import DefillamaAdapter
 

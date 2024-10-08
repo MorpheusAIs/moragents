@@ -65,7 +65,7 @@ class Config:
                 "upload_required": False,
             },
             {
-                "path": "news_agent.src.agent",
+                "path": "src.agents.news_agent.agent",
                 "class": "NewsAgent",
                 "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
                 "name": "crypto news agent",

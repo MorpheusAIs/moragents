@@ -16,20 +16,20 @@ else:
 
 class AgentDockerConfig:
     MACOS_APPLE_IMAGE_NAMES = [
-        "lachsbagel/moragents_dockers-nginx:apple-0.1.1",
-        "lachsbagel/moragents_dockers-agents:apple-0.1.1"
+        "lachsbagel/moragents_dockers-nginx:apple-0.2.0",
+        "lachsbagel/moragents_dockers-agents:apple-0.2.0"
     ]
     MACOS_INTEL_IMAGE_NAMES = [
-        "lachsbagel/moragents_dockers-nginx:amd64-0.1.1",
-        "lachsbagel/moragents_dockers-agents:amd64-0.1.1"
+        "lachsbagel/moragents_dockers-nginx:amd64-0.2.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.2.0"
     ]
     WINDOWS_IMAGE_NAMES = [
-        "lachsbagel/moragents_dockers-nginx:amd64-0.1.1",
-        "lachsbagel/moragents_dockers-agents:amd64-0.1.1"
+        "lachsbagel/moragents_dockers-nginx:amd64-0.2.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.2.0"
     ]
     LINUX_IMAGE_NAMES = [  # TODO, may need linux specific tagged images
-        "lachsbagel/moragents_dockers-nginx:amd64-0.1.1",
-        "lachsbagel/moragents_dockers-agents:amd64-0.1.1"
+        "lachsbagel/moragents_dockers-nginx:amd64-0.2.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.2.0"
     ]
 
     @staticmethod
@@ -50,6 +50,10 @@ class AgentDockerConfigDeprecate:
         "morpheus/price_fetcher_agent:latest",
         "moragents_dockers-nginx:latest",
         "moragents_dockers-agents:latest",
+        "lachsbagel/moragents_dockers-nginx:apple-0.0.9",
+        "lachsbagel/moragents_dockers-agents:apple-0.0.9",
+        "lachsbagel/moragents_dockers-nginx:amd64-0.0.9",
+        "lachsbagel/moragents_dockers-agents:amd64-0.0.9",
         "lachsbagel/moragents_dockers-nginx:apple-0.1.0",
         "lachsbagel/moragents_dockers-agents:apple-0.1.0",
         "lachsbagel/moragents_dockers-nginx:amd64-0.1.0",

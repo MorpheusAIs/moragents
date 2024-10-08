@@ -2,8 +2,8 @@
 
 import pytest
 import logging
-from submodules.benchmarks.news_agent_benchmarks.config import Config
-from submodules.benchmarks.news_agent_benchmarks.helpers import ask_news_agent, extract_classification
+from submodules.moragents_dockers.agents.tests.news_agent_benchmarks.config import Config
+from submodules.moragents_dockers.agents.tests.news_agent_benchmarks.helpers import ask_news_agent, extract_classification
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

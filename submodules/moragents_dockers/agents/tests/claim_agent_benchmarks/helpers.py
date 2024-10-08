@@ -1,5 +1,5 @@
-from submodules.benchmarks.claim_agent_benchmarks.config import Config
-from submodules.benchmarks.claim_agent_benchmarks.adapters.claim_adapter import ClaimAdapter
+from submodules.moragents_dockers.agents.tests.claim_agent_benchmarks.config import Config
+from submodules.moragents_dockers.agents.tests.claim_agent_benchmarks.adapters.claim_adapter import ClaimAdapter
 
 claim_adapter = ClaimAdapter(Config.URL, Config.HEADERS)
 

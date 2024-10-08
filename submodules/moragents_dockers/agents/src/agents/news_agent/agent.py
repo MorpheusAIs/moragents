@@ -2,8 +2,8 @@ import json
 import logging
 import re
 import urllib.parse
-from news_agent.src.config import Config
-from news_agent.src.tools import clean_html, is_within_time_window, fetch_rss_feed
+from src.agents.news_agent.config import Config
+from src.agents.news_agent.tools import clean_html, is_within_time_window, fetch_rss_feed
 import pyshorteners
 
 logger = logging.getLogger(__name__)

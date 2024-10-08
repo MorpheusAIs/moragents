@@ -1,6 +1,6 @@
 import pytest
 from helpers import request_claim, provide_receiver_address, confirm_transaction
-from submodules.benchmarks.claim_agent_benchmarks.config import Config
+from submodules.moragents_dockers.agents.tests.claim_agent_benchmarks.config import Config
 
 
 def test_claim_process():

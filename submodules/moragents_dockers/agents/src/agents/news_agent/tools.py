@@ -4,7 +4,7 @@ import pytz
 from dateutil import parser
 import re
 from html import unescape
-from news_agent.src.config import Config
+from news_agent.config import Config
 import logging
 import urllib.parse
 
