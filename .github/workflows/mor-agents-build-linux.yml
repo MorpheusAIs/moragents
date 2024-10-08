@@ -2,178 +2,178 @@ name: MOR Agents Build Linux
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pyinstaller
-    
-    - name: Build with PyInstaller
-      run: |
-        pyinstaller --name="MORagents" --add-data "images/moragents.png:images" main.py
-    
-    - name: Create Debian package
-      run: |
-        mkdir -p debian/DEBIAN
-        mkdir -p debian/usr/bin
-        mkdir -p debian/usr/share/applications
-        mkdir -p debian/usr/share/icons/hicolor/256x256/apps
-        cp -r dist/MORagents/* debian/usr/bin/
-        cp images/moragents.png debian/usr/share/icons/hicolor/256x256/apps/moragents.png
-        echo "[Desktop Entry]
-        Name=MORagents
-        Exec=/usr/bin/MORagents
-        Icon=moragents
-        Type=Application
-        Categories=Utility;" > debian/usr/share/applications/moragents.desktop
-        echo "Package: moragents
-        Version: 1.0
-        Section: utils
-        Priority: optional
-        Architecture: amd64
-        Maintainer: LachsBagel
-        Description: MORagents application
-         MORagents is a desktop application for AI agents." > debian/DEBIAN/control
-        
-        dpkg-deb --build debian moragents.deb
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
 
-    - name: Create setup script
-      run: |
-        cat << EOF > moragents-setup.sh
-        #!/bin/bash
-        set -e
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-        # Colors for output
-        RED='\033[0;31m'
-        GREEN='\033[0;32m'
-        YELLOW='\033[0;33m'
-        NC='\033[0m' # No Color
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
 
-        # Function to check if a command exists
-        command_exists() {
-            command -v "$1" >/dev/null 2>&1
-        }
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --name="MORagents" --add-data "images/moragents.png:images" main.py
 
-        # Function to add current user to docker group
-        add_user_to_docker_group() {
-            local current_user=\$(whoami)
-            if [ "\$current_user" != "root" ]; then
-                echo -e "\${YELLOW}Adding current user to docker group...${NC}"
-                sudo usermod -aG docker "\$current_user"
-                echo -e "\${GREEN}User added to docker group. Please log out and log back in for changes to take effect.${NC}"
-            else
-                echo -e "\${YELLOW}Running as root. Skipping user addition to docker group.${NC}"
-            fi
-        }
+      - name: Create Debian package
+        run: |
+          mkdir -p debian/DEBIAN
+          mkdir -p debian/usr/bin
+          mkdir -p debian/usr/share/applications
+          mkdir -p debian/usr/share/icons/hicolor/256x256/apps
+          cp -r dist/MORagents/* debian/usr/bin/
+          cp images/moragents.png debian/usr/share/icons/hicolor/256x256/apps/moragents.png
+          echo "[Desktop Entry]
+          Name=MORagents
+          Exec=/usr/bin/MORagents
+          Icon=moragents
+          Type=Application
+          Categories=Utility;" > debian/usr/share/applications/moragents.desktop
+          echo "Package: moragents
+          Version: 1.0
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: LachsBagel
+          Description: MORagents application
+           MORagents is a desktop application for AI agents." > debian/DEBIAN/control
 
-        # Function to wait for Ollama service to be ready
-        wait_for_ollama() {
-            echo -e "\${YELLOW}Waiting for Ollama service to be ready...${NC}"
-            for i in {1..30}; do
-                if curl -s http://localhost:11434/api/tags >/dev/null; then
-                    echo -e "\${GREEN}Ollama service is ready.${NC}"
-                    return 0
-                fi
-                sleep 2
-            done
-            echo -e "\${RED}Timed out waiting for Ollama service.${NC}"
-            return 1
-        }
+          dpkg-deb --build debian moragents.deb
 
-        # Function to pull Ollama model with retries
-        pull_ollama_model() {
-            local model=\$1
-            local max_attempts=3
-            local attempt=1
-            
-            while [ \$attempt -le \$max_attempts ]; do
-                echo -e "\${YELLOW}Pulling Ollama model \$model (Attempt \$attempt)...${NC}"
-                if ollama pull \$model; then
-                    echo -e "\${GREEN}Successfully pulled \$model.${NC}"
-                    return 0
-                fi
-                echo -e "\${YELLOW}Failed to pull \$model. Retrying...${NC}"
-                sleep 5
-                attempt=\$((attempt + 1))
-            done
-            
-            echo -e "\${RED}Failed to pull \$model after \$max_attempts attempts.${NC}"
-            return 1
-        }
+      - name: Create setup script
+        run: |
+          cat << EOF > moragents-setup.sh
+          #!/bin/bash
+          set -e
 
-        # Install curl if not present
-        if ! command_exists curl; then
-            echo -e "\${YELLOW}Installing curl...${NC}"
-            sudo apt-get update
-            sudo apt-get install -y curl
-        fi
+          # Colors for output
+          RED='\033[0;31m'
+          GREEN='\033[0;32m'
+          YELLOW='\033[0;33m'
+          NC='\033[0m' # No Color
 
-        # Install Docker if not present
-        if ! command_exists docker; then
-            echo -e "\${YELLOW}Installing Docker...${NC}"
-            curl -fsSL https://get.docker.com -o get-docker.sh
-            sudo sh get-docker.sh
-            add_user_to_docker_group
-            sudo systemctl enable docker
-            sudo systemctl start docker
-        else
-            echo -e "\${GREEN}Docker is already installed.${NC}"
-        fi
+          # Function to check if a command exists
+          command_exists() {
+              command -v "$1" >/dev/null 2>&1
+          }
 
-        # Install Ollama
-        echo -e "\${YELLOW}Installing Ollama...${NC}"
-        curl -fsSL https://ollama.com/install.sh | sh
+          # Function to add current user to docker group
+          add_user_to_docker_group() {
+              local current_user=\$(whoami)
+              if [ "\$current_user" != "root" ]; then
+                  echo -e "\${YELLOW}Adding current user to docker group...${NC}"
+                  sudo usermod -aG docker "\$current_user"
+                  echo -e "\${GREEN}User added to docker group. Please log out and log back in for changes to take effect.${NC}"
+              else
+                  echo -e "\${YELLOW}Running as root. Skipping user addition to docker group.${NC}"
+              fi
+          }
 
-        # Start Ollama service
-        echo -e "\${YELLOW}Starting Ollama service...${NC}"
-        nohup ollama serve > /dev/null 2>&1 &
+          # Function to wait for Ollama service to be ready
+          wait_for_ollama() {
+              echo -e "\${YELLOW}Waiting for Ollama service to be ready...${NC}"
+              for i in {1..30}; do
+                  if curl -s http://localhost:11434/api/tags >/dev/null; then
+                      echo -e "\${GREEN}Ollama service is ready.${NC}"
+                      return 0
+                  fi
+                  sleep 2
+              done
+              echo -e "\${RED}Timed out waiting for Ollama service.${NC}"
+              return 1
+          }
 
-        # Wait for Ollama service to be ready
-        wait_for_ollama
+          # Function to pull Ollama model with retries
+          pull_ollama_model() {
+              local model=\$1
+              local max_attempts=3
+              local attempt=1
+              
+              while [ \$attempt -le \$max_attempts ]; do
+                  echo -e "\${YELLOW}Pulling Ollama model \$model (Attempt \$attempt)...${NC}"
+                  if ollama pull \$model; then
+                      echo -e "\${GREEN}Successfully pulled \$model.${NC}"
+                      return 0
+                  fi
+                  echo -e "\${YELLOW}Failed to pull \$model. Retrying...${NC}"
+                  sleep 5
+                  attempt=\$((attempt + 1))
+              done
+              
+              echo -e "\${RED}Failed to pull \$model after \$max_attempts attempts.${NC}"
+              return 1
+          }
 
-        # Pull Ollama models
-        echo -e "\${YELLOW}Pulling Ollama models...${NC}"
-        pull_ollama_model llama3.1
-        pull_ollama_model nomic-embed-text
+          # Install curl if not present
+          if ! command_exists curl; then
+              echo -e "\${YELLOW}Installing curl...${NC}"
+              sudo apt-get update
+              sudo apt-get install -y curl
+          fi
 
-        # Pull necessary Docker images
-        echo -e "\${YELLOW}Pulling Docker images...${NC}"
-        sudo docker pull lachsbagel/moragents_dockers-nginx:amd64-0.1.0
-        sudo docker pull lachsbagel/moragents_dockers-agents:amd64-0.1.0
+          # Install Docker if not present
+          if ! command_exists docker; then
+              echo -e "\${YELLOW}Installing Docker...${NC}"
+              curl -fsSL https://get.docker.com -o get-docker.sh
+              sudo sh get-docker.sh
+              add_user_to_docker_group
+              sudo systemctl enable docker
+              sudo systemctl start docker
+          else
+              echo -e "\${GREEN}Docker is already installed.${NC}"
+          fi
 
-        # Start Docker containers
-        echo -e "\${YELLOW}Starting Docker containers...${NC}"
-        sudo docker run -d --name agents -p 8080:5000 --restart always -v /var/lib/agents -v /app/src lachsbagel/moragents_dockers-agents:amd64-0.1.0
-        sudo docker run -d --name nginx -p 3333:80 lachsbagel/moragents_dockers-nginx:amd64-0.1.0
+          # Install Ollama
+          echo -e "\${YELLOW}Installing Ollama...${NC}"
+          curl -fsSL https://ollama.com/install.sh | sh
 
-        echo -e "\${GREEN}Setup complete!${NC}"
-        EOF
-        
-        chmod +x moragents-setup.sh
+          # Start Ollama service
+          echo -e "\${YELLOW}Starting Ollama service...${NC}"
+          nohup ollama serve > /dev/null 2>&1 &
 
-    - name: Upload Debian Package and Setup Script
-      uses: actions/upload-artifact@v4
-      with:
-        name: MORagentsSetup-Linux
-        path: |
-          moragents.deb
-          moragents-setup.sh
+          # Wait for Ollama service to be ready
+          wait_for_ollama
+
+          # Pull Ollama models
+          echo -e "\${YELLOW}Pulling Ollama models...${NC}"
+          pull_ollama_model llama3.2:3b
+          pull_ollama_model nomic-embed-text
+
+          # Pull necessary Docker images
+          echo -e "\${YELLOW}Pulling Docker images...${NC}"
+          sudo docker pull lachsbagel/moragents_dockers-nginx:amd64-0.1.1
+          sudo docker pull lachsbagel/moragents_dockers-agents:amd64-0.1.1
+
+          # Start Docker containers
+          echo -e "\${YELLOW}Starting Docker containers...${NC}"
+          sudo docker run -d --name agents -p 8080:5000 --restart always -v /var/lib/agents -v /app/src lachsbagel/moragents_dockers-agents:amd64-0.1.1
+          sudo docker run -d --name nginx -p 3333:80 lachsbagel/moragents_dockers-nginx:amd64-0.1.1
+
+          echo -e "\${GREEN}Setup complete!${NC}"
+          EOF
+
+          chmod +x moragents-setup.sh
+
+      - name: Upload Debian Package and Setup Script
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORagentsSetup-Linux
+          path: |
+            moragents.deb
+            moragents-setup.sh

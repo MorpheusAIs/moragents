@@ -1,41 +1,44 @@
-# Moragents 
+# Moragents
 
 ## Overview
+
 This project is a Flask-based AI chat application featuring intelligent responses from various language models and embeddings. It includes file uploading, cryptocurrency swapping, and a delegator system to manage multiple agents. The application, along with a dApp for agent interaction, runs locally and is containerized with Docker.
 
-
 ## Pre-requisites
-* [Download Ollama](https://ollama.com/ )for your operating system
-* Then after finishing installation pull these two models:
 
-```ollama pull llama3.1```
+- [Download Ollama](https://ollama.com/)for your operating system
+- Then after finishing installation pull these two models:
 
-```ollama pull nomic-embed-text```
+`ollama pull llama3.2:3b`
+
+`ollama pull nomic-embed-text`
 
 ## Run with Docker Compose
 
-Docker compose will build and run two containers.  One will be for the agents, the other will be for the UI. 
+Docker compose will build and run two containers. One will be for the agents, the other will be for the UI.
 
 1. Ensure you're in the submodules/moragents_dockers folder
-    ```sh
-    $ cd submodules/moragents_dockers
-    ```
+
+   ```sh
+   $ cd submodules/moragents_dockers
+   ```
 
 2. Build Images and Launch Containers:
-   1. For Intel / AMD / x86_64  
-        ```sh 
-        docker-compose up
-        ```
+   1. For Intel / AMD / x86_64
+      ```sh
+      docker-compose up
+      ```
    2. For Apple silicon (M1, M2, M3, etc)
-        ```sh
-        docker-compose -f docker-compose-apple.yml up
-        ```
+      ```sh
+      docker-compose -f docker-compose-apple.yml up
+      ```
 
-Open in the browser: ```http://localhost:3333/```
+Open in the browser: `http://localhost:3333/`
 
-Docker build will download the model.  The first time that one of the agents are called, the model will be loaded into memory and this instance will be shared between all agents.
+Docker build will download the model. The first time that one of the agents are called, the model will be loaded into memory and this instance will be shared between all agents.
 
 ## Agents
+
 Five agents are included:
 
 ### Data Agent
@@ -53,6 +56,7 @@ It currently supports the following metrics:
 It is possible to ask questions about assets by referring to them either by their name or their ticker symbol.
 
 ### Swap Agent
+
 This agent will enable you to perform swaps between cryptoassets. It should be used with the accompanying UI which provides a browser-based front-end to chat with the agent, display quotes and sign transactions.
 
 A typical flow looks like this:
@@ -65,35 +69,43 @@ A typical flow looks like this:
 - If the allowance for the token being sold is too low, an approval transaction will be generated first
 
 ## RAG Agent
+
 This agent will answer questions about an uploaded PDF file.
 
 ## Tweet Sizzler Agent
-This agent will let you generate tweets, edit with a WSYWIG. 
-Provided you enter API creds in the Settings you can also directly post to your X account. 
+
+This agent will let you generate tweets, edit with a WSYWIG.
+Provided you enter API creds in the Settings you can also directly post to your X account.
 
 ## MOR Rewards Agent
+
 Ask the agent to check your MOR rewards and it will retrieve claimable MOR stats from both capital and coder pools.
 
 ---
 
 # Delegator
+
 The Delegator handles user queries by analyzing the prompt and delegating it to the appropriate agent.
 
 ## API Endpoints
 
 1. **Chat Functionality**
+
    - Endpoint: `POST /`
    - Handles chat interactions, delegating to appropriate agents when necessary.
 
 2. **Message History**
+
    - Endpoint: `GET /messages`
    - Retrieves chat message history.
 
 3. **Clear Messages**
+
    - Endpoint: `GET /clear_messages`
    - Clears the chat message history.
 
 4. **Swap Operations**
+
    - Endpoints:
      - `POST /tx_status`: Check transaction status
      - `POST /allowance`: Get allowance
@@ -129,6 +141,7 @@ This allows the delegator to delegate to the correct task agent based on the use
    - `upload`: A boolean indicating if the agent requires a file to be uploaded from the front-end before it should be called.
 
 #### Example:
+
 ```python:agents/src/config.py
 DELEGATOR_CONFIG = {
     "agents": [
@@ -144,13 +157,13 @@ DELEGATOR_CONFIG = {
 }
 ```
 
-
 ### 3. Implement Agent Logic
 
 1. **Define the agent class** in the specified path.
 2. **Ensure the agent can handle the queries** it is designed for.
 
 #### Example:
+
 ```python:agents/src/new_agent/src/agent.py
 class NewAgent:
     def __init__(self, agent_info, llm, llm_ollama, embeddings, flask_app):
@@ -177,12 +190,12 @@ class NewAgent:
     # Add other methods as needed
 ```
 
-
 ### 4. Handle Multi-Turn Conversations
 
 Agents can handle multi-turn conversations by returning a next_turn_agent which indicates the name of the agent that should handle the next turn.
 
 #### Example:
+
 ```python
 class NewAgent:
     def __init__(self, agent_info, llm, llm_ollama, embeddings, flask_app):
@@ -205,7 +218,7 @@ class NewAgent:
     def chat(self, request, user_id):
         # Process the query and determine the next agent
         next_turn_agent = self.agent_info["name"]
-        
+
         # Generate response where we want to initiate a multi-turn conversation with the same agent.
 
         return response, next_turn_agent
@@ -215,6 +228,7 @@ class NewAgent:
 ### 5. Integration
 
 The `Delegator` will automatically:
+
 - Import the agent module.
 - Instantiate the agent class.
 - Add the agent to its internal dictionary.
