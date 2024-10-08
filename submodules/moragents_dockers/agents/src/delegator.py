@@ -2,6 +2,8 @@ import importlib
 import logging
 import json
 
+from langchain.schema import SystemMessage, HumanMessage, AIMessage
+
 logger = logging.getLogger(__name__)
 
 # Configurable default agent
@@ -9,12 +11,10 @@ DEFAULT_AGENT = "general purpose and context-based rag agent"
 
 
 class Delegator:
-    def __init__(self, config, llm, llm_ollama, embeddings, flask_app):
-        self.llm = llm
-        self.flask_app = flask_app
-        self.llm_ollama = llm_ollama
-        self.embeddings = embeddings
+    def __init__(self, config, llm, embeddings):
         self.config = config
+        self.llm = llm  # This is now a ChatOllama instance
+        self.embeddings = embeddings
         self.agents = self.load_agents(config)
         logger.info("Delegator initialized with %d agents", len(self.agents))
 
@@ -27,9 +27,7 @@ class Delegator:
                 agent_instance = agent_class(
                     agent_info,
                     self.llm,
-                    self.llm_ollama,
                     self.embeddings,
-                    self.flask_app,
                 )
                 agents[agent_info["name"]] = agent_instance
                 logger.info("Loaded agent: %s", agent_info["name"])
@@ -49,72 +47,49 @@ class Delegator:
             if agent_info["name"] in available_agents
         )
 
-        prompt_text = (
-            "### Instruction: Your name is Morpheus. "
+        system_prompt = (
+            "Your name is Morpheus. "
             "Your primary function is to select the correct agent based on the user's input. "
-            "You MUST use the 'route' function to select an agent. "
-            "Available agents and their descriptions:\n"
-            f"{agent_descriptions}\n"
+            "You MUST use the 'select_agent' function to select an agent. "
+            f"Available agents and their descriptions: {agent_descriptions}\n"
             "Analyze the user's input and select the most appropriate agent. "
-            "Do not respond with any text other than calling the 'route' function. "
-            "###"
         )
 
         tools = [
             {
-                "type": "function",
-                "function": {
-                    "name": "route",
-                    "description": "Choose which agent to run next",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "next": {
-                                "type": "string",
-                                "enum": available_agents,
-                                "description": "The name of the next agent to run",
-                            }
+                "name": "select_agent",
+                "description": "Choose which agent should be used to respond to the user query",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "agent": {
+                            "type": "string",
+                            "enum": available_agents,
+                            "description": "The name of the agent to be used to respond to the user query",
                         },
-                        "required": ["next"],
                     },
+                    "required": ["agent"],
                 },
             }
         ]
 
-        message_list = [
-            {"role": "system", "content": prompt_text},
-            prompt,
-            {
-                "role": "system",
-                "content": "Remember, you must use the 'route' function to select an agent.",
-            },
+        agent_selection_llm = self.llm.bind_tools(tools)
+
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=prompt),
         ]
 
-        logger.info("Sending prompt to LLM: %s", prompt)
-        result = self.llm.create_chat_completion(
-            messages=message_list,
-            tools=tools,
-            tool_choice="auto",
-            temperature=0.3,
-        )
-        logger.info("Received response from LLM: %s", result)
+        result = agent_selection_llm.invoke(messages)
+        tool_calls = result.tool_calls
+        if not tool_calls:
+            raise ValueError("No agent was selected by the model.")
 
-        response = result["choices"][0]["message"]
+        selected_agent = tool_calls[0]
+        logger.info(f"Selected agent: {selected_agent}")
+        selected_agent_name = selected_agent.get("args").get("agent")
 
-        if response.get("tool_calls"):
-            try:
-                function_args = json.loads(
-                    response["tool_calls"][0]["function"]["arguments"]
-                )
-                return {"next": function_args["next"]}
-            except (json.JSONDecodeError, KeyError) as e:
-                logger.error(f"Error parsing function call: {e}")
-                return {"next": DEFAULT_AGENT}
-        else:
-            logger.warning(
-                "No tool calls in LLM response, defaulting to general purpose agent"
-            )
-            return {"next": DEFAULT_AGENT}
+        return {"agent": selected_agent_name}
 
     def delegate_chat(self, agent_name, request):
         logger.info(f"Attempting to delegate chat to agent: {agent_name}")

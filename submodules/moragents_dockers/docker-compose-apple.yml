@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   agents:
-    image: lachsbagel/moragents_dockers-agents:apple-0.1.0
+    image: lachsbagel/moragents_dockers-agents:apple-0.1.1
     build:
       dockerfile: Dockerfile-apple
       context: ./agents
@@ -18,7 +18,7 @@ services:
       - BASE_URL=http://host.docker.internal:11434
 
   nginx:
-    image: lachsbagel/moragents_dockers-nginx:apple-0.1.0
+    image: lachsbagel/moragents_dockers-nginx:apple-0.1.1
     build:
       context: ./frontend
       dockerfile: Dockerfile
