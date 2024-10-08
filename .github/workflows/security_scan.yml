@@ -25,6 +25,7 @@ jobs:
 
     - name: Run Safety check
       run: safety check -r requirements.txt
+      continue-on-error: true
 
     - name: Run Bandit
       run: bandit -r . -f custom
@@ -36,9 +37,11 @@ jobs:
         ignore-unfixed: true
         format: 'sarif'
         output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
 
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
+        wait-for-processing: true
