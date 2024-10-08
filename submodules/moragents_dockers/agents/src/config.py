@@ -64,5 +64,12 @@ class Config:
                 "name": "realtime search agent",
                 "upload_required": False,
             },
+            {
+                "path": "news_agent.src.agent",
+                "class": "NewsAgent",
+                "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
+                "name": "crypto news agent",
+                "upload_required": False,
+            }
         ]
     }
