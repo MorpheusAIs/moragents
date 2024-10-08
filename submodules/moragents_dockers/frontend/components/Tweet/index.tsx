@@ -54,7 +54,7 @@ export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
 
   const handleTweet = async () => {
     setIsTweeting(true);
-    const backendClient = getHttpClient(selectedAgent);
+    const backendClient = getHttpClient();
 
     try {
       await postTweet(backendClient, tweetContent);
@@ -72,7 +72,7 @@ export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
 
   const handleRegenerate = async () => {
     setIsRegenerating(true);
-    const backendClient = getHttpClient(selectedAgent);
+    const backendClient = getHttpClient();
 
     try {
       const newTweet = await regenerateTweet(backendClient);
