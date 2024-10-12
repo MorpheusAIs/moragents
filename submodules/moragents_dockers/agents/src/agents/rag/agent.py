@@ -42,10 +42,13 @@ class RagAgent:
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         filename = secure_filename(file.filename)
-        file.save(os.path.join(UPLOAD_FOLDER, filename))
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
 
         # DocumentToolsGenerator class instantiation
-        loader = PyMuPDFLoader(os.path.join(UPLOAD_FOLDER, filename))
+        loader = PyMuPDFLoader(file_path)
         docs = loader.load()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1024,
@@ -58,16 +61,18 @@ class RagAgent:
         self.retriever = vector_store.as_retriever(search_kwargs={"k": 7})
 
     def upload_file(self, request: ChatRequest):
-        data = request.dict()
+        data = request
         if "file" not in data:
             return {"error": "No file part"}, 400
         file = data["file"]
         if file.filename == "":
             return {"error": "No selected file"}, 400
         # Check file size
-        file.seek(0, os.SEEK_END)
-        file_length = file.tell()
-        file.seek(0, 0)  # Reset the file pointer to the beginning
+        try:
+            file_length = file.file.size
+        except AttributeError:
+            file_length = len(file.file.read())
+            file.file.seek(0)  # Reset the file pointer to the beginning
         if file_length > self.max_size:
             return {"role": "assistant", "content": "please use a file less than 5 MB"}
         try:
@@ -92,6 +97,9 @@ class RagAgent:
                     doc.page_content for doc in retrieved_docs
                 )
                 formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
+
+                print(formatted_prompt)
+
                 answer = self.llm(formatted_prompt)
                 response = answer if self.upload_state else "please upload a file first"
                 return {"role": role, "content": response}

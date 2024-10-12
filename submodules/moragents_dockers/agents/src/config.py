@@ -15,13 +15,13 @@ class Config:
     MAX_UPLOAD_LENGTH = 16 * 1024 * 1024
     DELEGATOR_CONFIG = {
         "agents": [
-            {
-                "path": "src.agents.rag.agent",
-                "class": "RagAgent",
-                "description": "Handles general queries, information retrieval, and context-based questions. Use for any query that doesn't explicitly match other agents' specialties.",
-                "name": "general purpose and context-based rag agent",
-                "upload_required": True,
-            },
+            # {
+            #     "path": "src.agents.rag.agent",
+            #     "class": "RagAgent",
+            #     "description": "Default model. Use for summarization, explaining, and main points from successfully uploaded text",
+            #     "name": "general purpose and context-based rag agent",
+            #     "upload_required": True,
+            # },
             {
                 "path": "src.agents.crypto_data.agent",
                 "class": "CryptoDataAgent",
@@ -29,13 +29,13 @@ class Config:
                 "name": "crypto data agent",
                 "upload_required": False,
             },
-            {
-                "path": "src.agents.token_swap.agent",
-                "class": "TokenSwapAgent",
-                "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
-                "name": "token swap agent",
-                "upload_required": False,
-            },
+            # {
+            #     "path": "src.agents.token_swap.agent",
+            #     "class": "TokenSwapAgent",
+            #     "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
+            #     "name": "token swap agent",
+            #     "upload_required": False,
+            # },
             {
                 "path": "src.agents.tweet_sizzler.agent",
                 "class": "TweetSizzlerAgent",
@@ -43,13 +43,13 @@ class Config:
                 "name": "tweet sizzler agent",
                 "upload_required": False,
             },
-            {
-                "path": "src.agents.mor_claims.agent",
-                "class": "MorClaimsAgent",
-                "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
-                "name": "mor claims agent",
-                "upload_required": False,
-            },
+            # {
+            #     "path": "src.agents.mor_claims.agent",
+            #     "class": "MorClaimsAgent",
+            #     "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
+            #     "name": "mor claims agent",
+            #     "upload_required": False,
+            # },
             {
                 "path": "src.agents.mor_rewards.agent",
                 "class": "MorRewardsAgent",
@@ -64,12 +64,12 @@ class Config:
                 "name": "realtime search agent",
                 "upload_required": False,
             },
-            # {
-            #     "path": "src.agents.news_agent.agent",
-            #     "class": "NewsAgent",
-            #     "description": "Fetches and analyzes cryptocurrency headlines for potential price impacts. Use when query is about project updates related to a token or cryptocurrency.",
-            #     "name": "crypto news agent",
-            #     "upload_required": False,
-            # }
+            {
+                "path": "src.agents.news_agent.agent",
+                "class": "NewsAgent",
+                "description": "Fetches and analyzes cryptocurrency headlines for potential price impacts. Use when query is about project updates related to a token or cryptocurrency.",
+                "name": "crypto news agent",
+                "upload_required": False,
+            }
         ]
     }
