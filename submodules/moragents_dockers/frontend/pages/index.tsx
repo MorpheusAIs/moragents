@@ -1,33 +1,41 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import type { NextPage } from 'next';
-import { Flex, Grid, GridItem } from '@chakra-ui/react';
-import { LeftSidebar } from '../components/LeftSidebar';
-import { Chat } from '../components/Chat';
-import { writeMessage, getHttpClient, ChatMessage, getMessagesHistory, sendSwapStatus, SWAP_STATUS, uploadFile } from '../services/backendClient';
-import { useEffect, useMemo, useState } from 'react';
-import { useAccount, useChainId, useWalletClient } from 'wagmi';
-import { HeaderBar } from '../components/HeaderBar';
-import { availableAgents } from '../config';
-import { WalletRequiredModal } from '../components/WalletRequiredModal';
-import { ErrorBackendModal } from '../components/ErrorBackendModal';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import type { NextPage } from "next";
+import { Flex, Grid, GridItem } from "@chakra-ui/react";
+import { LeftSidebar } from "../components/LeftSidebar";
+import { Chat } from "../components/Chat";
+import {
+  writeMessage,
+  getHttpClient,
+  ChatMessage,
+  getMessagesHistory,
+  sendSwapStatus,
+  SWAP_STATUS,
+  uploadFile,
+} from "../services/backendClient";
+import { useEffect, useMemo, useState } from "react";
+import { useAccount, useChainId, useWalletClient } from "wagmi";
+import { HeaderBar } from "../components/HeaderBar";
+import { availableAgents } from "../config";
+import { WalletRequiredModal } from "../components/WalletRequiredModal";
+import { ErrorBackendModal } from "../components/ErrorBackendModal";
 
 const Home: NextPage = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const chainId = useChainId();
   const { address } = useAccount();
-  const [selectedAgent, setSelectedAgent] = useState<string>('swap-agent'); // default is swap agent for now.
+  const [selectedAgent, setSelectedAgent] = useState<string>("swap-agent"); // default is swap agent for now.
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
 
   useEffect(() => {
-    getMessagesHistory(
-      getHttpClient(selectedAgent),
-    ).then((messages: ChatMessage[]) => {
-      setChatHistory([...messages])
-    }).catch((e) => {
-      console.error(`Failed to get initial messages history. Error: ${e}`);
-      setShowBackendError(true);
-    });
-  }, [selectedAgent]);
+    getMessagesHistory(getHttpClient())
+      .then((messages: ChatMessage[]) => {
+        setChatHistory([...messages]);
+      })
+      .catch((e) => {
+        console.error(`Failed to get initial messages history. Error: ${e}`);
+        setShowBackendError(true);
+      });
+  }, []); // Empty dependency array to run only on component initialization
 
   const isWalletRequired = useMemo(() => {
     const agent = availableAgents[selectedAgent] || null;
@@ -40,34 +48,34 @@ const Home: NextPage = () => {
   }, [selectedAgent]);
 
   return (
-    <div style={{
-      backgroundColor: '#020804',
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
+    <div
+      style={{
+        backgroundColor: "#020804",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <HeaderBar
         onAgentChanged={(agent) => {
           setSelectedAgent(agent);
         }}
-        currentAgent={selectedAgent || ''}
+        currentAgent={selectedAgent || ""}
       />
-      <Grid templateAreas={`
+      <Grid
+        templateAreas={`
         "sidebar chat"
       `}
-
         gridTemplateColumns={`1fr 3fr`}
-
       >
-        <GridItem area={'sidebar'} pl={2} pr={2}>
+        <GridItem area={"sidebar"} pl={2} pr={2}>
           <LeftSidebar />
         </GridItem>
 
-        <GridItem pl={2} pr={2} area={'chat'}
-          sx={{
-          }}
-        >
-          <Chat selectedAgent={selectedAgent} messages={chatHistory}
+        <GridItem pl={2} pr={2} area={"chat"} sx={{}}>
+          <Chat
+            selectedAgent={selectedAgent}
+            messages={chatHistory}
             onCancelSwap={async (fromAction: number) => {
               // 0 is swap, 1 is approve
 
@@ -76,29 +84,36 @@ const Home: NextPage = () => {
               }
 
               try {
-                await sendSwapStatus(getHttpClient(selectedAgent), chainId, address, SWAP_STATUS.CANCELLED, '', fromAction);
+                await sendSwapStatus(
+                  getHttpClient(),
+                  chainId,
+                  address,
+                  SWAP_STATUS.CANCELLED,
+                  "",
+                  fromAction
+                );
               } catch (e) {
                 console.error(`Failed to cancel swap . Error: ${e}`);
                 setShowBackendError(true);
-
               } finally {
                 try {
                   const _updatedMessages = await getMessagesHistory(
-                    getHttpClient(selectedAgent),
-                  )
+                    getHttpClient()
+                  );
 
                   setChatHistory([..._updatedMessages]);
                 } catch (e) {
-                  console.error(`Failed to get messages history after send swap status. Error: ${e}`);
+                  console.error(
+                    `Failed to get messages history after send swap status. Error: ${e}`
+                  );
                   setShowBackendError(true);
                 }
               }
-
-
-
             }}
-            onSubmitMessage={async (message: string, file: File | null): Promise<boolean> => {
-
+            onSubmitMessage={async (
+              message: string,
+              file: File | null
+            ): Promise<boolean> => {
               const agent = availableAgents[selectedAgent] || null;
 
               if (null !== agent && agent.requirements.connectedWallet) {
@@ -107,26 +122,29 @@ const Home: NextPage = () => {
                 }
               }
 
-              setChatHistory([...chatHistory, {
-                role: 'user',
-                content: message
-              } as ChatMessage]);
+              setChatHistory([
+                ...chatHistory,
+                {
+                  role: "user",
+                  content: message,
+                } as ChatMessage,
+              ]);
               let _newHistory = [];
               try {
                 if (!file) {
-                  _newHistory = await writeMessage(chatHistory, message, getHttpClient(selectedAgent), chainId, address || '');
-
+                  _newHistory = await writeMessage(
+                    chatHistory,
+                    message,
+                    getHttpClient(),
+                    chainId,
+                    address || ""
+                  );
                 } else {
-                  await uploadFile(
-                    getHttpClient(selectedAgent),
-                    file,
-                  )
+                  await uploadFile(getHttpClient(), file);
 
-                  _newHistory = await getMessagesHistory(
-                    getHttpClient(selectedAgent),
-                  )
+                  _newHistory = await getMessagesHistory(getHttpClient());
                 }
-                setChatHistory([..._newHistory])
+                setChatHistory([..._newHistory]);
               } catch (e) {
                 console.error(`Failed to send message. Error: ${e}`);
                 setShowBackendError(true);
@@ -142,7 +160,6 @@ const Home: NextPage = () => {
         {/* <GridItem area={'rightbar'} pl={2} pr={2}>
 
         </GridItem> */}
-
       </Grid>
 
       {/* <Flex height="100vh" sx={{
@@ -157,13 +174,12 @@ const Home: NextPage = () => {
               return;
             }
 
-            const _newHistory = await writeMessage(chatHistory, message, getHttpClient(selectedAgent), chainId, address);
+            const _newHistory = await writeMessage(chatHistory, message, getHttpClient(), chainId, address);
 
             setChatHistory([..._newHistory])
           }} />
         </Flex>
       </Flex> */}
-
 
       <WalletRequiredModal agentRequiresWallet={isWalletRequired} />
       <ErrorBackendModal show={showBackendError} />

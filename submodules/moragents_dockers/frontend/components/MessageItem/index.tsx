@@ -1,13 +1,16 @@
 import React, { FC } from "react";
 import { Grid, GridItem, Text } from "@chakra-ui/react";
+import ReactMarkdown from "react-markdown";
 import {
   ChatMessage,
   SwapMessagePayload,
   UserOrAssistantMessage,
+  ClaimMessagePayload,
 } from "../../services/backendClient";
 import { Avatar } from "../Avatar";
 import { availableAgents } from "../../config";
 import { SwapMessage } from "../SwapMessage";
+import { ClaimMessage } from "../ClaimMessage/ClaimMessage";
 import { Tweet } from "../Tweet";
 import styles from "./index.module.css";
 
@@ -21,7 +24,9 @@ type MessageItemProps = {
   selectedAgent: string;
   onCancelSwap: (fromAction: number) => void;
   onSwapSubmit: (swapTx: any) => void;
+  onClaimSubmit: (claimTx: any) => void;
   isLastSwapMessage: boolean;
+  isLastClaimMessage: boolean;
 };
 
 export const MessageItem: FC<MessageItemProps> = ({
@@ -29,7 +34,9 @@ export const MessageItem: FC<MessageItemProps> = ({
   selectedAgent,
   onCancelSwap,
   onSwapSubmit,
+  onClaimSubmit,
   isLastSwapMessage,
+  isLastClaimMessage,
 }) => {
   const agentName = availableAgents[selectedAgent]?.name || UNDEFINED_AGENT;
   const isUser = message.role === USER_ROLE;
@@ -40,7 +47,10 @@ export const MessageItem: FC<MessageItemProps> = ({
       if ((message as UserOrAssistantMessage).agentName === TWEET_AGENT) {
         return <Tweet initialContent={content} selectedAgent={selectedAgent} />;
       }
-      return <Text className={styles.messageText}>{content}</Text>;
+
+      return (
+        <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
+      );
     }
 
     if ((message as UserOrAssistantMessage).agentName === SWAP_AGENT) {
@@ -52,6 +62,18 @@ export const MessageItem: FC<MessageItemProps> = ({
           fromMessage={content as SwapMessagePayload}
           onSubmitSwap={onSwapSubmit}
         />
+      );
+    }
+
+    if (message.role === "claim") {
+      console.log("MessageItem rendering ClaimMessage with content:", message.content);
+      return (
+        <ClaimMessage
+      isActive={isLastClaimMessage}
+      selectedAgent={selectedAgent}
+      fromMessage={message.content as ClaimMessagePayload}
+      onSubmitClaim={onClaimSubmit}
+    />
       );
     }
 

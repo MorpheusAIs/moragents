@@ -25,8 +25,7 @@ export const ChatInput: FC<ChatInputProps> = ({
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
-  const agentSupportsFileUploads =
-    availableAgents[selectedAgent]?.supportsFiles || false;
+  const agentSupportsFileUploads = true;
 
   const handleSubmit = async () => {
     if (!message && !file) return;
