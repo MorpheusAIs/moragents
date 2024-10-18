@@ -2,39 +2,59 @@ import React, { useState, useEffect } from "react";
 import { FaCog } from "react-icons/fa";
 import classes from "./index.module.css";
 
+interface Credentials {
+  apiKey: string;
+  apiSecret: string;
+  accessToken: string;
+  accessTokenSecret: string;
+  bearerToken: string;
+  cdpApiKey: string;
+  cdpApiSecret: string;
+}
+
 const SettingsButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [credentials, setCredentials] = useState({
+  const [credentials, setCredentials] = useState<Credentials>({
     apiKey: "",
     apiSecret: "",
     accessToken: "",
     accessTokenSecret: "",
     bearerToken: "",
+    cdpApiKey: "",
+    cdpApiSecret: "",
   });
-  const [displayCredentials, setDisplayCredentials] = useState({
+  const [displayCredentials, setDisplayCredentials] = useState<Credentials>({
     apiKey: "",
     apiSecret: "",
     accessToken: "",
     accessTokenSecret: "",
     bearerToken: "",
+    cdpApiKey: "",
+    cdpApiSecret: "",
   });
 
   useEffect(() => {
-    const storedCredentials = {
+    const storedCredentials: Credentials = {
       apiKey: localStorage.getItem("apiKey") || "",
       apiSecret: localStorage.getItem("apiSecret") || "",
       accessToken: localStorage.getItem("accessToken") || "",
       accessTokenSecret: localStorage.getItem("accessTokenSecret") || "",
       bearerToken: localStorage.getItem("bearerToken") || "",
+      cdpApiKey: localStorage.getItem("cdpApiKey") || "",
+      cdpApiSecret: localStorage.getItem("cdpApiSecret") || "",
     };
     setCredentials(storedCredentials);
+
     setDisplayCredentials({
       apiKey: obscureCredential(storedCredentials.apiKey),
       apiSecret: obscureCredential(storedCredentials.apiSecret),
       accessToken: obscureCredential(storedCredentials.accessToken),
       accessTokenSecret: obscureCredential(storedCredentials.accessTokenSecret),
       bearerToken: obscureCredential(storedCredentials.bearerToken),
+      cdpApiKey: obscureCredential(storedCredentials.cdpApiKey),
+      cdpApiSecret: obscureCredential(storedCredentials.cdpApiSecret),
     });
+    
   }, []);
 
   const obscureCredential = (credential: string) => {
@@ -46,13 +66,7 @@ const SettingsButton: React.FC = () => {
     Object.entries(credentials).forEach(([key, value]) => {
       localStorage.setItem(key, value);
     });
-    setDisplayCredentials({
-      apiKey: obscureCredential(credentials.apiKey),
-      apiSecret: obscureCredential(credentials.apiSecret),
-      accessToken: obscureCredential(credentials.accessToken),
-      accessTokenSecret: obscureCredential(credentials.accessTokenSecret),
-      bearerToken: obscureCredential(credentials.bearerToken),
-    });
+
     setIsOpen(false);
   };
 
@@ -61,21 +75,50 @@ const SettingsButton: React.FC = () => {
     setCredentials((prev) => ({ ...prev, [name]: value }));
   };
 
-  const getFieldLabel = (key: string) => {
-    switch (key) {
-      case "apiKey":
-        return "API Key";
-      case "apiSecret":
-        return "API Secret";
-      case "accessToken":
-        return "Access Token";
-      case "accessTokenSecret":
-        return "Access Token Secret";
-      case "bearerToken":
-        return "Bearer Token";
+  const getFieldSet = (group: string): (keyof Credentials)[] => {
+    switch (group) {
+      case "x":
+        return ["apiKey", "apiSecret", "accessToken", "accessTokenSecret", "bearerToken"];
+      case "cdp":
+        return ["cdpApiKey", "cdpApiSecret"];
       default:
-        return key;
+        return [];
     }
+  };
+
+  const getFieldLabel = (key: keyof Credentials): string => {
+    const labels: Record<keyof Credentials, string> = {
+      apiKey: "API Key",
+      apiSecret: "API Secret",
+      accessToken: "Access Token",
+      accessTokenSecret: "Access Token Secret",
+      bearerToken: "Bearer Token",
+      cdpApiKey: "CDP API Key",
+      cdpApiSecret: "CDP API Secret",
+    };
+    return labels[key] || key;
+  };
+
+  const renderCredentialFields = (group: string) => {
+    const fields = getFieldSet(group);
+    return fields.map((key) => (
+      <div key={key} className={classes.credentialField}>
+        <p className={classes.apiKeyDisplay}>
+          Current {getFieldLabel(key)}:{" "}
+          <span className={classes.apiKeyValue}>
+            {displayCredentials[key] || "Not set"}
+          </span>
+        </p>
+        <input
+          className={classes.apiKeyInput}
+          type="password"
+          name={key}
+          placeholder={`Enter new ${getFieldLabel(key)}`}
+          value={credentials[key]}
+          onChange={handleInputChange}
+        />
+      </div>
+    ));
   };
 
   return (
@@ -94,6 +137,13 @@ const SettingsButton: React.FC = () => {
             className={classes.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              className={classes.closeButton}
+              onClick={() => setIsOpen(false)}
+            >
+              ×
+            </button>
+
             <h2 className={classes.modalHeader}>X API Settings</h2>
             <p className={classes.modalDescription}>
               All of these credentials are necessary. The API Key and API Secret
@@ -103,41 +153,18 @@ const SettingsButton: React.FC = () => {
               Token Secret and Bearer Token are found in the X Developer Portal
               under the Authentication Tokens section.
             </p>
-            <br />
-            <button
-              className={classes.closeButton}
-              onClick={() => setIsOpen(false)}
-            >
-              ×
-            </button>
-            <div>
-              {Object.entries(credentials).map(([key, value]) => (
-                <div key={key} className={classes.credentialField}>
-                  <p className={classes.apiKeyDisplay}>
-                    Current {getFieldLabel(key)}:{" "}
-                    <span className={classes.apiKeyValue}>
-                      {displayCredentials[
-                        key as keyof typeof displayCredentials
-                      ] || "Not set"}
-                    </span>
-                  </p>
-                  <input
-                    className={classes.apiKeyInput}
-                    type={value ? "text" : "password"}
-                    name={key}
-                    placeholder={`Enter new ${getFieldLabel(key)}`}
-                    value={
-                      value
-                        ? value.replace(/./g, (char, index) =>
-                            index < value.length - 4 ? "•" : char
-                          )
-                        : ""
-                    }
-                    onChange={handleInputChange}
-                  />
-                </div>
-              ))}
+            <div className={classes.credentialsSection}>
+              {renderCredentialFields("x")}
             </div>
+
+            <h2 className={classes.modalHeader}>Coinbase Developer Platform Settings</h2>
+            <p className={classes.modalDescription}>
+              Enter your Coinbase Developer Platform API credentials here. You can find these in your Coinbase Developer account settings.
+            </p>
+            <div className={classes.credentialsSection}>
+              {renderCredentialFields("cdp")}
+            </div>
+
             <div className={classes.modalFooter}>
               <button
                 className={classes.saveButton}
