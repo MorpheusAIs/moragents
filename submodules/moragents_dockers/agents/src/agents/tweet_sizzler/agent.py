@@ -59,6 +59,7 @@ class TweetSizzlerAgent:
         logger.info(f"Received tweet request: {request}")
         data = await request.json()
         logger.info(f"Received tweet data: {data}")
+
         tweet_content = data.get("post_content")
         logger.info(f"Received tweet content: {tweet_content}")
 

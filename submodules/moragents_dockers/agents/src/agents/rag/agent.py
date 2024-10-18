@@ -13,6 +13,7 @@ from src.models.messages import ChatRequest
 from src.stores import chat_manager
 
 logger = logging.getLogger(__name__)
+
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 
 
@@ -24,6 +25,7 @@ class RagAgent:
         self.messages = [
             {"role": "assistant", "content": "Please upload a file to begin"}
         ]
+
         self.prompt = ChatPromptTemplate.from_template(
             """
                 Answer the following question only based on the given context
@@ -98,18 +100,18 @@ class RagAgent:
         ]
         result = self.llm.invoke(messages)
         return result.content.strip()
-
+   
     def chat(self, request: ChatRequest):
         try:
             data = request.dict()
             if "prompt" in data:
                 prompt = data["prompt"]["content"]
-
                 if chat_manager.get_uploaded_file_status():
                     response = self._get_rag_response(prompt)
                 else:
                     response = "Please upload a file first"
                 return {"role": "assistant", "content": response}
+
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:

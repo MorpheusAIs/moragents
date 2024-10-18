@@ -29,14 +29,15 @@ class Config:
                 "name": "crypto data agent",
                 "upload_required": False,
             },
+            # {
+            #     "path": "src.agents.token_swap.agent",
+            #     "class": "TokenSwapAgent",
+            #     "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
+            #     "name": "token swap agent",
+            #     "upload_required": False,
+            # },
             {
-                "path": "src.agents.token_swap.agent",
-                "class": "TokenSwapAgent",
-                "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
-                "name": "token swap agent",
-                "upload_required": False,
-            },
-            {
+
                 "path": "src.agents.tweet_sizzler.agent",
                 "class": "TweetSizzlerAgent",
                 "description": "Generates and posts engaging tweets. Use when the query explicitly mentions Twitter, tweeting, or X platform.",

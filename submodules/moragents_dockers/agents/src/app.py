@@ -64,6 +64,7 @@ async def chat(chat_request: ChatRequest):
             result = delegator.get_delegator_response(
                 prompt["content"], chat_manager.get_uploaded_file_status()
             )
+
             end_time = time.time()
 
             logger.info(f"Delegator response time: {end_time - start_time:.2f} seconds")
@@ -146,6 +147,7 @@ async def swap_agent_swap(request: Request):
 async def rag_agent_upload(file: UploadFile = File(...)):
     logger.info("Received upload request")
     response = await delegator.delegate_route(
+
         "general purpose and context-based rag agent", {"file": file}, "upload_file"
     )
     chat_manager.add_message(response)
