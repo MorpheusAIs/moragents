@@ -49,12 +49,12 @@ class NewsAgent:
     def check_relevance_and_summarize(self, title, content, coin):
         logger.info(f"Checking relevance for {coin}: {title}")
         prompt = Config.RELEVANCE_PROMPT.format(coin=coin, title=title, content=content)
-        result = self.llm.create_chat_completion(
-            messages=[{"role": "user", "content": prompt}],
+        result = self.llm.invoke(
+            input=[{"role": "user", "content": prompt}],
             max_tokens=Config.LLM_MAX_TOKENS,
             temperature=Config.LLM_TEMPERATURE,
         )
-        return result["choices"][0]["message"]["content"].strip()
+        return result.content.strip()
 
     def process_rss_feed(self, feed_url, coin):
         logger.info(f"Processing RSS feed for {coin}: {feed_url}")

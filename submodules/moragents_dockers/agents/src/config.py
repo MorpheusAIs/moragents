@@ -37,20 +37,19 @@ class Config:
             #     "upload_required": False,
             # },
             {
-
                 "path": "src.agents.tweet_sizzler.agent",
                 "class": "TweetSizzlerAgent",
                 "description": "Generates and posts engaging tweets. Use when the query explicitly mentions Twitter, tweeting, or X platform.",
                 "name": "tweet sizzler agent",
                 "upload_required": False,
             },
-            {
-                "path": "src.agents.mor_claims.agent",
-                "class": "MorClaimsAgent",
-                "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
-                "name": "mor claims agent",
-                "upload_required": False,
-            },
+            # {
+            #     "path": "src.agents.mor_claims.agent",
+            #     "class": "MorClaimsAgent",
+            #     "description": "Manages the process of claiming rewards or tokens, specifically MOR rewards. Use when the query explicitly mentions claiming rewards or tokens.",
+            #     "name": "mor claims agent",
+            #     "upload_required": False,
+            # },
             {
                 "path": "src.agents.mor_rewards.agent",
                 "class": "MorRewardsAgent",
@@ -58,19 +57,19 @@ class Config:
                 "name": "mor rewards agent",
                 "upload_required": False,
             },
-            # {
-            #     "path": "src.agents.realtime_search.agent",
-            #     "class": "RealtimeSearchAgent",
-            #     "description": "Only use this agent for real-time data. This agent is not for general purpose queries. Use when the query is about searching the web for real-time information.",
-            #     "name": "realtime search agent",
-            #     "upload_required": False,
-            # },
-            # {
-            #     "path": "src.agents.news_agent.agent",
-            #     "class": "NewsAgent",
-            #     "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
-            #     "name": "crypto news agent",
-            #     "upload_required": False,
-            # }
+            {
+                "path": "src.agents.realtime_search.agent",
+                "class": "RealtimeSearchAgent",
+                "description": "Only use this agent for real-time data. This agent is not for general purpose queries. Use when the query is about searching the web for real-time information.",
+                "name": "realtime search agent",
+                "upload_required": False,
+            },
+            {
+                "path": "src.agents.news_agent.agent",
+                "class": "NewsAgent",
+                "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
+                "name": "crypto news agent",
+                "upload_required": False,
+            }
         ]
     }
