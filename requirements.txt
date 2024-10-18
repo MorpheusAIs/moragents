@@ -5,3 +5,5 @@ requests
 setuptools
 pyinstaller
 torch
+safety
+bandit

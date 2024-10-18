@@ -151,7 +151,7 @@ export const SwapForm: FC<SwapFormProps> = ({
         }
 
         const _payload = await getApprovalTxPayload(
-          getHttpClient(selectedAgent),
+          getHttpClient(),
           chainId,
           src_address,
           Number(src_amount),
@@ -166,14 +166,7 @@ export const SwapForm: FC<SwapFormProps> = ({
         setIsButtonLoading(false);
       }
     },
-    [
-      onSubmitApprove,
-      isNativeToken,
-      decimals?.data,
-      fromMessage,
-      chainId,
-      selectedAgent,
-    ]
+    [onSubmitApprove, isNativeToken, decimals?.data, fromMessage, chainId]
   );
 
   const handleSwap = useCallback(
@@ -182,7 +175,7 @@ export const SwapForm: FC<SwapFormProps> = ({
 
       try {
         const _payload = await getSwapTxPayload(
-          getHttpClient(selectedAgent),
+          getHttpClient(),
           fromMessage.src_address,
           fromMessage.dst_address,
           address,
@@ -202,14 +195,7 @@ export const SwapForm: FC<SwapFormProps> = ({
         setIsButtonLoading(false);
       }
     },
-    [
-      fromMessage,
-      chainId,
-      selectedAgent,
-      formData.slippage,
-      onSubmitSwap,
-      decimals,
-    ]
+    [fromMessage, chainId, formData.slippage, onSubmitSwap, decimals]
   );
 
   useEffect(() => {

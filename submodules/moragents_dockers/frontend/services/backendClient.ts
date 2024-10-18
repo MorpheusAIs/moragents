@@ -1,10 +1,8 @@
 import axios, { Axios } from "axios";
-import { availableAgents } from "../config";
 
 export type ChatMessageBase = {
   role: "user" | "assistant" | "swap" | "claim";
 };
-
 
 export type UserOrAssistantMessage = ChatMessageBase & {
   role: "user" | "assistant";
@@ -90,25 +88,20 @@ export type ClaimMessage = ChatMessageBase & {
 };
 
 // Update the ChatMessage type to include ClaimMessage
-export type ChatMessage = UserOrAssistantMessage | SwapMessage | SystemMessage | ClaimMessage;
+export type ChatMessage =
+  | UserOrAssistantMessage
+  | SwapMessage
+  | SystemMessage
+  | ClaimMessage;
 
 export type ChatsListItem = {
   index: number; //  index at chats array
   title: string; // title of the chat (first message content)
 };
 
-export const getHttpClient = (selectedAgent: string) => {
-  const agentData = availableAgents[selectedAgent];
-
-  if (typeof agentData === "undefined") {
-    // if no agent selected lets select by default swap agent for now.
-  }
-
-  const swapAgentUrl =
-    agentData?.endpoint || availableAgents["swap-agent"].endpoint;
-
+export const getHttpClient = () => {
   return axios.create({
-    baseURL: swapAgentUrl || "http://localhost:8080",
+    baseURL: "http://localhost:8080",
   });
 };
 
@@ -155,7 +148,7 @@ export const getApprovalTxPayload = async (
 export const uploadFile = async (backendClient: Axios, file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-
+  console.log("Uploading file:", file);
   return await backendClient.post("/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -220,6 +213,18 @@ export const getMessagesHistory = async (
     } as ChatMessage;
   });
 };
+
+export const clearMessagesHistory = async (
+  backendClient: Axios
+): Promise<void> => {
+  try {
+    await backendClient.get("/clear_messages");
+  } catch (error) {
+    console.error("Failed to clear message history:", error);
+    throw error;
+  }
+};
+
 export const writeMessage = async (
   history: ChatMessage[],
   message: string,
@@ -235,7 +240,7 @@ export const writeMessage = async (
   history.push(newMessage);
   let resp;
   try {
-    resp = await backendClient.post("/", {
+    resp = await backendClient.post("/chat", {
       prompt: {
         role: "user",
         content: message,
