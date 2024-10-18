@@ -1,6 +1,7 @@
 import os
 import logging
 
+from fastapi import Request
 from werkzeug.utils import secure_filename
 
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -9,8 +10,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 
 from src.models.messages import ChatRequest
+from src.stores import chat_manager
 
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 
 
@@ -19,11 +22,10 @@ class RagAgent:
         self.config = config
         self.llm = llm
         self.embedding = embeddings
-        self.agent = None
         self.messages = [
             {"role": "assistant", "content": "Please upload a file to begin"}
         ]
-        self.upload_state = False
+
         self.prompt = ChatPromptTemplate.from_template(
             """
                 Answer the following question only based on the given context
@@ -38,14 +40,16 @@ class RagAgent:
         self.max_size = 5 * 1024 * 1024
         self.retriever = None
 
-    def handle_file_upload(self, file):
+    async def handle_file_upload(self, file):
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
 
-        with open(file_path, "wb") as f:
-            f.write(file.file.read())
+        # Save the file
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
 
         # DocumentToolsGenerator class instantiation
         loader = PyMuPDFLoader(file_path)
@@ -60,24 +64,21 @@ class RagAgent:
         vector_store = FAISS.from_documents(split_documents, self.embedding)
         self.retriever = vector_store.as_retriever(search_kwargs={"k": 7})
 
-    def upload_file(self, request: ChatRequest):
-        data = request
-        if "file" not in data:
-            return {"error": "No file part"}, 400
-        file = data["file"]
+    async def upload_file(self, request: Request):
+        logger.info(f"Received upload request: {request}")
+        file = request["file"]
         if file.filename == "":
             return {"error": "No selected file"}, 400
-        # Check file size
+
+        # Check file size to ensure it's less than 5 MB
+        content = await file.read()
+        await file.seek(0)
+        if len(content) > self.max_size:
+            return {"role": "assistant", "content": "Please use a file less than 5 MB"}
+
         try:
-            file_length = file.file.size
-        except AttributeError:
-            file_length = len(file.file.read())
-            file.file.seek(0)  # Reset the file pointer to the beginning
-        if file_length > self.max_size:
-            return {"role": "assistant", "content": "please use a file less than 5 MB"}
-        try:
-            self.handle_file_upload(file)
-            self.upload_state = True
+            await self.handle_file_upload(file)
+            chat_manager.set_uploaded_file(True)
             return {
                 "role": "assistant",
                 "content": "You have successfully uploaded the text",
@@ -86,23 +87,31 @@ class RagAgent:
             logging.error(f"Error during file upload: {str(e)}")
             return {"error": str(e)}, 500
 
+    def _get_rag_response(self, prompt):
+        retrieved_docs = self.retriever.invoke(prompt)
+        formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
+        formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant. Use the provided context to respond to the following question.",
+            },
+            {"role": "user", "content": formatted_prompt},
+        ]
+        result = self.llm.invoke(messages)
+        return result.content.strip()
+   
     def chat(self, request: ChatRequest):
         try:
             data = request.dict()
             if "prompt" in data:
                 prompt = data["prompt"]["content"]
-                role = "assistant"
-                retrieved_docs = self.retriever.invoke(prompt)
-                formatted_context = "\n\n".join(
-                    doc.page_content for doc in retrieved_docs
-                )
-                formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
+                if chat_manager.get_uploaded_file_status():
+                    response = self._get_rag_response(prompt)
+                else:
+                    response = "Please upload a file first"
+                return {"role": "assistant", "content": response}
 
-                print(formatted_prompt)
-
-                answer = self.llm(formatted_prompt)
-                response = answer if self.upload_state else "please upload a file first"
-                return {"role": role, "content": response}
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:

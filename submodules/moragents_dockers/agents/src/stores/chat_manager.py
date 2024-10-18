@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 class ChatManager:
     def __init__(self):
+        self.has_uploaded_file = False
         self.messages: List[Dict[str, str]] = [
             {
                 "role": "assistant",
@@ -22,6 +23,13 @@ class ChatManager:
 
     def get_messages(self) -> List[Dict[str, str]]:
         return self.messages
+
+    def set_uploaded_file(self, has_file: bool):
+        self.has_uploaded_file = has_file
+        logger.info(f"Set uploaded file status to: {has_file}")
+
+    def get_uploaded_file_status(self) -> bool:
+        return self.has_uploaded_file
 
     def clear_messages(self):
         self.messages = [self.messages[0]]  # Keep the initial message

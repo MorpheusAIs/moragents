@@ -148,7 +148,7 @@ export const getApprovalTxPayload = async (
 export const uploadFile = async (backendClient: Axios, file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-
+  console.log("Uploading file:", file);
   return await backendClient.post("/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",

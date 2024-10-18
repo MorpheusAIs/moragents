@@ -41,6 +41,8 @@ class Delegator:
             for agent_info in self.config["agents"]
             if not (agent_info["upload_required"] and not upload_state)
         ]
+        logger.info(f"Available agents: {available_agents}")
+
         agent_descriptions = "\n".join(
             f"- {agent_info['name']}: {agent_info['description']}"
             for agent_info in self.config["agents"]

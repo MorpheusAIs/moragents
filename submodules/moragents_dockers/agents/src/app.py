@@ -61,8 +61,12 @@ async def chat(chat_request: ChatRequest):
             logger.info("No active agent, getting delegator response")
 
             start_time = time.time()
-            result = delegator.get_delegator_response(prompt["content"], False)
+            result = delegator.get_delegator_response(
+                prompt["content"], chat_manager.get_uploaded_file_status()
+            )
+
             end_time = time.time()
+
             logger.info(f"Delegator response time: {end_time - start_time:.2f} seconds")
             logger.info(f"Delegator response: {result}")
 
@@ -103,7 +107,7 @@ async def chat(chat_request: ChatRequest):
 @app.post("/tx_status")
 async def swap_agent_tx_status(request: Request):
     logger.info("Received tx_status request")
-    response = delegator.delegate_route("crypto swap agent", request, "tx_status")
+    response = await delegator.delegate_route("crypto swap agent", request, "tx_status")
     chat_manager.add_message(response)
     return response
 
@@ -142,7 +146,8 @@ async def swap_agent_swap(request: Request):
 @app.post("/upload")
 async def rag_agent_upload(file: UploadFile = File(...)):
     logger.info("Received upload request")
-    response = delegator.delegate_route(
+    response = await delegator.delegate_route(
+
         "general purpose and context-based rag agent", {"file": file}, "upload_file"
     )
     chat_manager.add_message(response)
@@ -158,13 +163,15 @@ async def regenerate_tweet():
 @app.post("/post_tweet")
 async def post_tweet(request: Request):
     logger.info("Received x post request")
-    return delegator.delegate_route("tweet sizzler agent", request, "post_tweet")
+    return await delegator.delegate_route("tweet sizzler agent", request, "post_tweet")
 
 
 @app.post("/set_x_api_key")
 async def set_x_api_key(request: Request):
     logger.info("Received set X API key request")
-    return delegator.delegate_route("tweet sizzler agent", request, "set_x_api_key")
+    return await delegator.delegate_route(
+        "tweet sizzler agent", request, "set_x_api_key"
+    )
 
 
 @app.post("/claim")
