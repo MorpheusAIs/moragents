@@ -16,20 +16,20 @@ else:
 
 class AgentDockerConfig:
     MACOS_APPLE_IMAGE_NAMES = [
-        "lachsbagel/moragents_dockers-nginx:apple-0.1.0",
-        "lachsbagel/moragents_dockers-agents:apple-0.1.0"
+        "lachsbagel/moragents_dockers-nginx:apple-0.2.0",
+        "lachsbagel/moragents_dockers-agents:apple-0.2.0"
     ]
     MACOS_INTEL_IMAGE_NAMES = [
-        "lachsbagel/moragents_dockers-nginx:amd64-0.1.0",
-        "lachsbagel/moragents_dockers-agents:amd64-0.1.0"
+        "lachsbagel/moragents_dockers-nginx:amd64-0.2.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.2.0"
     ]
     WINDOWS_IMAGE_NAMES = [
-        "lachsbagel/moragents_dockers-nginx:amd64-0.1.0",
-        "lachsbagel/moragents_dockers-agents:amd64-0.1.0"
+        "lachsbagel/moragents_dockers-nginx:amd64-0.2.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.2.0"
     ]
     LINUX_IMAGE_NAMES = [  # TODO, may need linux specific tagged images
-        "lachsbagel/moragents_dockers-nginx:amd64-0.1.0",
-        "lachsbagel/moragents_dockers-agents:amd64-0.1.0"
+        "lachsbagel/moragents_dockers-nginx:amd64-0.2.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.2.0"
     ]
 
     @staticmethod
@@ -53,5 +53,9 @@ class AgentDockerConfigDeprecate:
         "lachsbagel/moragents_dockers-nginx:apple-0.0.9",
         "lachsbagel/moragents_dockers-agents:apple-0.0.9",
         "lachsbagel/moragents_dockers-nginx:amd64-0.0.9",
-        "lachsbagel/moragents_dockers-agents:amd64-0.0.9"
+        "lachsbagel/moragents_dockers-agents:amd64-0.0.9",
+        "lachsbagel/moragents_dockers-nginx:apple-0.1.0",
+        "lachsbagel/moragents_dockers-agents:apple-0.1.0",
+        "lachsbagel/moragents_dockers-nginx:amd64-0.1.0",
+        "lachsbagel/moragents_dockers-agents:amd64-0.1.0"
     ]

@@ -7,30 +7,31 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 
 ![UI 1](images/tweet_sizzler.png)
 
-![UI 2](images/wallet_integration.png)
+![UI 2](images/real-time-info.png)
 
 ![UI 3](images/mor_rewards.png)
 
-![UI 4](images/price_fetcher.png)
+![UI 4](images/price-fetcher-realtime-news.png)
 
-![UI 5](images/moragents_chatpdf.jpg)
+![UI 5](images/moragents_chatpdf.png)
 
 ---
 
 ### Features
-#### Upload a PDF with paperclip icon, then ask questions about the PDF 📄
-  - "Can you give me a summary?"
-  - "What's the main point of the document?"
-#### Swap ERC Compatible Tokens 🪙 -> 🪙
-  - "Swap 0.01 ETH for USDC"
-  - **Works with your favorite wallet extensions in your existing browser**
+#### Write Sizzling Tweets 🌶️ No Content Moderation 😅
+  - "Write a based tweet about Crypto and AI"
+#### Real-time Info 🕸️
+  - "Real-time info about Company XYZ"
+#### Trending Crypto News
+  - "Latest news for USDC"
+#### Check MOR rewards 🏆
+  - "How many MOR rewards do I have?"
 #### Fetch Price, Market Cap, and TVL of coins and tokens supported on CoinGecko 📈
   - "What's the price of ETH?"
   - "What's the market cap of BTC?"
-#### Check MOR rewards 🏆
-  - "How many MOR rewards do I have?"
-#### Write Sizzling Tweets 🌶️ No Content Moderation 😅
-  - "Write a based tweet about Crypto and AI"
+#### Upload a PDF with paperclip icon, then ask questions about the PDF 📄
+  - "Can you give me a summary?"
+  - "What's the main point of the document?"
 
 ---
 
@@ -41,14 +42,13 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 #### Steps to Install
 1. Download Installer
    1. For Mac on Apple Silicon M1/2/3 etc. (arm64) 
-      1. Download and run MORagents installer [MORagents010-apple.pkg](https://drive.proton.me/urls/G9JZYZ508R#gmDk0i6UFLSG)
-      > SHA256 a4846c83ced5d35740f884a144cf518764edfc17b576b808cd77a8fe2da6ebf2 MORagents010-apple.pkg
+      1. Download and run MORagents installer [MORagents020-apple.pkg](https://drive.proton.me/urls/20ENWS94AW#Kols2sA9mWLf)
+      > SHA256 e65e11719a24ca9a00545443a35cda3b6d78f756b8e2ba535db00399ef75168f MORagents020-apple.pkg
    2. For Mac on Intel (x86_64)
-      1. Download and install [Docker Desktop](https://desktop.docker.com/mac/main/amd64/Docker.dmg)
-      2. Download and run MORagents installer [MORagents010-intel.pkg](https://drive.proton.me/urls/HPFMSN40GM#Pa90tgOzYn9g)
-      > SHA256 46b0e927aaca27cf08d9a95b73d01bc07a92cb5a8b05cf69faaf71566712a781 MORagents010-intel.pkg
+      1. Download and run MORagents installer [MORagents020-intel.pkg](https://drive.proton.me/urls/1SFGC83RMR#7hdNk4t7bQ0y)
+      > SHA256 0e3a831f9817ff8fe79cc87d87a60a7884e6752becde20aaa1920133ab2d8036 MORagents020-intel.pkg
 2. Wait several minutes for background files to download and then your browser should automatically open to http://localhost:3333
-    > Note: After installation is complete, the MORagents app icon will bounce for several minutes on your dock, and then stop. This is normal behavior as it's downloading a couple large 9GB files in the background. You can open "Activity Monitor" and in the Network tab see that it's downloading.
+    > Note: After installation is complete, the MORagents app icon will bounce for several minutes on your dock, and then stop. This is normal behavior as it's downloading a <7GB of files in the background. You can open "Activity Monitor" and in the Network tab see that it's downloading.
 
 #### Future Usage
 - Open the "MORagents" app from Mac search bar.
@@ -66,9 +66,9 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 >Assumes minimum 16GB RAM
 
 #### Steps
-1. Download [MORagentsSetupWindows010.zip](https://drive.proton.me/urls/QXRZR77AJ0#U0ZRbd2rDbXT)
-    > SHA256 0ca1879d3f103938a49852d2d2f82a36bc0ebc44ed94400fcee3b883e2cbb2f6 MORagentsSetupWindows010.zip
-2. Go to downloaded **MORagentsSetupWindows010(.zip)** file and double click to open
+1. Download [MORagentsSetupWindows020.zip](https://drive.proton.me/urls/CV5NDK88W8#TNGSOxKUbq4b)
+    > SHA256 1802a941517ad19c732d3a34bfd353fd9a7eb5921ca12210dc5335cf75e34ee8 MORagentsSetupWindows020.zip
+2. Go to downloaded **MORagentsSetupWindows020(.zip)** file and double click to open
 3. Double click **MORagentsSetup.exe**
    1. You may need to click "More info" -> "Run anyway"
    2. If that still doesn't work, try temporarily disabling your antivirus and open the .exe again

@@ -1,6 +1,6 @@
 [Setup]
 AppName=MORagents
-AppVersion=0.1.0
+AppVersion=0.2.0
 DefaultDirName={commonpf}\MORagents
 OutputDir=.\MORagentsWindowsInstaller
 OutputBaseFilename=MORagentsSetup
@@ -27,7 +27,7 @@ Filename: "{tmp}\DockerDesktopInstaller.exe"; Parameters: "install"; StatusMsg: 
 Filename: "{tmp}\OllamaSetup.exe"; StatusMsg: "Installing Ollama..."; Flags: waituntilterminated
 Filename: "{app}\LICENSE.md"; Description: "View License Agreement"; Flags: postinstall shellexec skipifsilent
 Filename: "{app}\MORagents.exe"; Description: "Launch MORagents"; Flags: postinstall nowait skipifsilent unchecked
-Filename: "cmd.exe"; Parameters: "/c ollama pull llama3.1"; StatusMsg: "Pulling llama3.1 model..."; Flags: runhidden waituntilterminated
+Filename: "cmd.exe"; Parameters: "/c ollama pull llama3.2:3b"; StatusMsg: "Pulling llama3.2:3b model..."; Flags: runhidden waituntilterminated
 Filename: "cmd.exe"; Parameters: "/c ollama pull nomic-embed-text"; StatusMsg: "Pulling nomic-embed-text model..."; Flags: runhidden waituntilterminated
 
 [Code]
