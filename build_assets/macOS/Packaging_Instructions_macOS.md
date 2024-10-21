@@ -33,12 +33,12 @@ Future usage only requires you to run MORagents from your searchbar.
 
 ## Notarize 
 ```sh 
-xcrun notarytool submit MORagents010-[apple\|intel].pkg --keychain-profile "NotaryProfile" --wait
+xcrun notarytool submit MORagents020-[apple\|intel].pkg --keychain-profile "NotaryProfile" --wait
 ```
 
 ## Staple
 ```sh 
-xcrun stapler staple MORagents010-[apple\|intel].pkg
+xcrun stapler staple MORagents020-[apple\|intel].pkg
 ```
 
 ---
