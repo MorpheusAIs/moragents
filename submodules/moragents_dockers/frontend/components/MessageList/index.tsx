@@ -8,6 +8,7 @@ type MessageListProps = {
   selectedAgent: string;
   onCancelSwap: (fromAction: number) => void;
   onSwapSubmit: (swapTx: any) => void;
+  onClaimSubmit: (claimTx: any) => void;
 };
 
 export const MessageList: FC<MessageListProps> = ({
@@ -15,6 +16,7 @@ export const MessageList: FC<MessageListProps> = ({
   selectedAgent,
   onCancelSwap,
   onSwapSubmit,
+  onClaimSubmit,
 }) => {
   return (
     <Box
@@ -42,8 +44,12 @@ export const MessageList: FC<MessageListProps> = ({
           selectedAgent={selectedAgent}
           onCancelSwap={onCancelSwap}
           onSwapSubmit={onSwapSubmit}
+          onClaimSubmit={onClaimSubmit}
           isLastSwapMessage={
             index === messages.length - 1 && message.role === "swap"
+          }
+          isLastClaimMessage={
+            index === messages.length - 1 && message.role === "claim"
           }
         />
       ))}
