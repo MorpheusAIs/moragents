@@ -5,7 +5,7 @@ from typing import Dict, Any
 from cdp import Wallet, Cdp
 
 class DCAAgent:
-    def __init__(self, agent_info: Dict[str, Any], llm: Any, llm_ollama: Any, embeddings: Any, flask_app):
+    def __init__(self, agent_info: Dict[str, Any], llm: Any, embeddings: Any):
         """
         Initialize the DCAAgent.
 
@@ -18,9 +18,7 @@ class DCAAgent:
         """
         self.agent_info = agent_info
         self.llm = llm
-        self.llm_ollama = llm_ollama
         self.embeddings = embeddings
-        self.flask_app = flask_app
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
 
     def chat(self, request: Dict[str, Any], user_id: str) -> tuple[str, str]:

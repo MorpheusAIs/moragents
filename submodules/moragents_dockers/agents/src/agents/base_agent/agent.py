@@ -4,23 +4,22 @@ import logging
 from cdp import Cdp, Wallet
 from datetime import datetime
 from typing import Dict, Any
-from .config import Config
-from base_agent.src import tools
+
+from src.agents.base_agent.config import Config
+from src.agents.base_agent import tools
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 class BaseAgent:
-    def __init__(self, agent_info: Dict[str, Any], llm: Any, llm_ollama: Any, embeddings: Any, flask_app):
+    def __init__(self, agent_info: Dict[str, Any], llm: Any, embeddings: Any):
         """
         Initialize the BaseAgent for sending transactions on Base.
         """
         self.agent_info = agent_info
         self.llm = llm
-        self.llm_ollama = llm_ollama
         self.embeddings = embeddings
-        self.flask_app = flask_app
         self.tools_provided = tools.get_tools()
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
         self.wallets: Dict[str, Wallet] = {}

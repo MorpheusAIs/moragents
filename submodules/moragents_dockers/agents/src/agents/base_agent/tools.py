@@ -1,7 +1,7 @@
 import requests
 import logging
 import time
-from base_agent.src.config import Config
+from src.agents.base_agent.config import Config
 from cdp import Cdp, Wallet, Transaction
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

@@ -44,14 +44,14 @@ class Config:
                 "upload_required": False,
             },
             {
-                "path": "dca_agent.src.agent",
+                "path": "src.agents.dca_agent.agent",
                 "class": "DCAAgent",
                 "description": "If the user wants to set up a dollar-cost averaging strategy for crypto purchases.",
                 "name": "dca agent",
                 "upload_required": False
             },
             {
-                "path": "base_agent.src.agent",
+                "path": "src.agents.base_agent.agent",
                 "class": "BaseAgent",
                 "description": "If the user wants to send a transaction on Base.",
                 "name": "base agent",
