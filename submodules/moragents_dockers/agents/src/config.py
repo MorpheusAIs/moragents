@@ -13,7 +13,7 @@ class Config:
     OLLAMA_URL = "http://host.docker.internal:11434"
 
     MAX_UPLOAD_LENGTH = 16 * 1024 * 1024
-    DELEGATOR_CONFIG = {
+    AGENTS_CONFIG = {
         "agents": [
             {
                 "path": "src.agents.rag.agent",
@@ -48,14 +48,14 @@ class Config:
                 "class": "DCAAgent",
                 "description": "If the user wants to set up a dollar-cost averaging strategy for crypto purchases.",
                 "name": "dca agent",
-                "upload_required": False
+                "upload_required": False,
             },
             {
                 "path": "src.agents.base_agent.agent",
                 "class": "BaseAgent",
                 "description": "If the user wants to send a transaction on Base.",
                 "name": "base agent",
-                "upload_required": False
+                "upload_required": False,
             },
             # {
             #     "path": "src.agents.mor_claims.agent",
@@ -84,6 +84,13 @@ class Config:
                 "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
                 "name": "crypto news agent",
                 "upload_required": False,
-            }
+            },
+            {
+                "path": "src.agents.imagen.agent",
+                "class": "ImagenAgent",
+                "description": "Generates images based on a prompt.",
+                "name": "imagen agent",
+                "upload_required": False,
+            },
         ]
     }

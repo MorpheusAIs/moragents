@@ -58,6 +58,16 @@ export type SwapMessage = ChatMessageBase & {
   content: SwapMessagePayload;
 };
 
+export type ImageMessage = ChatMessageBase & {
+  role: "image";
+  content: {
+    success: boolean;
+    service: string;
+    image: string;
+    error?: string;
+  };
+};
+
 export type SystemMessage = ChatMessageBase & {
   role: "system";
   content: string;
@@ -92,7 +102,8 @@ export type ChatMessage =
   | UserOrAssistantMessage
   | SwapMessage
   | SystemMessage
-  | ClaimMessage;
+  | ClaimMessage
+  | ImageMessage;
 
 export type ChatsListItem = {
   index: number; //  index at chats array
@@ -343,4 +354,43 @@ export const sendClaimStatus = async (
     role: responseBody.data.role,
     content: responseBody.data.content,
   } as ChatMessage;
+};
+
+export const getAvailableAgents = async (backendClient: Axios) => {
+  try {
+    const response = await backendClient.get("/available-agents");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch available agents:", error);
+    throw error;
+  }
+};
+
+export const setAvailableAgents = async (
+  backendClient: Axios,
+  agents: string[]
+) => {
+  try {
+    const response = await backendClient.post("/available-agents", {
+      agents,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set available agents:", error);
+    throw error;
+  }
+};
+
+// Update the ChatContext or wherever you're initializing the backend client
+export const initializeBackendClient = () => {
+  const backendClient = axios.create({
+    baseURL: "http://localhost:8080",
+  });
+
+  // Initialize available agents
+  getAvailableAgents(backendClient).catch((error) => {
+    console.error("Failed to initialize available agents:", error);
+  });
+
+  return backendClient;
 };

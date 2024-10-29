@@ -21,7 +21,6 @@ class NewsAgent:
         self.embeddings = embeddings
         self.tools_provided = self.get_tools()
         self.url_shortener = pyshorteners.Shortener()
-        logger.info("NewsAgent initialized")
 
     def get_tools(self):
         return [
@@ -42,7 +41,6 @@ class NewsAgent:
                         "required": ["coins"],
                     },
                 },
-
             }
         ]
 

@@ -46,7 +46,7 @@ embeddings = OllamaEmbeddings(
     model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL
 )
 
-delegator = Delegator(Config.DELEGATOR_CONFIG, llm, embeddings)
+delegator = Delegator(agent_manager, llm, embeddings)
 
 
 @app.post("/chat")
@@ -147,7 +147,6 @@ async def swap_agent_swap(request: Request):
 async def rag_agent_upload(file: UploadFile = File(...)):
     logger.info("Received upload request")
     response = await delegator.delegate_route(
-
         "general purpose and context-based rag agent", {"file": file}, "upload_file"
     )
     chat_manager.add_message(response)
@@ -178,6 +177,26 @@ async def set_x_api_key(request: Request):
 async def claim_agent_claim(request: Request):
     logger.info("Received claim request")
     return delegator.delegate_route("claim agent", request, "claim")
+
+
+@app.get("/available-agents")
+async def get_available_agents():
+    """Get the list of currently available agents"""
+    return {
+        "selected_agents": agent_manager.get_selected_agents(),
+        "available_agents": agent_manager.get_available_agents(),
+    }
+
+
+@app.post("/selected-agents")
+async def set_selected_agents(request: Request):
+    """Set which agents should be selected"""
+    data = await request.json()
+    agent_names = data.get("agents", [])
+
+    agent_manager.set_selected_agents(agent_names)
+
+    return {"status": "success", "agents": agent_names}
 
 
 if __name__ == "__main__":

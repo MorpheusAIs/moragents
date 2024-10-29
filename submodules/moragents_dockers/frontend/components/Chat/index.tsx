@@ -248,7 +248,7 @@ export const Chat: FC<ChatProps> = ({
       {showSpinner && <LoadingIndicator selectedAgent={selectedAgent} />}
       <ChatInput
         onSubmit={handleSubmit}
-        selectedAgent={selectedAgent}
+        hasMessages={messagesData.length > 1}
         disabled={
           showSpinner || messagesData[messagesData.length - 1]?.role === "swap"
         }

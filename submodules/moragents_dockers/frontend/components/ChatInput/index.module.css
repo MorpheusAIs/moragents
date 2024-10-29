@@ -1,0 +1,66 @@
+.container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: transparent;
+}
+
+.innerContainer {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.flexContainer {
+  margin-top: 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.inputGroup {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background-color: #353936;
+}
+
+.fileAddon {
+  background-color: transparent !important;
+  border: none !important;
+  color: #59f886 !important;
+  cursor: pointer;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.disabledIcon {
+  color: #6c6c6c !important;
+}
+
+.messageInput {
+  border: none !important;
+  color: white !important;
+}
+
+.messageInput:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.rightAddon {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.sendButton {
+  background-color: transparent !important;
+  font-size: 24px;
+  color: #59f886 !important;
+}
+
+.sendButton:hover {
+  background-color: transparent !important;
+}

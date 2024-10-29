@@ -2,7 +2,7 @@ import React, { FC, ComponentPropsWithoutRef } from "react";
 import Image from "next/image";
 import { Box, HStack, Spacer, Button } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import SettingsButton from "../Settings";
+import { SettingsButton } from "../Settings";
 import classes from "./index.module.css";
 import {
   getHttpClient,

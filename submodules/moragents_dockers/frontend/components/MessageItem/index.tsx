@@ -5,6 +5,7 @@ import {
   ChatMessage,
   SwapMessagePayload,
   UserOrAssistantMessage,
+  ImageMessage,
   ClaimMessagePayload,
 } from "../../services/backendClient";
 import { Avatar } from "../Avatar";
@@ -12,9 +13,11 @@ import { availableAgents } from "../../config";
 import { SwapMessage } from "../SwapMessage";
 import { ClaimMessage } from "../ClaimMessage/ClaimMessage";
 import { Tweet } from "../Tweet";
+import { ImageDisplay } from "../ImageDisplay";
 import styles from "./index.module.css";
 
 const TWEET_AGENT = "tweet sizzler agent";
+const IMAGEN_AGENT = "imagen agent";
 const SWAP_AGENT = "crypto swap agent";
 const USER_ROLE = "user";
 const UNDEFINED_AGENT = "Undefined Agent";
@@ -53,6 +56,10 @@ export const MessageItem: FC<MessageItemProps> = ({
       );
     }
 
+    if ((message as UserOrAssistantMessage).agentName === IMAGEN_AGENT) {
+      return <ImageDisplay content={content as ImageMessage["content"]} />;
+    }
+
     if ((message as UserOrAssistantMessage).agentName === SWAP_AGENT) {
       return (
         <SwapMessage
@@ -66,14 +73,17 @@ export const MessageItem: FC<MessageItemProps> = ({
     }
 
     if (message.role === "claim") {
-      console.log("MessageItem rendering ClaimMessage with content:", message.content);
+      console.log(
+        "MessageItem rendering ClaimMessage with content:",
+        message.content
+      );
       return (
         <ClaimMessage
-      isActive={isLastClaimMessage}
-      selectedAgent={selectedAgent}
-      fromMessage={message.content as ClaimMessagePayload}
-      onSubmitClaim={onClaimSubmit}
-    />
+          isActive={isLastClaimMessage}
+          selectedAgent={selectedAgent}
+          fromMessage={message.content as ClaimMessagePayload}
+          onSubmitClaim={onClaimSubmit}
+        />
       );
     }
 
