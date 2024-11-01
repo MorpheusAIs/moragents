@@ -62,7 +62,7 @@ async def chat(chat_request: ChatRequest):
 
             start_time = time.time()
             result = delegator.get_delegator_response(
-                prompt["content"], chat_manager.get_uploaded_file_status()
+                prompt, chat_manager.get_uploaded_file_status()
             )
 
             end_time = time.time()

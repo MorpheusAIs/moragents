@@ -31,6 +31,7 @@ export const SettingsButton: React.FC = () => {
         size="md"
         colorScheme="gray"
         variant="solid"
+        mr={2}
       >
         Settings
       </Button>

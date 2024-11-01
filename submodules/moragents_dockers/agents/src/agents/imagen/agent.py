@@ -1,18 +1,17 @@
-import logging
 import time
+import logging
 import base64
 import requests
 
 from io import BytesIO
 from PIL import Image
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 from src.models.messages import ChatRequest
 
@@ -30,110 +29,88 @@ class ImagenAgent:
 
     def _setup_headless_browser(self):
         chrome_options = Options()
+
+        # Essential Chromium flags for running in Docker
+        chrome_options.binary_location = "/usr/bin/chromium"
         chrome_options.add_argument("--headless")
-        service = Service(ChromeDriverManager().install())
-        return webdriver.Chrome(service=service, options=chrome_options)
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--disable-infobars")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-setuid-sandbox")
+        chrome_options.add_argument("--single-process")
+        chrome_options.add_argument("--ignore-certificate-errors")
+        chrome_options.add_argument("--ignore-ssl-errors")
 
-    def _generate_with_fastflux(self, prompt):
-        logger.info(f"Attempting FastFlux generation for prompt: {prompt}")
+        # Additional options for stability
+        chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+        chrome_options.add_argument("--disable-dev-tools")
+        chrome_options.add_argument("--disable-software-rasterizer")
+
+        try:
+            service = Service("/usr/bin/chromedriver")
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+            return driver
+        except Exception as e:
+            logger.error(f"Failed to setup Chromium browser: {str(e)}")
+            raise
+
+    def _generate_with_fluxai(self, prompt):
+        logger.info(f"Attempting image generation for prompt: {prompt}")
         try:
             driver = self._setup_headless_browser()
-        except Exception as e:
-            logger.error(f"Failed to setup Chrome browser: {str(e)}")
-            return None
+            driver.set_page_load_timeout(30)
+            driver.get("https://fluxai.pro/fast-flux")
 
-        try:
-            driver.get("https://www.fastflux.ai/")
-            time.sleep(3)
-
-            textarea = driver.find_element(By.TAG_NAME, "textarea")
-            img_div = driver.find_element(By.CSS_SELECTOR, "div.aspect-square")
-            initial_style = img_div.get_attribute("style")
-
-            textarea.clear()
-            textarea.send_keys(prompt)
-            driver.find_element(By.TAG_NAME, "button").click()
-
-            WebDriverWait(driver, 30).until(
-                lambda d: d.find_element(
-                    By.CSS_SELECTOR, "div.aspect-square"
-                ).get_attribute("style")
-                != initial_style
+            # Find textarea and enter the prompt
+            wait = WebDriverWait(driver, 30)
+            textarea = wait.until(
+                EC.presence_of_element_located((By.TAG_NAME, "textarea"))
             )
-
-            img_div = driver.find_element(By.CSS_SELECTOR, "div.aspect-square")
-            style = img_div.get_attribute("style")
-            url_data = style.split('background-image: url("')[1].split('")')[0]
-
-            if url_data == "undefined":
-                logger.warning("FastFlux generation failed - undefined result")
-                return None
-
-            if url_data.startswith("data:image"):
-                _, encoded = url_data.split(",", 1)
-                img_data = base64.b64decode(encoded)
-                return Image.open(BytesIO(img_data))
-
-            logger.warning("FastFlux generation failed - unsupported format")
-            return None
-
-        except Exception as e:
-            logger.error(f"Error in FastFlux generation: {str(e)}")
-            return None
-        finally:
-            try:
-                driver.quit()
-            except Exception as e:
-                logger.error(f"Error closing browser: {str(e)}")
-
-    def _generate_with_magicstudio(self, prompt):
-        logger.info(f"Attempting MagicStudio generation for prompt: {prompt}")
-        try:
-            driver = self._setup_headless_browser()
-        except Exception as e:
-            logger.error(f"Failed to setup Chrome browser: {str(e)}")
-            return None
-
-        try:
-            driver.get("https://magicstudio.com/ai-art-generator/")
-
-            textarea = driver.find_element(By.ID, "description")
-            img_element = driver.find_element(
-                By.CSS_SELECTOR, "img.rounded-xl[alt='generated image']"
-            )
-            initial_src = img_element.get_attribute("src")
-
             textarea.clear()
             textarea.send_keys(prompt)
 
-            prompt_box = driver.find_element(By.ID, "prompt-box")
-            submit_button = prompt_box.find_element(By.TAG_NAME, "button")
-            submit_button.click()
+            # Click generate button
+            run_button = driver.find_element(
+                By.XPATH,
+                "//textarea/following-sibling::button[contains(text(), 'Generate')]",
+            )
+            run_button.click()
 
-            WebDriverWait(driver, 10).until(
-                lambda d: d.find_element(
-                    By.CSS_SELECTOR, "img.rounded-xl[alt='generated image']"
-                ).get_attribute("src")
-                != initial_src
+            # Wait for the generated image
+            img_element = WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located(
+                    (By.XPATH, "//img[@alt='Generated' and @loading='lazy']")
+                )
             )
 
-            soup = BeautifulSoup(driver.page_source, "html.parser")
-            img_tag = soup.find("img", class_="rounded-xl", alt="generated image")
+            if img_element:
+                img_src = img_element.get_attribute("src")
+                logger.debug(f"Image source: {img_src}")
 
-            if img_tag and "src" in img_tag.attrs:
-                if img_tag["src"].startswith("data:image"):
-                    _, encoded = img_tag["src"].split(",", 1)
-                    img_data = base64.b64decode(encoded)
-                    return Image.open(BytesIO(img_data))
+                # Download the image
+                if img_src.startswith("https://api.together.ai/imgproxy/"):
+                    response = requests.get(img_src)
+                    if response.status_code == 200:
+                        img_data = response.content
+                        return Image.open(BytesIO(img_data))
+                    else:
+                        logger.error(
+                            f"Failed to download image. Status code: {response.status_code}"
+                        )
                 else:
-                    response = requests.get(img_tag["src"])
-                    return Image.open(BytesIO(response.content))
-
-            logger.warning("MagicStudio generation failed - image not found")
-            return None
+                    logger.warning(
+                        "Image format not supported. Expected a valid imgproxy URL."
+                    )
+            else:
+                logger.warning(
+                    "Image not found or still generating. You may need to increase the wait time."
+                )
 
         except Exception as e:
-            logger.error(f"Error in MagicStudio generation: {str(e)}")
+            logger.error(f"Error in image generation: {str(e)}")
             return None
         finally:
             try:
@@ -152,24 +129,16 @@ class ImagenAgent:
     def generate_image(self, prompt):
         logger.info(f"Starting image generation for prompt: {prompt}")
 
-        # Try FastFlux first
-        image = self._generate_with_fastflux(prompt)
+        # Generate image using the new method
+        image = self._generate_with_fluxai(prompt)
         if image:
             img_str = self._encode_image(image)
             if img_str:
-                return {"success": True, "service": "FastFlux", "image": img_str}
-
-        # Fallback to MagicStudio
-        logger.info("FastFlux failed, attempting MagicStudio")
-        image = self._generate_with_magicstudio(prompt)
-        if image:
-            img_str = self._encode_image(image)
-            if img_str:
-                return {"success": True, "service": "MagicStudio", "image": img_str}
+                return {"success": True, "service": "FluxAI", "image": img_str}
 
         return {
             "success": False,
-            "error": "Failed to generate image with both services",
+            "error": "Failed to generate image with FluxAI",
         }
 
     def chat(self, request: ChatRequest):

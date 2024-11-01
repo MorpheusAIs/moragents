@@ -16,6 +16,13 @@ class Config:
     AGENTS_CONFIG = {
         "agents": [
             {
+                "path": "src.agents.imagen.agent",
+                "class": "ImagenAgent",
+                "description": "Generates images based on a prompt.",
+                "name": "imagen agent",
+                "upload_required": False,
+            },
+            {
                 "path": "src.agents.rag.agent",
                 "class": "RagAgent",
                 "description": "Must be used anytime an upload or uploaded document is referred to. Handles general queries, information retrieval, and context-based questions. Use for any query that doesn't explicitly match other agents' specialties.",
@@ -83,13 +90,6 @@ class Config:
                 "class": "NewsAgent",
                 "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
                 "name": "crypto news agent",
-                "upload_required": False,
-            },
-            {
-                "path": "src.agents.imagen.agent",
-                "class": "ImagenAgent",
-                "description": "Generates images based on a prompt.",
-                "name": "imagen agent",
                 "upload_required": False,
             },
         ]

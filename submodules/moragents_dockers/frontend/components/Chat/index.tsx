@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { Box } from "@chakra-ui/react";
+import { Box, VStack } from "@chakra-ui/react";
 import {
   ChatMessage,
   ClaimMessage,
@@ -238,14 +238,16 @@ export const Chat: FC<ChatProps> = ({
 
   return (
     <Box width="65%">
-      <MessageList
-        messages={messagesData}
-        selectedAgent={selectedAgent}
-        onCancelSwap={onCancelSwap}
-        onSwapSubmit={handleSwapSubmit}
-        onClaimSubmit={handleClaimSubmit}
-      />
-      {showSpinner && <LoadingIndicator selectedAgent={selectedAgent} />}
+      <VStack spacing={0} align="stretch">
+        <MessageList
+          messages={messagesData}
+          selectedAgent={selectedAgent}
+          onCancelSwap={onCancelSwap}
+          onSwapSubmit={handleSwapSubmit}
+          onClaimSubmit={handleClaimSubmit}
+        />
+        {showSpinner && <LoadingIndicator selectedAgent={selectedAgent} />}
+      </VStack>
       <ChatInput
         onSubmit={handleSubmit}
         hasMessages={messagesData.length > 1}
