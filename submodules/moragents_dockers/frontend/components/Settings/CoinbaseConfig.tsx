@@ -103,7 +103,7 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
         ))}
       </VStack>
 
-      <Button colorScheme="blue" onClick={handleSave} mt={4}>
+      <Button colorScheme="green" onClick={handleSave} mt={4}>
         Save Coinbase Credentials
       </Button>
     </VStack>

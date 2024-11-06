@@ -16,17 +16,27 @@ class Config:
     AGENTS_CONFIG = {
         "agents": [
             {
+                "path": "src.agents.default.agent",
+                "class": "DefaultAgent",
+                "description": "Must be used for meta-queries that ask about active agents, and also for general purpose queries that don't match other agents' specialties.",
+                "name": "default agent",
+                "human_readable_name": "Default General Purpose Agent",
+                "upload_required": False,
+            },
+            {
                 "path": "src.agents.imagen.agent",
                 "class": "ImagenAgent",
-                "description": "Generates images based on a prompt.",
+                "description": "Must only be used for image generation tasks. Use when the query explicitly mentions generating or creating an image.",
                 "name": "imagen agent",
+                "human_readable_name": "Image Generator",
                 "upload_required": False,
             },
             {
                 "path": "src.agents.rag.agent",
                 "class": "RagAgent",
-                "description": "Must be used anytime an upload or uploaded document is referred to. Handles general queries, information retrieval, and context-based questions. Use for any query that doesn't explicitly match other agents' specialties.",
-                "name": "general purpose and context-based rag agent",
+                "description": "Must be used anytime an upload or uploaded document is referred to.",
+                "name": "rag agent",
+                "human_readable_name": "Document Assistant",
                 "upload_required": True,
             },
             {
@@ -34,6 +44,7 @@ class Config:
                 "class": "CryptoDataAgent",
                 "description": "Crypto-specific. Provides real-time cryptocurrency data such as price, market cap, and fully diluted valuation (FDV).",
                 "name": "crypto data agent",
+                "human_readable_name": "Crypto Data Fetcher",
                 "upload_required": False,
             },
             # {
@@ -48,6 +59,7 @@ class Config:
                 "class": "TweetSizzlerAgent",
                 "description": "Generates and posts engaging tweets. Use when the query explicitly mentions Twitter, tweeting, or X platform.",
                 "name": "tweet sizzler agent",
+                "human_readable_name": "Tweet / X-Post Generator",
                 "upload_required": False,
             },
             {
@@ -55,6 +67,7 @@ class Config:
                 "class": "DCAAgent",
                 "description": "If the user wants to set up a dollar-cost averaging strategy for crypto purchases.",
                 "name": "dca agent",
+                "human_readable_name": "DCA Strategy Manager",
                 "upload_required": False,
             },
             {
@@ -62,6 +75,7 @@ class Config:
                 "class": "BaseAgent",
                 "description": "If the user wants to send a transaction on Base.",
                 "name": "base agent",
+                "human_readable_name": "Base Transaction Manager",
                 "upload_required": False,
             },
             # {
@@ -76,6 +90,7 @@ class Config:
                 "class": "MorRewardsAgent",
                 "description": "Provides information about user's accrued MOR rewards or tokens. Use when the query is about checking or querying reward balances.",
                 "name": "mor rewards agent",
+                "human_readable_name": "MOR Rewards Tracker",
                 "upload_required": False,
             },
             {
@@ -83,6 +98,7 @@ class Config:
                 "class": "RealtimeSearchAgent",
                 "description": "Only use this agent for real-time data. This agent is not for general purpose queries. Use when the query is about searching the web for real-time information.",
                 "name": "realtime search agent",
+                "human_readable_name": "Real-Time Search",
                 "upload_required": False,
             },
             {
@@ -90,6 +106,7 @@ class Config:
                 "class": "NewsAgent",
                 "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
                 "name": "crypto news agent",
+                "human_readable_name": "Crypto News Analyst",
                 "upload_required": False,
             },
         ]

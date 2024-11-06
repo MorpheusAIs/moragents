@@ -88,8 +88,8 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
           Twitter API Configuration
         </Heading>
         <Text fontSize="sm" color={textColor}>
-          Enter your Twitter API credentials. These can be found in your Twitter
-          Developer Portal.
+          Enter your X API credentials. These can be found in your X Developer
+          Portal. Please follow the readme to set up these X API keys properly.
         </Text>
       </Box>
 
@@ -122,7 +122,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
         ))}
       </VStack>
 
-      <Button colorScheme="blue" onClick={handleSave} mt={4}>
+      <Button colorScheme="green" onClick={handleSave} mt={4}>
         Save Twitter Credentials
       </Button>
     </VStack>

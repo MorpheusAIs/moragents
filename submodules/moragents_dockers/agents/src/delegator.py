@@ -14,27 +14,16 @@ class Delegator:
         self.embeddings = embeddings
         self.agents = {}  # Empty dict initially
 
-        # Load initial agents
-        self._load_selected_agents()
+        # Load all agents initially
+        self._load_all_agents()
         logger.info(f"Delegator initialized with {len(self.agents)} agents")
+        logger.info(f"Selected agents: {self.agent_manager.get_selected_agents()}")
 
-    def _load_selected_agents(self) -> None:
-        """Load all currently selected agents"""
-        selected_agents = self.agent_manager.get_selected_agents()
-
-        # Remove agents that are no longer selected
-        self.agents = {
-            name: agent
-            for name, agent in self.agents.items()
-            if name in selected_agents
-        }
-
-        # Load new agents
-        for agent_name in selected_agents:
-            if agent_name not in self.agents:
-                agent_config = self.agent_manager.get_agent_config(agent_name)
-                if agent_config:
-                    self._load_agent(agent_config)
+    def _load_all_agents(self) -> None:
+        """Load all available agents"""
+        available_agents = self.agent_manager.get_available_agents()
+        for agent_config in available_agents:
+            self._load_agent(agent_config)
 
     def _load_agent(self, agent_config: Dict) -> bool:
         """Load a single agent"""
@@ -56,12 +45,15 @@ class Delegator:
     def update_selected_agents(self, agent_names: List[str]) -> None:
         """Update loaded agents based on new selection"""
         self.agent_manager.set_selected_agents(agent_names)
-        self._load_selected_agents()
+        self._load_all_agents()
 
     def get_delegator_response(
         self, prompt: Dict, upload_state: bool
     ) -> Dict[str, str]:
         """Get appropriate agent based on prompt"""
+        # Ensure agents are loaded before filtering
+        self._load_all_agents()
+
         available_agents = [
             agent_config
             for agent_config in self.agent_manager.get_available_agents()
@@ -74,7 +66,7 @@ class Delegator:
 
         system_prompt = (
             "Your name is Morpheus. "
-            "Your primary function is to select the correct agent based on the user's input. "
+            "Your primary function is to select the correct agent from the list of available agents based on the user's input. "
             "You MUST use the 'select_agent' function to select an agent. "
             "Available agents and their descriptions:\n"
             + "\n".join(
@@ -101,7 +93,7 @@ class Delegator:
             }
         ]
 
-        agent_selection_llm = self.llm.bind_tools(tools)
+        agent_selection_llm = self.llm.bind_tools(tools, tool_choice="select_agent")
         messages = [
             SystemMessage(content=system_prompt),
             HumanMessage(content=prompt["content"]),
@@ -114,6 +106,7 @@ class Delegator:
             raise ValueError("No agent was selected by the model")
 
         selected_agent = tool_calls[0]
+        logger.info(f"Selected agent: {selected_agent}")
         selected_agent_name = selected_agent.get("args", {}).get("agent")
 
         return {"agent": selected_agent_name}
@@ -124,12 +117,12 @@ class Delegator:
 
         if agent_name not in self.agent_manager.get_selected_agents():
             logger.warning(f"Attempted to delegate to unselected agent: {agent_name}")
-            return None, {"error": f"Agent {agent_name} is not selected"}, 400
+            return None, {"error": f"Agent {agent_name} is not selected"}
 
         agent = self.agents.get(agent_name)
         if not agent:
             logger.error(f"Agent {agent_name} is selected but not loaded")
-            return None, {"error": "Agent failed to load"}, 500
+            return None, {"error": "Agent failed to load"}
 
         try:
             result = agent.chat(request)
@@ -137,7 +130,7 @@ class Delegator:
             return agent_name, result
         except Exception as e:
             logger.error(f"Error during chat delegation to {agent_name}: {str(e)}")
-            return None, {"error": f"Chat delegation failed: {str(e)}"}, 500
+            return None, {"error": f"Chat delegation failed: {str(e)}"}
 
     def delegate_route(
         self, agent_name: str, request: Any, method_name: str

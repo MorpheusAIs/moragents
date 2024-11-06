@@ -10,8 +10,8 @@ class AgentManager:
         self.selected_agents: List[str] = []
         self.config = config
 
-        # Initialize with first 5 agents selected
-        default_agents = [agent["name"] for agent in config["agents"][:5]]
+        # Initialize with first 6 agents selected
+        default_agents = [agent["name"] for agent in config["agents"][:6]]
         self.set_selected_agents(default_agents)
         logger.info(
             f"AgentManager initialized with {len(default_agents)} default selected agents"

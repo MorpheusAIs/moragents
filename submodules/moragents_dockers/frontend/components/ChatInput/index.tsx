@@ -43,61 +43,59 @@ export const ChatInput: FC<ChatInputProps> = ({
     <>
       {!hasMessages && <PrefilledOptions onSelect={handlePrefilledSelect} />}
       <div className={styles.container}>
-        <div className={styles.innerContainer}>
-          <Flex className={styles.flexContainer}>
-            <InputGroup className={styles.inputGroup}>
-              {agentSupportsFileUploads && (
-                <InputLeftAddon
-                  className={styles.fileAddon}
+        <Flex className={styles.flexContainer}>
+          <InputGroup className={styles.inputGroup}>
+            {agentSupportsFileUploads && (
+              <InputLeftAddon className={styles.fileAddon}>
+                <input
+                  type="file"
+                  className={styles.hiddenInput}
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+                <IconButton
+                  aria-label="Attach file"
+                  icon={<AttachmentIcon />}
+                  className={disabled ? styles.disabledIcon : ""}
+                  disabled={disabled}
                   onClick={() =>
                     document
                       .querySelector('input[type="file"]')
                       ?.dispatchEvent(new MouseEvent("click"))
                   }
-                >
-                  <input
-                    className={styles.hiddenInput}
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  />
-                  <AttachmentIcon
-                    className={file !== null ? styles.disabledIcon : undefined}
-                  />
-                </InputLeftAddon>
-              )}
-              <Textarea
-                className={styles.messageInput}
-                onKeyDown={(e) => {
-                  if (disabled) return;
-                  if (e.altKey && e.key === "Enter") {
-                    setMessage(message + "\n");
-                  } else if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-                disabled={disabled || file !== null}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Type your message here..."
-                rows={1}
-                resize="none"
-                overflow="hidden"
-                minHeight="unset"
-              />
-              <InputRightAddon className={styles.rightAddon}>
-                <IconButton
-                  className={styles.sendButton}
-                  disabled={disabled}
-                  aria-label="Send"
-                  onClick={handleSubmit}
-                  icon={<SendIcon width="24px" height="24px" />}
                 />
-              </InputRightAddon>
-            </InputGroup>
-          </Flex>
-        </div>
+              </InputLeftAddon>
+            )}
+            <Textarea
+              className={styles.messageInput}
+              onKeyDown={(e) => {
+                if (disabled) return;
+                if (e.altKey && e.key === "Enter") {
+                  setMessage(message + "\n");
+                } else if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+              disabled={disabled || file !== null}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your message here..."
+              rows={1}
+              resize="none"
+              overflow="hidden"
+              minHeight="unset"
+            />
+            <InputRightAddon className={styles.rightAddon}>
+              <IconButton
+                className={styles.sendButton}
+                disabled={disabled}
+                aria-label="Send"
+                onClick={handleSubmit}
+                icon={<SendIcon width="24px" height="24px" />}
+              />
+            </InputRightAddon>
+          </InputGroup>
+        </Flex>
       </div>
     </>
   );

@@ -10,7 +10,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 
 from src.models.messages import ChatRequest
-from src.stores import chat_manager
+from src.stores import chat_manager, agent_manager
 
 logger = logging.getLogger(__name__)
 
@@ -91,16 +91,25 @@ class RagAgent:
         retrieved_docs = self.retriever.invoke(prompt)
         formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
         formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
+        selected_agents = agent_manager.get_selected_agents()
+        agent_descriptions = "\n".join(
+            [f"- {agent['description']}" for agent in selected_agents]
+        )
+        system_prompt = f"""
+        You are a helpful assistant. Use the provided context to respond to the following question.
+        The following agents are currently available:
+        {agent_descriptions}"""
+
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant. Use the provided context to respond to the following question.",
+                "content": system_prompt,
             },
             {"role": "user", "content": formatted_prompt},
         ]
         result = self.llm.invoke(messages)
         return result.content.strip()
-   
+
     def chat(self, request: ChatRequest):
         try:
             data = request.dict()

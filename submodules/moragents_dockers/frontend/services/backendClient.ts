@@ -2,12 +2,12 @@ import axios, { Axios } from "axios";
 
 export type ChatMessageBase = {
   role: "user" | "assistant" | "swap" | "claim";
+  agentName: string;
 };
 
 export type UserOrAssistantMessage = ChatMessageBase & {
   role: "user" | "assistant";
   content: string;
-  agentName?: string;
 };
 
 export const SWAP_STATUS = {
@@ -58,14 +58,26 @@ export type SwapMessage = ChatMessageBase & {
   content: SwapMessagePayload;
 };
 
+export type ImageMessageContent = {
+  success: boolean;
+  service: string;
+  image: string;
+  error?: string;
+};
+
 export type ImageMessage = ChatMessageBase & {
   role: "image";
-  content: {
-    success: boolean;
-    service: string;
-    image: string;
-    error?: string;
-  };
+  content: ImageMessageContent;
+};
+
+export type CryptoDataMessageContent = {
+  data: string;
+  coinId: string;
+};
+
+export type CryptoDataMessage = ChatMessageBase & {
+  role: "crypto_data";
+  content: CryptoDataMessageContent;
 };
 
 export type SystemMessage = ChatMessageBase & {
@@ -246,6 +258,7 @@ export const writeMessage = async (
   const newMessage: ChatMessage = {
     role: "user",
     content: message,
+    agentName: "user",
   };
 
   history.push(newMessage);
@@ -261,18 +274,6 @@ export const writeMessage = async (
     });
   } catch (e) {
     console.error(e);
-
-    // resp = {
-    //     data: {
-    //         content: "Sorry, I'm not available right now. Please try again later."
-    //     }
-    // };
-  } finally {
-    console.log("Finally write message");
-    // history.push({
-    //     role: 'assistant',
-    //     content: resp?.data.content || "Unknown error occurred."
-    // });
   }
 
   return await getMessagesHistory(backendClient);

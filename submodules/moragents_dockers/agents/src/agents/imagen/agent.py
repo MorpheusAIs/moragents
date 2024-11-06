@@ -91,7 +91,12 @@ class ImagenAgent:
                 logger.debug(f"Image source: {img_src}")
 
                 # Download the image
-                if img_src.startswith("https://api.together.ai/imgproxy/"):
+                if img_src.startswith(
+                    (
+                        "https://api.together.ai/imgproxy/",
+                        "https://fast-flux-demo.replicate.workers.dev/api/generate-image",
+                    )
+                ):
                     response = requests.get(img_src)
                     if response.status_code == 200:
                         img_data = response.content
@@ -102,7 +107,7 @@ class ImagenAgent:
                         )
                 else:
                     logger.warning(
-                        "Image format not supported. Expected a valid imgproxy URL."
+                        "Image format not supported. Expected a valid imgproxy or replicate URL."
                     )
             else:
                 logger.warning(
