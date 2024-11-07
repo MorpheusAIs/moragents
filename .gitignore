@@ -59,3 +59,7 @@ MORagentsWindowsInstaller.zip
 
 ## app
 MORagents.app
+
+## lint
+.mypy_cache/
+.pytest_cache/
