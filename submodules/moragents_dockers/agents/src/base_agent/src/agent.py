@@ -34,6 +34,22 @@ class BaseAgent:
     def chat(self, request):
         try:
             data = request.get_json()
+            if not data:
+                return {"error": "Invalid request data"}, 400
+
+            # Check CDP client initialization
+            if not self.client and not self.initialize_cdp_client():
+                return {
+                    "error": "CDP client not initialized. Please set API credentials.",
+                    "needs_credentials": True
+                }, 400
+
+            # Handle strategy status request
+            if 'strategy_id' in data:
+                response, role = self.handle_get_status({"strategy_id": data['strategy_id']})
+                return {"role": role, "content": response}
+
+            # Handle chat prompt
             if 'prompt' in data:
                 prompt = data['prompt']
                 wallet_address = data.get('wallet_address')
@@ -109,6 +125,23 @@ class BaseAgent:
         except Exception as e:
             logger.error(f"Error processing LLM response: {str(e)}")
             return "Error: Unable to process the request.", "assistant", None
+        
+    def initialize_cdp_client(self) -> bool:
+        """Initialize CDP client with stored credentials"""
+        try:
+            api_key = self.flask_app.config.get("cdpApiKey")
+            api_secret = self.flask_app.config.get("cdpApiSecret")
+            
+            if not all([api_key, api_secret]):
+                logger.warning("CDP credentials not found")
+                return False
+                
+            self.client = Cdp.configure(api_key, api_secret)
+            return True
+        except Exception as e:
+            logger.error(f"CDP client initialization failed: {e}")
+            return False
+
 
     def handle_function_call(self, func_name, args, chain_id, wallet_address):
         handler = self.function_handlers.get(func_name)
