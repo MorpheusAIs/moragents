@@ -24,5 +24,7 @@ selenium==4.25.0
 torch
 tweepy
 cdp-sdk
+apscheduler
+aiofiles
 pytz
 pyshorteners
