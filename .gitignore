@@ -56,3 +56,6 @@ resources/*
 ## installer
 MORagentsWindowsInstaller
 MORagentsWindowsInstaller.zip
+
+## app
+MORagents.app
