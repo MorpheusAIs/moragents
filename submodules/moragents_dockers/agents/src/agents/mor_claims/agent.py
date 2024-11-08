@@ -1,6 +1,10 @@
+import logging
+
 from src.agents.mor_claims import tools
 from src.models.messages import ChatRequest
 from src.stores import agent_manager
+
+logger = logging.getLogger(__name__)
 
 
 class MorClaimsAgent:
@@ -105,7 +109,10 @@ class MorClaimsAgent:
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            return {"Error": str(e)}, 500
+            logger.error(
+                f"Unexpected error in chat method: {str(e)}, request: {request}"
+            )
+            raise e
 
     def claim(self, request: ChatRequest):
         try:

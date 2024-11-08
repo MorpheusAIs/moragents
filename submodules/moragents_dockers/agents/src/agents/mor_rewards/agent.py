@@ -52,5 +52,5 @@ class MorRewardsAgent:
                 logger.warning("Missing required parameters in request")
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(f"Error in chat method: {str(e)}")
-            return {"Error": str(e)}, 500
+            logger.error(f"Error in chat method: {str(e)}, request: {request}")
+            raise e

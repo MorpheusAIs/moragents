@@ -1,0 +1,76 @@
+.prefilledContainer {
+  position: fixed;
+  bottom: 120px;
+  left: 0;
+  right: 0;
+  padding: 0 1.5rem;
+  background-color: transparent;
+}
+
+.prefilledInner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.prefilledSection {
+  background-color: #2d2e33;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.sectionIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #a0a0a0;
+}
+
+.examplesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.exampleButton {
+  text-align: left;
+  background-color: #353936;
+  color: #a0a0a0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: background-color 0.2s;
+  line-height: 1.2;
+}
+
+.exampleButton:hover {
+  background-color: #404142;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+  .prefilledInner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .prefilledInner {
+    grid-template-columns: 1fr;
+  }
+}

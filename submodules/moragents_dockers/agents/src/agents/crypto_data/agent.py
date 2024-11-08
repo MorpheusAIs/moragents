@@ -3,7 +3,6 @@ import logging
 
 from src.agents.crypto_data import tools
 from src.models.messages import ChatRequest
-from src.stores import agent_manager
 
 logger = logging.getLogger(__name__)
 
@@ -42,31 +41,40 @@ class CryptoDataAgent:
                 args = tool_call.get("args")
                 logger.info("LLM suggested using tool: %s", func_name)
 
+                response_data = {"data": None, "coinId": None}
+
                 if func_name == "get_price":
-                    return tools.get_coin_price_tool(args["coin_name"]), "assistant"
+                    response_data["data"] = tools.get_coin_price_tool(args["coin_name"])
+                    response_data["coinId"] = tools.get_tradingview_symbol(
+                        tools.get_coingecko_id(args["coin_name"])
+                    )
+                    return response_data, "assistant"
                 elif func_name == "get_floor_price":
-                    return tools.get_nft_floor_price_tool(args["nft_name"]), "assistant"
+                    response_data["data"] = tools.get_nft_floor_price_tool(
+                        args["nft_name"]
+                    )
+                    return response_data, "assistant"
                 elif func_name == "get_fdv":
-                    return (
-                        tools.get_fully_diluted_valuation_tool(args["coin_name"]),
-                        "assistant",
+                    response_data["data"] = tools.get_fully_diluted_valuation_tool(
+                        args["coin_name"]
                     )
+                    return response_data, "assistant"
                 elif func_name == "get_tvl":
-                    return (
-                        tools.get_protocol_total_value_locked_tool(args["protocol_name"]),
-                        "assistant",
+                    response_data["data"] = tools.get_protocol_total_value_locked_tool(
+                        args["protocol_name"]
                     )
+                    return response_data, "assistant"
                 elif func_name == "get_market_cap":
-                    return (
-                        tools.get_coin_market_cap_tool(args["coin_name"]),
-                        "assistant",
+                    response_data["data"] = tools.get_coin_market_cap_tool(
+                        args["coin_name"]
                     )
+                    return response_data, "assistant"
             else:
                 logger.info("LLM provided a direct response without using tools")
-                return result.content, "assistant"
+                return {"data": result.content, "coinId": None}, "assistant"
         except Exception as e:
             logger.error(f"Error in get_response: {str(e)}")
-            return f"An error occurred: {str(e)}", "assistant"
+            raise e
 
     def generate_response(self, prompt):
         response, role = self.get_response([prompt])
@@ -88,4 +96,4 @@ class CryptoDataAgent:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
             logger.error("Error in chat method: %s", str(e), exc_info=True)
-            return {"Error": str(e)}, 500
+            raise e

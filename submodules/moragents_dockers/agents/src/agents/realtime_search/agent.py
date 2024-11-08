@@ -132,5 +132,7 @@ class RealtimeSearchAgent:
                 logger.error("Missing 'prompt' in chat request data")
                 return {"error": "Missing parameters"}, 400
         except Exception as e:
-            logger.exception(f"Unexpected error in chat method: {str(e)}")
-            return {"Error": str(e)}, 500
+            logger.error(
+                f"Unexpected error in chat method: {str(e)}, request: {request}"
+            )
+            raise e

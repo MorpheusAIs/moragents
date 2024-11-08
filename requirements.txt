@@ -4,6 +4,7 @@ customtkinter
 requests
 setuptools
 pyinstaller
+cdp-sdk
 torch
 safety
 bandit

@@ -36,6 +36,20 @@ def get_coingecko_id(text, type="coin"):
         raise
 
 
+def get_tradingview_symbol(coingecko_id):
+    """Convert a CoinGecko ID to a TradingView symbol."""
+    url = f"{Config.COINGECKO_BASE_URL}/coins/{coingecko_id}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        symbol = data.get("symbol", "").upper()
+        return f"CRYPTO:{symbol}USD" if symbol else None
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to get TradingView symbol: {str(e)}")
+        raise
+
+
 def get_price(coin):
     """Get the price of a coin from CoinGecko API."""
     coin_id = get_coingecko_id(coin, type="coin")
