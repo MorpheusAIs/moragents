@@ -125,4 +125,4 @@ class RagAgent:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
             logging.error(f"Error in chat endpoint: {str(e)}")
-            return {"Error": str(e)}, 500
+            raise e

@@ -74,7 +74,7 @@ class CryptoDataAgent:
                 return {"data": result.content, "coinId": None}, "assistant"
         except Exception as e:
             logger.error(f"Error in get_response: {str(e)}")
-            return {"data": f"An error occurred: {str(e)}", "coinId": None}, "assistant"
+            raise e
 
     def generate_response(self, prompt):
         response, role = self.get_response([prompt])
@@ -96,4 +96,4 @@ class CryptoDataAgent:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
             logger.error("Error in chat method: %s", str(e), exc_info=True)
-            return {"Error": str(e)}, 500
+            raise e

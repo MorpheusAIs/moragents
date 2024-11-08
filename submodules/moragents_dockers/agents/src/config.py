@@ -96,7 +96,7 @@ class Config:
             {
                 "path": "src.agents.realtime_search.agent",
                 "class": "RealtimeSearchAgent",
-                "description": "Only use this agent for real-time data. This agent is not for general purpose queries. Use when the query is about searching the web for real-time information.",
+                "description": "Use when the query is about searching the web for real-time information or asks about a recent / current event.",
                 "name": "realtime search agent",
                 "human_readable_name": "Real-Time Search",
                 "upload_required": False,

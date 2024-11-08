@@ -55,15 +55,16 @@ async def chat(chat_request: ChatRequest):
     chat_manager.add_message(prompt)
 
     try:
+        # Reset attempted agents at the start of each new chat request, for agent cascading
+        delegator.reset_attempted_agents()
+
         active_agent = agent_manager.get_active_agent()
 
         if not active_agent:
             logger.info("No active agent, getting delegator response")
 
             start_time = time.time()
-            result = delegator.get_delegator_response(
-                prompt, chat_manager.get_uploaded_file_status()
-            )
+            result = delegator.get_delegator_response(prompt)
 
             end_time = time.time()
 
@@ -79,13 +80,20 @@ async def chat(chat_request: ChatRequest):
         logger.info(f"Delegating chat to active agent: {active_agent}")
         current_agent, response = delegator.delegate_chat(active_agent, chat_request)
 
+        if not current_agent:
+            logger.error("All agents failed to provide a valid response")
+            raise HTTPException(
+                status_code=500,
+                detail="All available agents failed to process the request",
+            )
+
         if isinstance(response, tuple) and len(response) == 2:
             error_message, status_code = response
             logger.error(f"Error from agent: {error_message}")
             raise HTTPException(status_code=status_code, detail=error_message)
 
         if isinstance(response, dict) and "role" in response and "content" in response:
-            chat_manager.add_response(response, current_agent or "Unknown")
+            chat_manager.add_response(response, current_agent)
 
             logger.info(f"Sending response: {response}")
             return response
@@ -195,6 +203,7 @@ async def set_selected_agents(request: Request):
     agent_names = data.get("agents", [])
 
     agent_manager.set_selected_agents(agent_names)
+    logger.info(f"Newly selected agents: {agent_manager.get_selected_agents()}")
 
     return {"status": "success", "agents": agent_names}
 
