@@ -1,13 +1,12 @@
 import logging
-import requests
 import time
 
+import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
-
 from src.models.messages import ChatRequest
 
 logging.basicConfig(
@@ -95,8 +94,8 @@ class RealtimeSearchAgent:
         messages = [
             {
                 "role": "system",
-                "content": """You are a helpful assistant that synthesizes information from web search results to answer user queries. 
-                    Do not preface your answer with 'Based on the search results, I can tell you that:' or anything similar. 
+                "content": """You are a helpful assistant that synthesizes information from web search results to answer user queries.
+                    Do not preface your answer with 'Based on the search results, I can tell you that:' or anything similar.
                     Just provide the answer.""",
             },
             {

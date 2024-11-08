@@ -56,7 +56,7 @@ A notebook has been provided to run test queries against the API:
 
 ### Without Docker
 
-To use the API run 
+To use the API run
 ```python agent.py```
 
 To use an interactive CLI prompt to test the agent run:

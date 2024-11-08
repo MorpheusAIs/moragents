@@ -41,7 +41,7 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 
 #### Steps to Install
 1. Download Installer
-   1. For Mac on Apple Silicon M1/2/3 etc. (arm64) 
+   1. For Mac on Apple Silicon M1/2/3 etc. (arm64)
       1. Download and run MORagents installer [MORagents020-apple.pkg](https://drive.proton.me/urls/20ENWS94AW#Kols2sA9mWLf)
       > SHA256 e65e11719a24ca9a00545443a35cda3b6d78f756b8e2ba535db00399ef75168f MORagents020-apple.pkg
    2. For Mac on Intel (x86_64)
@@ -52,11 +52,11 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 
 #### Future Usage
 - Open the "MORagents" app from Mac search bar.
-  - For easier access: Right-click MORagents icon on dock -> Options -> Keep in Dock 
+  - For easier access: Right-click MORagents icon on dock -> Options -> Keep in Dock
 
 #### Troubleshooting
 - If the app shows connections errors in connecting to agents. Please ensure Docker Desktop is running, then close and reopen **MORagents** from desktop.
-- If installation is unsuccessful, run the following in your Terminal and open the MORagents....pkg again 
+- If installation is unsuccessful, run the following in your Terminal and open the MORagents....pkg again
    ```shell
       $ xcode-select --install
    ```
@@ -74,7 +74,7 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
    2. If that still doesn't work, try temporarily disabling your antivirus and open the .exe again
 4. Click and Run **MORagentsSetup.exe**
    1. This will auto-install Docker and Ollama dependencies. Those will ask you for confirmation.
-5. Open **MORagents** from Desktop 
+5. Open **MORagents** from Desktop
    1. Wait for Docker engine to start...
    2. If you see any errors or if anything hangs for >10min, please try opening the MORagents app again from the Desktop
 
@@ -100,4 +100,3 @@ This will allow you to add custom agents which will be automatically invoked bas
 #### Build instructions:
 1. [macOS](build_assets/macOS/README_MACOS_DEV_BUILD.md)
 2. [Windows](build_assets/windows/README_WINDOWS_DEV_BUILD.md)
- 

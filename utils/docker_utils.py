@@ -8,7 +8,7 @@ def find_unused_port() -> int:
     while True:
         port = random.randint(49152, 65535)
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            res = sock.connect_ex(('localhost', port))
+            res = sock.connect_ex(("localhost", port))
             if res != 0:
                 return port
 
@@ -18,12 +18,21 @@ def build_image_if_not_present(image_name, dockerfile_path) -> None:
     context_dir = os.path.dirname(dockerfile_path)
 
     try:
-        subprocess.run(f"docker inspect {image_name}", shell=True, check=True, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL)
+        subprocess.run(
+            f"docker inspect {image_name}",
+            shell=True,
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         print(f"Docker image '{image_name}' already exists.")
     except subprocess.CalledProcessError:
         print(f"Docker image '{image_name}' not found. Building the image...")
-        subprocess.run(f"docker build -t {image_name} -f {dockerfile_path} {context_dir}", shell=True, check=True)
+        subprocess.run(
+            f"docker build -t {image_name} -f {dockerfile_path} {context_dir}",
+            shell=True,
+            check=True,
+        )
         print(f"Docker image '{image_name}' built successfully.")
 
 
@@ -57,6 +66,8 @@ def launch_container(image_name, internal_port, dockerfile_path) -> int:
 
     docker_command = f"docker run -d -p {host_port}:{internal_port} {image_name}"
     subprocess.run(docker_command, shell=True, check=True)
-    print(f"Docker container of image {image_name} launched with port mapping: {host_port}:{internal_port}")
+    print(
+        f"Docker container of image {image_name} launched with port mapping: {host_port}:{internal_port}"
+    )
 
     return host_port

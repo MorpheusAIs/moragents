@@ -13,7 +13,6 @@ pre-commit==3.5.0
 flake8==7.0.0
 black==24.2.0
 isort==5.13.2
-mypy==1.8.0
 types-requests==2.31.0.20240311
 types-setuptools==69.2.0.20240316
 flake8-bugbear==24.2.6

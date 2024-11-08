@@ -1,8 +1,8 @@
 import importlib
-import logging
 import json
+import logging
 
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
@@ -118,11 +118,7 @@ class Delegator:
                 method = getattr(agent, method_name)
                 return method(request)
             else:
-                logger.warning(
-                    "Method %s not found in agent %s", method_name, agent_name
-                )
-                return {
-                    "error": f"No such method '{method_name}' in agent '{agent_name}'"
-                }, 400
+                logger.warning("Method %s not found in agent %s", method_name, agent_name)
+                return {"error": f"No such method '{method_name}' in agent '{agent_name}'"}, 400
         logger.warning("Attempted to delegate to non-existent agent: %s", agent_name)
         return {"error": "No such agent registered"}, 400

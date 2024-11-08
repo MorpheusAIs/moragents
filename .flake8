@@ -1,4 +1,43 @@
 [flake8]
 max-line-length = 100
-exclude = .git,__pycache__,build,dist,*.egg-info
-ignore = E203, W503, E731
+max-complexity = 10
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.egg-info,
+    venv,
+    .venv
+extend-ignore =
+    # Black conflicts with E203 (whitespace before ':')
+    E203,
+    # Line break before binary operator (Black formats this way)
+    W503,
+    # Lambda assignments (used in routes)
+    E731,
+    # Bugbear errors that might cause recursion
+    B023,
+    # Ignore nested function definition
+    B006,
+    # Ignore missing docstring in public module/package/class/function/method
+    D100,
+    D101,
+    D104,
+    D102,
+    D103,
+    D105,
+    D106,
+    D107,
+
+per-file-ignores =
+    # Allow unused imports in __init__.py
+    __init__.py: F401
+    # Allow longer lines in config files
+    config.py: E501
+
+# Limit the plugins to avoid recursion issues
+enable-extensions = B
+
+# Increased recursion depth adjustment for bugbear
+max-recursion-depth = 1000

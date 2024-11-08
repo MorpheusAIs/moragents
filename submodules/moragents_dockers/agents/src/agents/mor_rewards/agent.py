@@ -42,9 +42,7 @@ class MorRewardsAgent:
             if "prompt" in data and "wallet_address" in data:
                 prompt = data["prompt"]
                 wallet_address = data["wallet_address"]
-                response, role, next_turn_agent = self.get_response(
-                    prompt, wallet_address
-                )
+                response, role, next_turn_agent = self.get_response(prompt, wallet_address)
                 return {
                     "role": role,
                     "content": response,

@@ -98,7 +98,7 @@ end;
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
-  
+
   { Skip EULA page if already accepted }
   if (PageID = EULAPage.ID) and EULAAccepted then
     Result := True;

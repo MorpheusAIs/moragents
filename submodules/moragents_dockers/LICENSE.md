@@ -1,5 +1,5 @@
-This repository is provided under the following MIT License subject to 
-it's continued status as a contribution to the Morpheus project with 
+This repository is provided under the following MIT License subject to
+it's continued status as a contribution to the Morpheus project with
 weights as accepted in the initial contribution pull request.
 
 MIT License

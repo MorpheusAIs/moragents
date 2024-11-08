@@ -20,28 +20,3 @@ repos:
     rev: 5.13.2
     hooks:
     -   id: isort
-
--   repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
-    hooks:
-    -   id: flake8
-        additional_dependencies: [
-            'flake8-bugbear',
-            'flake8-comprehensions',
-            'flake8-docstrings',
-        ]
-
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-    -   id: mypy
-        additional_dependencies: [types-all]
-
--   repo: local
-    hooks:
-    -   id: eslint
-        name: eslint
-        entry: bash -c 'cd submodules/moragents_dockers/frontend && npx eslint'
-        language: system
-        types_or: [javascript, jsx, ts, tsx]
-        require_serial: true

@@ -53,9 +53,7 @@ class CryptoDataAgent:
                     )
                 elif func_name == "get_tvl":
                     return (
-                        tools.get_protocol_total_value_locked_tool(
-                            args["protocol_name"]
-                        ),
+                        tools.get_protocol_total_value_locked_tool(args["protocol_name"]),
                         "assistant",
                     )
                 elif func_name == "get_market_cap":

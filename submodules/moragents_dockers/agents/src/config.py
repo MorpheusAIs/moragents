@@ -70,6 +70,6 @@ class Config:
                 "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
                 "name": "crypto news agent",
                 "upload_required": False,
-            }
+            },
         ]
     }

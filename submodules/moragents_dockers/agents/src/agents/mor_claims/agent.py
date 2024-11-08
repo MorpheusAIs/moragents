@@ -24,21 +24,15 @@ class MorClaimsAgent:
                 0: tools.get_current_user_reward(wallet_address, 0),
                 1: tools.get_current_user_reward(wallet_address, 1),
             }
-            available_rewards = {
-                pool: amount for pool, amount in rewards.items() if amount > 0
-            }
+            available_rewards = {pool: amount for pool, amount in rewards.items() if amount > 0}
 
             if available_rewards:
                 selected_pool = max(available_rewards, key=available_rewards.get)
                 self.conversation_state[wallet_address]["available_rewards"] = {
                     selected_pool: available_rewards[selected_pool]
                 }
-                self.conversation_state[wallet_address][
-                    "receiver_address"
-                ] = wallet_address
-                self.conversation_state[wallet_address][
-                    "state"
-                ] = "awaiting_confirmation"
+                self.conversation_state[wallet_address]["receiver_address"] = wallet_address
+                self.conversation_state[wallet_address]["state"] = "awaiting_confirmation"
                 return (
                     f"You have {available_rewards[selected_pool]} MOR rewards available in pool {selected_pool}. Would you like to proceed with claiming these rewards?",
                     "assistant",
@@ -53,9 +47,7 @@ class MorClaimsAgent:
 
         elif state == "awaiting_confirmation":
             user_input = message[-1]["content"].lower()
-            if any(
-                word in user_input for word in ["yes", "proceed", "confirm", "claim"]
-            ):
+            if any(word in user_input for word in ["yes", "proceed", "confirm", "claim"]):
                 return self.prepare_transactions(wallet_address)
             else:
                 return (
@@ -104,9 +96,7 @@ class MorClaimsAgent:
             if "prompt" in data and "wallet_address" in data:
                 prompt = data["prompt"]
                 wallet_address = data["wallet_address"]
-                response, role, next_turn_agent = self._get_response(
-                    [prompt], wallet_address
-                )
+                response, role, next_turn_agent = self._get_response([prompt], wallet_address)
                 return {
                     "role": role,
                     "content": response,
@@ -153,9 +143,7 @@ class MorClaimsAgent:
         elif flag == "failed":
             response = f"The claim transaction has failed."
         elif flag == "initiated":
-            response = (
-                f"Claim transaction has been sent, please wait for it to be confirmed."
-            )
+            response = f"Claim transaction has been sent, please wait for it to be confirmed."
 
         if tx_hash:
             response = (
