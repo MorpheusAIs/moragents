@@ -1,7 +1,5 @@
-import json
 import logging
 import re
-import urllib.parse
 from src.agents.news_agent.config import Config
 from src.agents.news_agent.tools import (
     clean_html,
@@ -21,7 +19,6 @@ class NewsAgent:
         self.embeddings = embeddings
         self.tools_provided = self.get_tools()
         self.url_shortener = pyshorteners.Shortener()
-        logger.info("NewsAgent initialized")
 
     def get_tools(self):
         return [
@@ -42,7 +39,6 @@ class NewsAgent:
                         "required": ["coins"],
                     },
                 },
-
             }
         ]
 
@@ -152,9 +148,5 @@ class NewsAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error in chat method: {str(e)}", exc_info=True)
-            return {
-                "role": "assistant",
-                "content": f"An error occurred: {str(e)}",
-                "next_turn_agent": None,
-            }
+            logger.error(f"Error in chat method: {str(e)}, request: {request}")
+            raise e
