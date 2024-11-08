@@ -26,3 +26,5 @@ tweepy
 cdp-sdk
 pytz
 pyshorteners
+pillow==11.0.0
+webdriver-manager==4.0.2
