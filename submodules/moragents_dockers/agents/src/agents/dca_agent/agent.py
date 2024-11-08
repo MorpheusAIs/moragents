@@ -1,12 +1,8 @@
-import logging
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any
-from cdp import Wallet
-
-logger = logging.getLogger(__name__)
-
+from cdp import Wallet, Cdp
 
 class DCAAgent:
     def __init__(self, agent_info: Dict[str, Any], llm: Any, embeddings: Any):
@@ -37,9 +33,9 @@ class DCAAgent:
         - tuple: A response message and the next turn agent.
         """
         try:
-            token = request.get("token", "ETH")
-            spend_limit = float(request.get("spend_limit", 0.01))
-            interval = int(request.get("interval", 24))
+            token = request.get('token', 'ETH')
+            spend_limit = float(request.get('spend_limit', 0.01))
+            interval = int(request.get('interval', 24))
 
             if spend_limit <= 0 or interval <= 0:
                 raise ValueError("Spend limit and interval must be positive numbers.")
@@ -50,19 +46,11 @@ class DCAAgent:
             next_turn_agent = self.agent_info["name"]
             return response, next_turn_agent
         except ValueError as e:
-            logger.error(
-                f"Validation error in chat: {str(e)}, agent: {self.agent_info['name']}"
-            )
-            raise e
+            return f"Error: {str(e)}", self.agent_info["name"]
         except Exception as e:
-            logger.error(
-                f"Unexpected error in chat: {str(e)}, agent: {self.agent_info['name']}"
-            )
-            raise e
+            return f"An unexpected error occurred: {str(e)}", self.agent_info["name"]
 
-    def schedule_purchase(
-        self, user_id: str, token: str, amount: float, interval: int
-    ) -> str:
+    def schedule_purchase(self, user_id: str, token: str, amount: float, interval: int) -> str:
         """
         Schedule a recurring purchase task.
 

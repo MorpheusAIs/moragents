@@ -1,18 +1,16 @@
 .headerBar {
-  background-color: #020804;
-  border-bottom: 2px solid gray;
-  padding: 8px 0;
-  width: 100%;
+  background-color: var(--header-bg-color);
+  padding: 10px;
+  border-bottom: 1px solid #313137;
   z-index: 1401;
+  font-family: inherit;
 }
 
 .logo {
-  display: flex;
-  align-items: center;
+  margin-right: 200px;
 }
 
 .buttonContainer {
   display: flex;
-  gap: 16px;
   align-items: center;
 }

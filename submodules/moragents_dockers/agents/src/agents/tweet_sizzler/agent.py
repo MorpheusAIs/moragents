@@ -151,7 +151,5 @@ class TweetSizzlerAgent:
                 return {"role": "assistant", "content": Config.ERROR_INVALID_ACTION}
 
         except Exception as e:
-            logger.error(
-                f"Unexpected error in chat method: {str(e)}, request: {chat_request}"
-            )
-            raise e
+            logger.exception(f"Unexpected error in chat method: {str(e)}")
+            return {"role": "assistant", "content": f"Error: {str(e)}"}
