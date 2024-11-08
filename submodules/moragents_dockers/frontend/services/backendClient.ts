@@ -2,12 +2,12 @@ import axios, { Axios } from "axios";
 
 export type ChatMessageBase = {
   role: "user" | "assistant" | "swap" | "claim";
-  agentName: string;
 };
 
 export type UserOrAssistantMessage = ChatMessageBase & {
   role: "user" | "assistant";
   content: string;
+  agentName?: string;
 };
 
 export const SWAP_STATUS = {
@@ -58,28 +58,6 @@ export type SwapMessage = ChatMessageBase & {
   content: SwapMessagePayload;
 };
 
-export type ImageMessageContent = {
-  success: boolean;
-  service: string;
-  image: string;
-  error?: string;
-};
-
-export type ImageMessage = ChatMessageBase & {
-  role: "image";
-  content: ImageMessageContent;
-};
-
-export type CryptoDataMessageContent = {
-  data: string;
-  coinId: string;
-};
-
-export type CryptoDataMessage = ChatMessageBase & {
-  role: "crypto_data";
-  content: CryptoDataMessageContent;
-};
-
 export type SystemMessage = ChatMessageBase & {
   role: "system";
   content: string;
@@ -114,8 +92,7 @@ export type ChatMessage =
   | UserOrAssistantMessage
   | SwapMessage
   | SystemMessage
-  | ClaimMessage
-  | ImageMessage;
+  | ClaimMessage;
 
 export type ChatsListItem = {
   index: number; //  index at chats array
@@ -258,7 +235,6 @@ export const writeMessage = async (
   const newMessage: ChatMessage = {
     role: "user",
     content: message,
-    agentName: "user",
   };
 
   history.push(newMessage);
@@ -274,6 +250,18 @@ export const writeMessage = async (
     });
   } catch (e) {
     console.error(e);
+
+    // resp = {
+    //     data: {
+    //         content: "Sorry, I'm not available right now. Please try again later."
+    //     }
+    // };
+  } finally {
+    console.log("Finally write message");
+    // history.push({
+    //     role: 'assistant',
+    //     content: resp?.data.content || "Unknown error occurred."
+    // });
   }
 
   return await getMessagesHistory(backendClient);
@@ -355,43 +343,4 @@ export const sendClaimStatus = async (
     role: responseBody.data.role,
     content: responseBody.data.content,
   } as ChatMessage;
-};
-
-export const getAvailableAgents = async (backendClient: Axios) => {
-  try {
-    const response = await backendClient.get("/available-agents");
-    return response.data;
-  } catch (error) {
-    console.error("Failed to fetch available agents:", error);
-    throw error;
-  }
-};
-
-export const setAvailableAgents = async (
-  backendClient: Axios,
-  agents: string[]
-) => {
-  try {
-    const response = await backendClient.post("/available-agents", {
-      agents,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Failed to set available agents:", error);
-    throw error;
-  }
-};
-
-// Update the ChatContext or wherever you're initializing the backend client
-export const initializeBackendClient = () => {
-  const backendClient = axios.create({
-    baseURL: "http://localhost:8080",
-  });
-
-  // Initialize available agents
-  getAvailableAgents(backendClient).catch((error) => {
-    console.error("Failed to initialize available agents:", error);
-  });
-
-  return backendClient;
 };

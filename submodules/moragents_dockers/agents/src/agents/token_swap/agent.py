@@ -154,8 +154,7 @@ class TokenSwapAgent:
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(f"Error in chat method: {str(e)}, request: {request}")
-            raise e
+            return {"Error": str(e)}, 500
 
     def tx_status(self, data):
         try:

@@ -46,7 +46,7 @@ embeddings = OllamaEmbeddings(
     model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL
 )
 
-delegator = Delegator(agent_manager, llm, embeddings)
+delegator = Delegator(Config.DELEGATOR_CONFIG, llm, embeddings)
 
 
 @app.post("/chat")
@@ -55,16 +55,15 @@ async def chat(chat_request: ChatRequest):
     chat_manager.add_message(prompt)
 
     try:
-        # Reset attempted agents at the start of each new chat request, for agent cascading
-        delegator.reset_attempted_agents()
-
         active_agent = agent_manager.get_active_agent()
 
         if not active_agent:
             logger.info("No active agent, getting delegator response")
 
             start_time = time.time()
-            result = delegator.get_delegator_response(prompt)
+            result = delegator.get_delegator_response(
+                prompt["content"], chat_manager.get_uploaded_file_status()
+            )
 
             end_time = time.time()
 
@@ -80,20 +79,13 @@ async def chat(chat_request: ChatRequest):
         logger.info(f"Delegating chat to active agent: {active_agent}")
         current_agent, response = delegator.delegate_chat(active_agent, chat_request)
 
-        if not current_agent:
-            logger.error("All agents failed to provide a valid response")
-            raise HTTPException(
-                status_code=500,
-                detail="All available agents failed to process the request",
-            )
-
         if isinstance(response, tuple) and len(response) == 2:
             error_message, status_code = response
             logger.error(f"Error from agent: {error_message}")
             raise HTTPException(status_code=status_code, detail=error_message)
 
         if isinstance(response, dict) and "role" in response and "content" in response:
-            chat_manager.add_response(response, current_agent)
+            chat_manager.add_response(response, current_agent or "Unknown")
 
             logger.info(f"Sending response: {response}")
             return response
@@ -155,7 +147,8 @@ async def swap_agent_swap(request: Request):
 async def rag_agent_upload(file: UploadFile = File(...)):
     logger.info("Received upload request")
     response = await delegator.delegate_route(
-        "rag agent", {"file": file}, "upload_file"
+
+        "general purpose and context-based rag agent", {"file": file}, "upload_file"
     )
     chat_manager.add_message(response)
     return response
@@ -185,27 +178,6 @@ async def set_x_api_key(request: Request):
 async def claim_agent_claim(request: Request):
     logger.info("Received claim request")
     return delegator.delegate_route("claim agent", request, "claim")
-
-
-@app.get("/available-agents")
-async def get_available_agents():
-    """Get the list of currently available agents"""
-    return {
-        "selected_agents": agent_manager.get_selected_agents(),
-        "available_agents": agent_manager.get_available_agents(),
-    }
-
-
-@app.post("/selected-agents")
-async def set_selected_agents(request: Request):
-    """Set which agents should be selected"""
-    data = await request.json()
-    agent_names = data.get("agents", [])
-
-    agent_manager.set_selected_agents(agent_names)
-    logger.info(f"Newly selected agents: {agent_manager.get_selected_agents()}")
-
-    return {"status": "success", "agents": agent_names}
 
 
 if __name__ == "__main__":

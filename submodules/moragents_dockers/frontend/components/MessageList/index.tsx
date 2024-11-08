@@ -26,7 +26,7 @@ export const MessageList: FC<MessageListProps> = ({
       sx={{
         overflowY: "scroll",
         overflowX: "hidden",
-        height: "100%",
+        height: "calc(100vh - 200px)",
         "::-webkit-scrollbar": {
           width: "8px",
           backgroundColor: "transparent",
