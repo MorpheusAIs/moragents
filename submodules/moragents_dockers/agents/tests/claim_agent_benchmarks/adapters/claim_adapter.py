@@ -1,5 +1,7 @@
-import requests
 import json
+
+import requests
+
 
 class ClaimAdapter:
     def __init__(self, url, headers):
@@ -11,4 +13,6 @@ class ClaimAdapter:
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception(f"Request failed with status code {response.status_code}: {response.text}")
+            raise Exception(
+                f"Request failed with status code {response.status_code}: {response.text}"
+            )

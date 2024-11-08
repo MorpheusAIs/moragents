@@ -18,4 +18,4 @@ export const Avatar: FC<AvatarProps> = ({ isAgent, agentName }: AvatarProps) => 
     return (
         <CAvatar w={'40px'} h={'40px'} backgroundColor={'#FFF'} padding={2} colorScheme="gray" src={me.src} name={agentName} />
     );
-}   
+}

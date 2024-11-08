@@ -14,27 +14,13 @@ class Config:
     DISTRIBUTION_ABI = [
         {
             "inputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "poolId_",
-                    "type": "uint256"
-                },
-                {
-                    "internalType": "address",
-                    "name": "user_",
-                    "type": "address"
-                }
+                {"internalType": "uint256", "name": "poolId_", "type": "uint256"},
+                {"internalType": "address", "name": "user_", "type": "address"},
             ],
             "name": "getCurrentUserReward",
-            "outputs": [
-                {
-                    "internalType": "uint256",
-                    "name": "",
-                    "type": "uint256"
-                }
-            ],
+            "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
             "stateMutability": "view",
-            "type": "function"
+            "type": "function",
         }
     ]
 
@@ -59,7 +45,7 @@ test_cases = [
     {
         "pool_id": 1,
         "wallet_address": "0x5CD4C60f0e566dCa1Ae8456C36a63bc7A8D803de",
-    }
+    },
 ]
 
 reward_check_prompts = [

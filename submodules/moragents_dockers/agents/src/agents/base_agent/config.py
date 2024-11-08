@@ -12,10 +12,11 @@ DELEGATOR_CONFIG = {
             "class": "BaseAgent",
             "description": "If the user wants to send a transaction on Base",
             "name": "Base Agent",
-            "upload": False
+            "upload": False,
         }
     ]
 }
+
 
 class Config:
 

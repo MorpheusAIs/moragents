@@ -1,19 +1,17 @@
-import os
 import logging
+import os
 import time
+
 import uvicorn
-
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
-from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
-
+from langchain_ollama import ChatOllama
+from pydantic import BaseModel
 from src.config import Config
 from src.delegator import Delegator
-from src.stores import agent_manager, chat_manager
 from src.models.messages import ChatRequest
+from src.stores import agent_manager, chat_manager
 
 # Constants
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
@@ -42,9 +40,7 @@ llm = ChatOllama(
     model=Config.OLLAMA_MODEL,
     base_url=Config.OLLAMA_URL,
 )
-embeddings = OllamaEmbeddings(
-    model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL
-)
+embeddings = OllamaEmbeddings(model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL)
 
 delegator = Delegator(agent_manager, llm, embeddings)
 
@@ -154,9 +150,7 @@ async def swap_agent_swap(request: Request):
 @app.post("/upload")
 async def rag_agent_upload(file: UploadFile = File(...)):
     logger.info("Received upload request")
-    response = await delegator.delegate_route(
-        "rag agent", {"file": file}, "upload_file"
-    )
+    response = await delegator.delegate_route("rag agent", {"file": file}, "upload_file")
     chat_manager.add_message(response)
     return response
 
@@ -176,9 +170,7 @@ async def post_tweet(request: Request):
 @app.post("/set_x_api_key")
 async def set_x_api_key(request: Request):
     logger.info("Received set X API key request")
-    return await delegator.delegate_route(
-        "tweet sizzler agent", request, "set_x_api_key"
-    )
+    return await delegator.delegate_route("tweet sizzler agent", request, "set_x_api_key")
 
 
 @app.post("/claim")

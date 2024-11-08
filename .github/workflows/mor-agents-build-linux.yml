@@ -104,7 +104,7 @@ jobs:
               local model=\$1
               local max_attempts=3
               local attempt=1
-              
+
               while [ \$attempt -le \$max_attempts ]; do
                   echo -e "\${YELLOW}Pulling Ollama model \$model (Attempt \$attempt)...${NC}"
                   if ollama pull \$model; then
@@ -115,7 +115,7 @@ jobs:
                   sleep 5
                   attempt=\$((attempt + 1))
               done
-              
+
               echo -e "\${RED}Failed to pull \$model after \$max_attempts attempts.${NC}"
               return 1
           }

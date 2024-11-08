@@ -1,6 +1,6 @@
 import logging
-import tweepy
 
+import tweepy
 from src.agents.tweet_sizzler.config import Config
 from src.models.messages import ChatRequest
 
@@ -125,9 +125,7 @@ class TweetSizzlerAgent:
             logger.info(f"Received chat request: {prompt}")
 
             action = prompt.get("action", Config.DEFAULT_ACTION)
-            logger.debug(
-                f"Extracted prompt content: {prompt['content']}, action: {action}"
-            )
+            logger.debug(f"Extracted prompt content: {prompt['content']}, action: {action}")
 
             if action == "generate":
                 logger.info(f"Generating tweet for prompt: {prompt['content']}")
@@ -137,9 +135,7 @@ class TweetSizzlerAgent:
             elif action == "post":
                 logger.info("Attempting to post tweet")
                 result, status_code = self.post_tweet(chat_request)
-                logger.info(
-                    f"Posted tweet result: {result}, status code: {status_code}"
-                )
+                logger.info(f"Posted tweet result: {result}, status code: {status_code}")
                 if isinstance(result, dict) and "error" in result:
                     return result, status_code
                 return {
@@ -151,7 +147,5 @@ class TweetSizzlerAgent:
                 return {"role": "assistant", "content": Config.ERROR_INVALID_ACTION}
 
         except Exception as e:
-            logger.error(
-                f"Unexpected error in chat method: {str(e)}, request: {chat_request}"
-            )
+            logger.error(f"Unexpected error in chat method: {str(e)}, request: {chat_request}")
             raise e

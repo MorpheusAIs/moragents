@@ -1,16 +1,13 @@
-import os
 import logging
+import os
 
 from fastapi import Request
-from werkzeug.utils import secure_filename
-
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
-
 from src.models.messages import ChatRequest
-from src.stores import chat_manager, agent_manager
+from src.stores import agent_manager, chat_manager
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +19,16 @@ class RagAgent:
         self.config = config
         self.llm = llm
         self.embedding = embeddings
-        self.messages = [
-            {"role": "assistant", "content": "Please upload a file to begin"}
-        ]
+        self.messages = [{"role": "assistant", "content": "Please upload a file to begin"}]
 
         self.prompt = ChatPromptTemplate.from_template(
             """
                 Answer the following question only based on the given context
-                                                        
+
                 <context>
                 {context}
                 </context>
-                                                        
+
                 Question: {input}
             """
         )
@@ -92,9 +87,7 @@ class RagAgent:
         formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
         formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
         selected_agents = agent_manager.get_selected_agents()
-        agent_descriptions = "\n".join(
-            [f"- {agent['description']}" for agent in selected_agents]
-        )
+        agent_descriptions = "\n".join([f"- {agent['description']}" for agent in selected_agents])
         system_prompt = f"""
         You are a helpful assistant. Use the provided context to respond to the following question.
         The following agents are currently available:

@@ -16,7 +16,7 @@ You may instead simply download the [pre-built app](../../README.md)
 3. Build Docker Image for Local Agent Execution
 
 ```shell
-For ARM (M1, M2, M3) 
+For ARM (M1, M2, M3)
     $ docker-compose -f submodules/moragents_dockers/docker-compose-apple.yml up
 
 For Intel (x86_64)
@@ -38,7 +38,7 @@ For Intel (x86_64)
     # If you have issues, try
     python -m PyInstaller --windowed --name="MORagents" --icon="images/moragents.icns" --osx-entitlements-file "build_assets/macOS/MORagents.entitlements" main.py
 
-6. Install Application 
+6. Install Application
 ```shell
   $ cp dist/MORagents.app /Applications
 ```

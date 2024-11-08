@@ -25,9 +25,7 @@ class DefaultAgent:
                 for agent in available_agents:
                     if agent["name"] in selected_agent_names:
                         human_name = agent.get("human_readable_name", agent["name"])
-                        selected_agents_info.append(
-                            f"- {human_name}: {agent['description']}"
-                        )
+                        selected_agents_info.append(f"- {human_name}: {agent['description']}")
 
                 system_prompt = f"""
                 You are a helpful assistant. Use the context provided to respond to the user's question.

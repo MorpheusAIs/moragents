@@ -34,12 +34,12 @@ if this_python < min_version:
     sys.exit(1)
 
 
+import argparse
+import importlib
 import os.path
 import pkgutil
 import shutil
 import tempfile
-import argparse
-import importlib
 from base64 import b85decode
 
 
@@ -115,6 +115,7 @@ def bootstrap(tmpdir):
     # Execute the included pip and use it to install the latest pip and
     # any user-requested packages from PyPI.
     from pip._internal.cli.main import main as pip_entry_point
+
     args = determine_pip_install_arguments()
     sys.exit(pip_entry_point(args))
 

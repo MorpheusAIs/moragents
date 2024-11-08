@@ -2,7 +2,8 @@ import logging
 import threading
 import time
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
+
 from cdp import Wallet
 
 logger = logging.getLogger(__name__)
@@ -50,19 +51,13 @@ class DCAAgent:
             next_turn_agent = self.agent_info["name"]
             return response, next_turn_agent
         except ValueError as e:
-            logger.error(
-                f"Validation error in chat: {str(e)}, agent: {self.agent_info['name']}"
-            )
+            logger.error(f"Validation error in chat: {str(e)}, agent: {self.agent_info['name']}")
             raise e
         except Exception as e:
-            logger.error(
-                f"Unexpected error in chat: {str(e)}, agent: {self.agent_info['name']}"
-            )
+            logger.error(f"Unexpected error in chat: {str(e)}, agent: {self.agent_info['name']}")
             raise e
 
-    def schedule_purchase(
-        self, user_id: str, token: str, amount: float, interval: int
-    ) -> str:
+    def schedule_purchase(self, user_id: str, token: str, amount: float, interval: int) -> str:
         """
         Schedule a recurring purchase task.
 

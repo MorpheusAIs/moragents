@@ -1,21 +1,22 @@
-import feedparser
+import logging
+import re
+import urllib.parse
 from datetime import datetime, timedelta
+from html import unescape
+
+import feedparser
 import pytz
 from dateutil import parser
-import re
-from html import unescape
 from src.agents.news_agent.config import Config
-import logging
-import urllib.parse
 
 logger = logging.getLogger(__name__)
 
 
 def clean_html(raw_html):
-    cleanr = re.compile('<.*?>')
-    cleantext = re.sub(cleanr, '', raw_html)
+    cleanr = re.compile("<.*?>")
+    cleantext = re.sub(cleanr, "", raw_html)
     cleantext = unescape(cleantext)
-    cleantext = ' '.join(cleantext.split())
+    cleantext = " ".join(cleantext.split())
     return cleantext
 
 
@@ -37,8 +38,8 @@ def fetch_rss_feed(feed_url):
     # URL encode the query parameter
     parsed_url = urllib.parse.urlparse(feed_url)
     query_params = urllib.parse.parse_qs(parsed_url.query)
-    if 'q' in query_params:
-        query_params['q'] = [urllib.parse.quote(q) for q in query_params['q']]
+    if "q" in query_params:
+        query_params["q"] = [urllib.parse.quote(q) for q in query_params["q"]]
     encoded_query = urllib.parse.urlencode(query_params, doseq=True)
     encoded_url = urllib.parse.urlunparse(parsed_url._replace(query=encoded_query))
 
@@ -58,14 +59,12 @@ def get_tools():
                     "properties": {
                         "coins": {
                             "type": "array",
-                            "items": {
-                                "type": "string"
-                            },
-                            "description": "List of cryptocurrency symbols to fetch news for"
+                            "items": {"type": "string"},
+                            "description": "List of cryptocurrency symbols to fetch news for",
                         }
                     },
-                    "required": ["coins"]
-                }
-            }
+                    "required": ["coins"],
+                },
+            },
         }
     ]
