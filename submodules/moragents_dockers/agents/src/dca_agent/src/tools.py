@@ -204,38 +204,26 @@ class StrategyStatus(str, Enum):
 class CDPClient:
     """CDP Client with error handling and retry logic"""
     _instance = None
-    _lock = threading.Lock()
+    _lock = asyncio.Lock()
+    _init_lock = asyncio.Lock()
 
     def __new__(cls):
-        with cls._lock:
-            if cls._instance is None:
-                cls._instance = super(CDPClient, cls).__new__(cls)
-                cls._instance._initialized = False
-            return cls._instance
+        if cls._instance is None:
+            cls._instance = super(CDPClient, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
 
-    def __init__(self):
-        if self._initialized:
-            return
-            
-        self._wallet: Optional[Wallet] = None
-        self._initialized = False
-        self._ready = asyncio.Event()
-        self._health_check_interval = 300  # 5 minutes
-        self._last_health_check = None
-        self._error_count = 0
-        
     async def initialize(self, api_key: str, api_secret: str) -> None:
         """Initialize CDP client with health monitoring"""
-        try:
-            with self._lock:
-                if self._initialized:
-                    return
-
+        async with self._init_lock:
+            if self._initialized:
+                return
+            try:
                 # Configure CDP SDK
                 Cdp.configure(api_key, api_secret)
                 
                 # Create wallet and verify connection
-                self._wallet = Wallet.create()
+                self._wallet = await Wallet.create()
                 await self._verify_connection()
                 
                 # Start health monitoring
@@ -246,10 +234,10 @@ class CDPClient:
                 
                 logger.info(f"CDP client initialized successfully: {self._wallet.default_address}")
                 
-        except Exception as e:
-            logger.error(f"CDP initialization failed: {e}")
-            self._ready.clear()
-            raise StrategyError.ExecutionFailed(f"CDP initialization failed: {e}")
+            except Exception as e:
+                logger.error(f"CDP initialization failed: {e}")
+                self._ready.clear()
+                raise StrategyError.ExecutionFailed(f"CDP initialization failed: {e}")
         
     async def _verify_connection(self) -> None:
         """Verify CDP connection and wallet setup"""
@@ -347,6 +335,7 @@ class Strategy:
     next_execution: Optional[datetime] = None
     history: List[Dict[str, Any]] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
+    _lock: asyncio.Lock = field(default_factory=asyncio.Lock, init=False)
 
     def __post_init__(self):
         """Initialize strategy metadata"""
@@ -357,8 +346,9 @@ class Strategy:
 
     async def execute(self, client: CDPClient) -> ExecutionResult:
         """Execute strategy purchase"""
-        if self.status != StrategyStatus.ACTIVE:
-            return ExecutionResult(
+        async with self._lock:
+            if self.status != StrategyStatus.ACTIVE:
+                return ExecutionResult(
                 success=False,
                 error=f"Strategy {self.id} is not active (current status: {self.status})"
             )
@@ -643,10 +633,13 @@ class Strategy:
             logger.error(f"Failed to fetch token price: {e}")
             raise StrategyError.ExecutionFailed(f"Failed to fetch token price: {e}")
 
-    def _schedule_next_execution(self, client: Optional[CDPClient] = None) -> None:
+    def _schedule_next_execution(self, client: Optional[CDPClient] = None, scheduler: Optional[AsyncIOScheduler] = None) -> None:
         """Schedule next execution with enhanced reliability"""
         if not client:
             client = CDPClient()
+        if not scheduler:
+            scheduler = AsyncIOScheduler()
+            scheduler.start()
             
         if self.next_execution:
             # Calculate optimal execution window
@@ -784,13 +777,16 @@ class Strategy:
 class StrategyStore(Protocol):
     """Strategy persistence protocol"""
     @abstractmethod
-    def save(self, strategy: Strategy) -> None: pass
+    async def save(self, strategy: Strategy) -> None: pass
+
     @abstractmethod
-    def load(self, strategy_id: str) -> Optional[Strategy]: pass
+    async def load(self, strategy_id: str) -> Optional[Strategy]: pass
+
     @abstractmethod
-    def delete(self, strategy_id: str) -> None: pass
+    async def delete(self, strategy_id: str) -> None: pass
+
     @abstractmethod
-    def list_all(self) -> List[Strategy]: pass
+    async def list_all(self) -> List[Strategy]: pass
 
 class JsonFileStrategyStore(StrategyStore):
     """Asynchronous JSON file-based strategy storage"""
@@ -1096,7 +1092,7 @@ async def handle_get_status(strategy_id: str, include_history: bool = False) -> 
     """Handler for getting strategy status"""
     try:
         store = JsonFileStrategyStore()
-        strategy = store.load(strategy_id)
+        strategy = await store.load(strategy_id)
         
         if not strategy:
             raise StrategyError.NotFound(f"Strategy {strategy_id} not found")
@@ -1131,7 +1127,7 @@ async def handle_pause_dca(strategy_id: str) -> Dict[str, Any]:
     """Handler for pausing DCA strategy"""
     try:
         store = JsonFileStrategyStore()
-        strategy = store.load(strategy_id)
+        strategy = await store.load(strategy_id)
         
         if not strategy:
             raise StrategyError.NotFound(f"Strategy {strategy_id} not found")
@@ -1158,7 +1154,7 @@ async def handle_resume_dca(strategy_id: str) -> Dict[str, Any]:
     """Handler for resuming DCA strategy"""
     try:
         store = JsonFileStrategyStore()
-        strategy = store.load(strategy_id)
+        strategy = await store.load(strategy_id)
         
         if not strategy:
             raise StrategyError.NotFound(f"Strategy {strategy_id} not found")
@@ -1186,7 +1182,7 @@ async def handle_cancel_dca(strategy_id: str) -> Dict[str, Any]:
     """Handler for cancelling DCA strategy"""
     try:
         store = JsonFileStrategyStore()
-        strategy = store.load(strategy_id)
+        strategy = await store.load(strategy_id)
         
         if not strategy:
             raise StrategyError.NotFound(f"Strategy {strategy_id} not found")
@@ -1213,7 +1209,7 @@ async def handle_check_health(strategy_id: str) -> Dict[str, Any]:
     """Handler for checking strategy health"""
     try:
         store = JsonFileStrategyStore()
-        strategy = store.load(strategy_id)
+        strategy = await store.load(strategy_id)
         
         if not strategy:
             raise StrategyError.NotFound(f"Strategy {strategy_id} not found")
