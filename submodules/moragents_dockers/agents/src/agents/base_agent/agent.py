@@ -1,12 +1,12 @@
 import json
-import threading
 import logging
-from cdp import Cdp, Wallet
+import threading
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
 
-from src.agents.base_agent.config import Config
+from cdp import Cdp, Wallet
 from src.agents.base_agent import tools
+from src.agents.base_agent.config import Config
 
 # Configure logging
 logging.basicConfig(
@@ -51,9 +51,7 @@ class BaseAgent:
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(
-                f"Error in chat method: {str(e)}, agent: {self.agent_info['name']}"
-            )
+            logger.error(f"Error in chat method: {str(e)}, agent: {self.agent_info['name']}")
             raise e
 
     def handle_request(self, message, chain_id, wallet_address):
@@ -108,9 +106,7 @@ class BaseAgent:
                 logger.info(f"Arguments: {args}")
 
                 # Call the appropriate handler
-                return self.handle_function_call(
-                    func_name, args, chain_id, wallet_address
-                )
+                return self.handle_function_call(func_name, args, chain_id, wallet_address)
             else:
                 # No function call; return the assistant's message
                 content = choice.get("content", "")
@@ -133,14 +129,10 @@ class BaseAgent:
         toAddress = args.get("toAddress")
         amount = args.get("amount")
         if not toAddress or not amount:
-            logger.error(
-                "Missing 'toAddress' or 'amount' in gasless_usdc_transfer arguments."
-            )
+            logger.error("Missing 'toAddress' or 'amount' in gasless_usdc_transfer arguments.")
             return "Error: Missing 'toAddress' or 'amount'.", "assistant", None
 
-        logger.info(
-            f"Initiating gasless USDC transfer to {toAddress} of amount {amount}."
-        )
+        logger.info(f"Initiating gasless USDC transfer to {toAddress} of amount {amount}.")
 
         try:
             res, role = tools.send_gasless_usdc_transaction(toAddress, amount)

@@ -109,9 +109,7 @@ class MorClaimsAgent:
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(
-                f"Unexpected error in chat method: {str(e)}, request: {request}"
-            )
+            logger.error(f"Unexpected error in chat method: {str(e)}, request: {request}")
             raise e
 
     def claim(self, request: ChatRequest):

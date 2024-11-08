@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +13,7 @@ class AgentManager:
         # Initialize with first 6 agents selected
         default_agents = [agent["name"] for agent in config["agents"][:6]]
         self.set_selected_agents(default_agents)
-        logger.info(
-            f"AgentManager initialized with {len(default_agents)} default selected agents"
-        )
+        logger.info(f"AgentManager initialized with {len(default_agents)} default selected agents")
 
     def get_active_agent(self) -> Optional[str]:
         return self.active_agent

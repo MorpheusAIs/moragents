@@ -1,9 +1,8 @@
 import importlib
-
 import logging
-from typing import Dict, Optional, Tuple, Any, List
+from typing import Any, Dict, List, Optional, Tuple
 
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
+from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from src.stores import chat_manager
 
 logger = logging.getLogger(__name__)
@@ -64,8 +63,7 @@ class Delegator:
             and agent_config["name"] not in self.attempted_agents
             and agent_config["name"] != "default agent"  # Exclude default agent
             and not (
-                agent_config["upload_required"]
-                and not chat_manager.get_uploaded_file_status()
+                agent_config["upload_required"] and not chat_manager.get_uploaded_file_status()
             )
         ]
 
@@ -86,10 +84,7 @@ class Delegator:
             "Your primary function is to select the correct agent from the list of available agents based on the user's input. "
             "You MUST use the 'select_agent' function to select an agent. "
             "Available agents and their descriptions:\n"
-            + "\n".join(
-                f"- {agent['name']}: {agent['description']}"
-                for agent in available_agents
-            )
+            + "\n".join(f"- {agent['name']}: {agent['description']}" for agent in available_agents)
         )
 
         tools = [
@@ -134,9 +129,7 @@ class Delegator:
 
         return {"agent": selected_agent_name}
 
-    def delegate_chat(
-        self, agent_name: str, chat_request: Any
-    ) -> Tuple[Optional[str], Any]:
+    def delegate_chat(self, agent_name: str, chat_request: Any) -> Tuple[Optional[str], Any]:
         """Delegate chat to specific agent with cascading fallback"""
         logger.info(f"Attempting to delegate chat to agent: {agent_name}")
 
@@ -173,13 +166,9 @@ class Delegator:
         except ValueError as ve:
             # No more agents available
             logger.error(f"No more agents available: {str(ve)}")
-            return None, {
-                "error": "All available agents have been attempted without success"
-            }
+            return None, {"error": "All available agents have been attempted without success"}
 
-    def delegate_route(
-        self, agent_name: str, request: Any, method_name: str
-    ) -> Tuple[Any, int]:
+    def delegate_route(self, agent_name: str, request: Any, method_name: str) -> Tuple[Any, int]:
         agent = self.agents.get(agent_name)
         if agent:
             if hasattr(agent, method_name):

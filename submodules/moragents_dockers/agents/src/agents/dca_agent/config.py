@@ -10,10 +10,11 @@ DELEGATOR_CONFIG = {
             "class": "DCAAgent",
             "description": "If the user wants to set up a dollar-cost averaging strategy for crypto purchases.",
             "name": "DCA Agent",
-            "upload": False
+            "upload": False,
         }
     ]
 }
+
 
 class Config:
 

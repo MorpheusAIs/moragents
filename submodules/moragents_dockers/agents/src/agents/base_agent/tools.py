@@ -1,18 +1,23 @@
-import requests
 import logging
 import time
-from src.agents.base_agent.config import Config
-from cdp import Cdp, Wallet, Transaction
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+import requests
+from cdp import Cdp, Transaction, Wallet
+from src.agents.base_agent.config import Config
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 class InsufficientFundsError(Exception):
     pass
 
+
 def send_gasless_usdc_transaction(toAddress, amount):
-    
-    client = Cdp.configure('','')
+
+    client = Cdp.configure("", "")
 
     logger.info(f"Client successfully configured: {client}")
 
@@ -22,7 +27,7 @@ def send_gasless_usdc_transaction(toAddress, amount):
     logger.info(f"Wallet address: {wallet1.default_address}")
 
     eth_faucet_tx = wallet1.faucet()
-    
+
     usdc_faucet_tx = wallet1.faucet(asset_id="usdc")
 
     logger.info(f"Faucet transaction successfully sent: {eth_faucet_tx}")
@@ -41,13 +46,12 @@ def send_gasless_usdc_transaction(toAddress, amount):
 
     logger.info(f"Transfer transaction: {transfer}")
 
-    return {
-        'success': 'Transfer transaction successful'
-    }, "gasless_usdc_transfer"
+    return {"success": "Transfer transaction successful"}, "gasless_usdc_transfer"
+
 
 def send_eth_transaction(toAddress, amount):
-    
-    client = Cdp.configure('','')
+
+    client = Cdp.configure("", "")
 
     logger.info(f"Client successfully configured: {client}")
 
@@ -72,10 +76,7 @@ def send_eth_transaction(toAddress, amount):
 
     logger.info(f"Transfer transaction: {transfer}")
 
-    return {
-        'success': 'Transfer transaction successful'
-    }, "eth_transfer"
-
+    return {"success": "Transfer transaction successful"}, "eth_transfer"
 
 
 def get_tools():
@@ -89,11 +90,11 @@ def get_tools():
                     "type": "object",
                     "properties": {
                         "toAddress": {"type": "string", "description": "Recipient's address."},
-                        "amount": {"type": "string", "description": "Amount of USDC to transfer."}
+                        "amount": {"type": "string", "description": "Amount of USDC to transfer."},
                     },
-                    "required": ["toAddress", "amount"]
-                }
-            }
+                    "required": ["toAddress", "amount"],
+                },
+            },
         },
         {
             "type": "function",
@@ -104,10 +105,10 @@ def get_tools():
                     "type": "object",
                     "properties": {
                         "toAddress": {"type": "string", "description": "Recipient's address."},
-                        "amount": {"type": "string", "description": "Amount of ETH to transfer."}
+                        "amount": {"type": "string", "description": "Amount of ETH to transfer."},
                     },
-                    "required": ["toAddress", "amount"]
-                }
-            }
-        }
+                    "required": ["toAddress", "amount"],
+                },
+            },
+        },
     ]

@@ -150,9 +150,7 @@ async def swap_agent_swap(request: Request):
 @app.post("/upload")
 async def rag_agent_upload(file: UploadFile = File(...)):
     logger.info("Received upload request")
-    response = await delegator.delegate_route(
-        "rag agent", {"file": file}, "upload_file"
-    )
+    response = await delegator.delegate_route("rag agent", {"file": file}, "upload_file")
     chat_manager.add_message(response)
     return response
 

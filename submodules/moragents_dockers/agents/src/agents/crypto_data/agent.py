@@ -50,9 +50,7 @@ class CryptoDataAgent:
                     )
                     return response_data, "assistant"
                 elif func_name == "get_floor_price":
-                    response_data["data"] = tools.get_nft_floor_price_tool(
-                        args["nft_name"]
-                    )
+                    response_data["data"] = tools.get_nft_floor_price_tool(args["nft_name"])
                     return response_data, "assistant"
                 elif func_name == "get_fdv":
                     response_data["data"] = tools.get_fully_diluted_valuation_tool(
@@ -65,9 +63,7 @@ class CryptoDataAgent:
                     )
                     return response_data, "assistant"
                 elif func_name == "get_market_cap":
-                    response_data["data"] = tools.get_coin_market_cap_tool(
-                        args["coin_name"]
-                    )
+                    response_data["data"] = tools.get_coin_market_cap_tool(args["coin_name"])
                     return response_data, "assistant"
             else:
                 logger.info("LLM provided a direct response without using tools")

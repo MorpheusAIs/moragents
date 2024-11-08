@@ -1,17 +1,15 @@
-import logging
 import base64
-import requests
-
+import logging
 from io import BytesIO
+
+import requests
 from PIL import Image
-
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
-
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from src.models.messages import ChatRequest
 
 logging.basicConfig(
@@ -65,9 +63,7 @@ class ImagenAgent:
 
             # Find textarea and enter the prompt
             wait = WebDriverWait(driver, 30)
-            textarea = wait.until(
-                EC.presence_of_element_located((By.TAG_NAME, "textarea"))
-            )
+            textarea = wait.until(EC.presence_of_element_located((By.TAG_NAME, "textarea")))
             textarea.clear()
             textarea.send_keys(prompt)
 
@@ -157,7 +153,5 @@ class ImagenAgent:
                 logger.error("Missing 'prompt' in chat request data")
                 return {"error": "Missing parameters"}, 400
         except Exception as e:
-            logger.error(
-                f"Unexpected error in chat method: {str(e)}, request: {request}"
-            )
+            logger.error(f"Unexpected error in chat method: {str(e)}, request: {request}")
             raise e
