@@ -36,6 +36,7 @@ class BaseAgent:
     def chat(self, request):
         try:
             data = request.get_json()
+<<<<<<< HEAD:submodules/moragents_dockers/agents/src/agents/base_agent/agent.py
             if "prompt" in data:
                 prompt = data["prompt"]
                 wallet_address = data.get("wallet_address")
@@ -48,6 +49,30 @@ class BaseAgent:
                     "content": response,
                     "next_turn_agent": next_turn_agent,
                 }
+=======
+            if not data:
+                return {"error": "Invalid request data"}, 400
+
+            # Check CDP client initialization
+            if not self.client and not self.initialize_cdp_client():
+                return {
+                    "error": "CDP client not initialized. Please set API credentials.",
+                    "needs_credentials": True
+                }, 400
+
+            # Handle strategy status request
+            if 'strategy_id' in data:
+                response, role = self.handle_get_status({"strategy_id": data['strategy_id']})
+                return {"role": role, "content": response}
+
+            # Handle chat prompt
+            if 'prompt' in data:
+                prompt = data['prompt']
+                wallet_address = data.get('wallet_address')
+                chain_id = data.get('chain_id')
+                response, role, next_turn_agent = self.handle_request(prompt, chain_id, wallet_address)
+                return {"role": role, "content": response, "next_turn_agent": next_turn_agent}
+>>>>>>> domsteil/main:submodules/moragents_dockers/agents/src/base_agent/src/agent.py
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
@@ -112,10 +137,32 @@ class BaseAgent:
                 content = choice.get("content", "")
                 return content, "assistant", None
         except Exception as e:
+<<<<<<< HEAD:submodules/moragents_dockers/agents/src/agents/base_agent/agent.py
             logger.error(
                 f"Error processing LLM response: {str(e)}, agent: {self.agent_info['name']}"
             )
             raise e
+=======
+            logger.error(f"Error processing LLM response: {str(e)}")
+            return "Error: Unable to process the request.", "assistant", None
+        
+    def initialize_cdp_client(self) -> bool:
+        """Initialize CDP client with stored credentials"""
+        try:
+            api_key = self.flask_app.config.get("cdpApiKey")
+            api_secret = self.flask_app.config.get("cdpApiSecret")
+            
+            if not all([api_key, api_secret]):
+                logger.warning("CDP credentials not found")
+                return False
+                
+            self.client = Cdp.configure(api_key, api_secret)
+            return True
+        except Exception as e:
+            logger.error(f"CDP client initialization failed: {e}")
+            return False
+
+>>>>>>> domsteil/main:submodules/moragents_dockers/agents/src/base_agent/src/agent.py
 
     def handle_function_call(self, func_name, args, chain_id, wallet_address):
         handler = self.function_handlers.get(func_name)
