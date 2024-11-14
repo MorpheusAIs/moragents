@@ -344,3 +344,18 @@ export const sendClaimStatus = async (
     content: responseBody.data.content,
   } as ChatMessage;
 };
+
+
+// Set CDP credentials
+export const setCdpCredentials = async (
+  backendClient: Axios,
+): Promise<void> => {
+
+  const cdApiKey = localStorage.getItem("cdpApiKey");
+  const cdApiSecret = localStorage.getItem("cdpApiSecret");
+
+  await backendClient.post("/set-cdp-credentials", {
+    cdp_api_key: cdApiKey,
+    cdp_api_secret: cdApiSecret,
+  });
+};
