@@ -15,7 +15,7 @@ import { Tweet } from "../Tweet";
 import styles from "./index.module.css";
 
 const TWEET_AGENT = "tweet sizzler agent";
-const SWAP_AGENT = "crypto swap agent";
+const SWAP_AGENT = "token swap agent";
 const USER_ROLE = "user";
 const UNDEFINED_AGENT = "Undefined Agent";
 
@@ -53,7 +53,7 @@ export const MessageItem: FC<MessageItemProps> = ({
       );
     }
 
-    if ((message as UserOrAssistantMessage).agentName === SWAP_AGENT) {
+    if (message.role === "swap")  {
       return (
         <SwapMessage
           isActive={isLastSwapMessage}

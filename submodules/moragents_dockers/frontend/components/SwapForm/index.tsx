@@ -150,7 +150,7 @@ export const SwapForm: FC<SwapFormProps> = ({
           return;
         }
 
-        const _payload = await getApprovalTxPayload(
+        const response = await getApprovalTxPayload(
           getHttpClient(),
           chainId,
           src_address,
@@ -158,15 +158,19 @@ export const SwapForm: FC<SwapFormProps> = ({
           decimals?.data || 18
         );
 
-        onSubmitApprove(_payload.data.response);
+        console.log('Raw backend response:', response); // Debug log
+        console.log('Transaction data:', response.data); // Debug log
+
+        // Make sure we're passing the transaction data correctly
+        onSubmitApprove(response.data);
         setDisableButtons(true);
       } catch (e) {
-        console.log(`Failed to generate Approve TX payload: ${e}`);
+        console.error(`Failed to generate Approve TX payload: ${e}`);
       } finally {
         setIsButtonLoading(false);
       }
     },
-    [onSubmitApprove, isNativeToken, decimals?.data, fromMessage, chainId]
+    [fromMessage, chainId, onSubmitApprove, decimals, isNativeToken]
   );
 
   const handleSwap = useCallback(

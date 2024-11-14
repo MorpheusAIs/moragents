@@ -107,7 +107,9 @@ async def chat(chat_request: ChatRequest):
 @app.post("/tx_status")
 async def swap_agent_tx_status(request: Request):
     logger.info("Received tx_status request")
-    response = await delegator.delegate_route("crypto swap agent", request, "tx_status")
+    data = await request.json()
+    logger.debug(f"TX status data: {data}")
+    response = delegator.delegate_route("token swap agent", data, "tx_status")
     chat_manager.add_message(response)
     return response
 
@@ -128,19 +130,25 @@ async def clear_messages():
 @app.post("/allowance")
 async def swap_agent_allowance(request: Request):
     logger.info("Received allowance request")
-    return delegator.delegate_route("crypto swap agent", request, "get_allowance")
+    data = await request.json()
+    logger.debug(f"Allowance request data: {data}")
+    return delegator.delegate_route("token swap agent", data, "get_allowance")
 
 
 @app.post("/approve")
 async def swap_agent_approve(request: Request):
     logger.info("Received approve request")
-    return delegator.delegate_route("crypto swap agent", request, "approve")
+    data = await request.json()
+    logger.debug(f"Approve request data: {data}")
+    return delegator.delegate_route("token swap agent", data, "approve")
 
 
 @app.post("/swap")
 async def swap_agent_swap(request: Request):
     logger.info("Received swap request")
-    return delegator.delegate_route("crypto swap agent", request, "swap")
+    data = await request.json()
+    logger.debug(f"Swap request data: {data}")
+    return delegator.delegate_route("token swap agent", data, "swap")
 
 
 @app.post("/upload")
@@ -171,6 +179,13 @@ async def set_x_api_key(request: Request):
     logger.info("Received set X API key request")
     return await delegator.delegate_route(
         "tweet sizzler agent", request, "set_x_api_key"
+    )
+
+@app.post("/set_inch_api_key")
+async def set_inch_api_key(request: Request):
+    logger.info("Received set 1inch API key request")
+    return await delegator.delegate_route(
+        "token swap agent", request, "set_inch_api_key"
     )
 
 
