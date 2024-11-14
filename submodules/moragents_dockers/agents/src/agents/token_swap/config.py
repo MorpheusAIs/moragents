@@ -11,10 +11,6 @@ class Config:
     INCH_URL = "https://api.1inch.dev/token"
     QUOTE_URL = "https://api.1inch.dev/swap"
     APIBASEURL = f"https://api.1inch.dev/swap/v6.0/"
-    HEADERS = {
-        "Authorization": "Bearer WvQuxaMYpPvDiiOL5RHWUm7OzOd20nt4",
-        "accept": "application/json",
-    }
     WEB3RPCURL = {
         "56": "https://bsc-dataseed.binance.org",
         "42161": "https://arb1.arbitrum.io/rpc",
@@ -52,3 +48,20 @@ class Config:
         },
     ]
     INCH_NATIVE_TOKEN_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+
+    _instance = None
+    _inch_api_key = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    @property
+    def inch_api_key(self):
+        return self._inch_api_key
+
+    @inch_api_key.setter
+    def inch_api_key(self, value):
+        self._inch_api_key = value

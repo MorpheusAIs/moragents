@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaCog } from "react-icons/fa";
 import classes from "./index.module.css";
+import { setInchApiKey, getHttpClient } from "../../services/backendClient";
 
 const SettingsButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +11,7 @@ const SettingsButton: React.FC = () => {
     accessToken: "",
     accessTokenSecret: "",
     bearerToken: "",
+    inchApiKey: "",
   });
   const [displayCredentials, setDisplayCredentials] = useState({
     apiKey: "",
@@ -17,6 +19,7 @@ const SettingsButton: React.FC = () => {
     accessToken: "",
     accessTokenSecret: "",
     bearerToken: "",
+    inchApiKey: "",
   });
 
   useEffect(() => {
@@ -26,6 +29,7 @@ const SettingsButton: React.FC = () => {
       accessToken: localStorage.getItem("accessToken") || "",
       accessTokenSecret: localStorage.getItem("accessTokenSecret") || "",
       bearerToken: localStorage.getItem("bearerToken") || "",
+      inchApiKey: localStorage.getItem("inchApiKey") || "",
     };
     setCredentials(storedCredentials);
     setDisplayCredentials({
@@ -34,6 +38,7 @@ const SettingsButton: React.FC = () => {
       accessToken: obscureCredential(storedCredentials.accessToken),
       accessTokenSecret: obscureCredential(storedCredentials.accessTokenSecret),
       bearerToken: obscureCredential(storedCredentials.bearerToken),
+      inchApiKey: obscureCredential(storedCredentials.inchApiKey),
     });
   }, []);
 
@@ -42,18 +47,37 @@ const SettingsButton: React.FC = () => {
     return "***" + credential.slice(-5);
   };
 
-  const handleSaveCredentials = () => {
-    Object.entries(credentials).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
-    });
-    setDisplayCredentials({
-      apiKey: obscureCredential(credentials.apiKey),
-      apiSecret: obscureCredential(credentials.apiSecret),
-      accessToken: obscureCredential(credentials.accessToken),
-      accessTokenSecret: obscureCredential(credentials.accessTokenSecret),
-      bearerToken: obscureCredential(credentials.bearerToken),
-    });
-    setIsOpen(false);
+  const handleSaveCredentials = async () => {
+    try {
+      console.log("Saving credentials...");
+      
+      // Save to localStorage first
+      Object.entries(credentials).forEach(([key, value]) => {
+        localStorage.setItem(key, value);
+      });
+
+      // If we have a 1inch API key, send it to the backend
+      if (credentials.inchApiKey) {
+        console.log("Saving 1inch API key to backend...");
+        const actualApiKey = credentials.inchApiKey; // Get the raw value before obscuring
+        await setInchApiKey(getHttpClient(), actualApiKey);
+        console.log("1inch API key saved to backend successfully");
+      }
+
+      // Only obscure values for display
+      setDisplayCredentials({
+        apiKey: obscureCredential(credentials.apiKey),
+        apiSecret: obscureCredential(credentials.apiSecret),
+        accessToken: obscureCredential(credentials.accessToken),
+        accessTokenSecret: obscureCredential(credentials.accessTokenSecret),
+        bearerToken: obscureCredential(credentials.bearerToken),
+        inchApiKey: obscureCredential(credentials.inchApiKey),
+      });
+      
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error saving credentials:", error);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,6 +97,8 @@ const SettingsButton: React.FC = () => {
         return "Access Token Secret";
       case "bearerToken":
         return "Bearer Token";
+      case "inchApiKey":
+        return "1inch API Key";
       default:
         return key;
     }
@@ -94,14 +120,19 @@ const SettingsButton: React.FC = () => {
             className={classes.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className={classes.modalHeader}>X API Settings</h2>
+            <h2 className={classes.modalHeader}>Settings</h2>
             <p className={classes.modalDescription}>
-              All of these credentials are necessary. The API Key and API Secret
+              <strong>X API:</strong> All of these credentials are necessary. The API Key and API Secret
               are the API keys found in the developer portal. The Access Token
               and Access Token Secret will be generated for your particular
               user. The Bearer Token is used for authentication. Both the Access
               Token Secret and Bearer Token are found in the X Developer Portal
               under the Authentication Tokens section.
+            </p>
+            <br />
+            <p className={classes.modalDescription}>
+              <strong>1inch API:</strong> This is necessary for the token swap agent.  You can get 
+              a key from the 1inch developer portal.
             </p>
             <br />
             <button
@@ -116,23 +147,15 @@ const SettingsButton: React.FC = () => {
                   <p className={classes.apiKeyDisplay}>
                     Current {getFieldLabel(key)}:{" "}
                     <span className={classes.apiKeyValue}>
-                      {displayCredentials[
-                        key as keyof typeof displayCredentials
-                      ] || "Not set"}
+                      {displayCredentials[key as keyof typeof displayCredentials] || "Not set"}
                     </span>
                   </p>
                   <input
                     className={classes.apiKeyInput}
-                    type={value ? "text" : "password"}
+                    type="password"
                     name={key}
                     placeholder={`Enter new ${getFieldLabel(key)}`}
-                    value={
-                      value
-                        ? value.replace(/./g, (char, index) =>
-                            index < value.length - 4 ? "•" : char
-                          )
-                        : ""
-                    }
+                    value={credentials[key as keyof typeof credentials]}
                     onChange={handleInputChange}
                   />
                 </div>

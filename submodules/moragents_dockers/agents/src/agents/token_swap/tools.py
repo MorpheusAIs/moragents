@@ -4,6 +4,8 @@ import time
 from web3 import Web3
 
 from src.agents.token_swap.config import Config
+logger = logging.getLogger(__name__)
+
 
 
 class InsufficientFundsError(Exception):
@@ -18,16 +20,39 @@ class SwapNotPossibleError(Exception):
     pass
 
 
-def search_tokens(query, chain_id, limit=1, ignore_listed="false"):
+def get_headers(api_key: str | None = None) -> dict[str, str]:
+    """Get headers for 1inch API requests with optional API key override"""
+    config = Config.get_instance()
+    headers = {
+        "Authorization": f"Bearer {api_key or config.inch_api_key or ''}",
+        "accept": "application/json",
+    }
+    return headers
+
+
+def search_tokens(
+    query: str, 
+    chain_id: int, 
+    limit: int = 1, 
+    ignore_listed: str = "false", 
+    inch_api_key: str | None = None
+) -> dict | None:
+    logger.info(f"Searching tokens - Query: {query}, Chain ID: {chain_id}")
     endpoint = f"/v1.2/{chain_id}/search"
     params = {"query": query, "limit": limit, "ignore_listed": ignore_listed}
+    
     response = requests.get(
-        Config.INCH_URL + endpoint, params=params, headers=Config.HEADERS
+        Config.INCH_URL + endpoint,
+        params=params,
+        headers=get_headers(inch_api_key)
     )
+    logger.info(f"Search tokens response status: {response.status_code}")
     if response.status_code == 200:
-        return response.json()
+        result = response.json()
+        logger.info(f"Found tokens: {result}")
+        return result
     else:
-        logging.error(f"Failed to search tokens. Status code: {response.status_code}")
+        logger.error(f"Failed to search tokens. Status code: {response.status_code}, Response: {response.text}")
         return None
 
 
@@ -99,16 +124,24 @@ def validate_swap(web3: Web3, token1, token2, chain_id, amount, wallet_address):
     return t1[0]["address"], t1[0]["symbol"], t2[0]["address"], t2[0]["symbol"]
 
 
-def get_quote(token1, token2, amount_in_wei, chain_id):
+def get_quote(token1, token2, amount_in_wei, chain_id, inch_api_key=None):
+    logger.info(f"Getting quote - Token1: {token1}, Token2: {token2}, Amount: {amount_in_wei}, Chain ID: {chain_id}")
     endpoint = f"/v6.0/{chain_id}/quote"
     params = {"src": token1, "dst": token2, "amount": int(amount_in_wei)}
+    logger.debug(f"Quote request - URL: {Config.QUOTE_URL + endpoint}, Params: {params}")
+    
     response = requests.get(
-        Config.QUOTE_URL + endpoint, params=params, headers=Config.HEADERS
+        Config.QUOTE_URL + endpoint,
+        params=params,
+        headers=get_headers(inch_api_key)
     )
+    logger.info(f"Quote response status: {response.status_code}")
     if response.status_code == 200:
-        return response.json()
+        result = response.json()
+        logger.info(f"Quote received: {result}")
+        return result
     else:
-        logging.error(f"Failed to get quote. Status code: {response.status_code}")
+        logger.error(f"Failed to get quote. Status code: {response.status_code}, Response: {response.text}")
         return None
 
 
@@ -134,8 +167,32 @@ def convert_to_readable_unit(
     return smallest_unit_amount / (10**decimals)
 
 
-def swap_coins(token1, token2, amount, chain_id, wallet_address):
-    """Swap two crypto coins with each other"""
+def swap_coins(token1: str, token2: str, amount: str | float, chain_id: int, wallet_address: str) -> tuple[str, str]:
+    """Swap two tokens"""
+    logger.info(f"Attempting swap: {token1} -> {token2}, amount: {amount}")
+    
+    # Validate amount first
+    if not amount or (isinstance(amount, str) and not amount.strip()):
+        return {
+            "error": "Please specify the amount you want to swap"
+        }, "assistant"
+        
+    try:
+        amount = float(amount)
+    except ValueError:
+        return {
+            "error": f"Invalid amount format: {amount}. Please provide a valid number."
+        }, "assistant"
+
+    if amount <= 0:
+        return {
+            "error": "Amount must be greater than 0"
+        }, "assistant"
+
+    # Normalize token symbols
+    token1 = token1.strip().upper()
+    token2 = token2.strip().upper()
+    
     web3 = Web3(Web3.HTTPProvider(Config.WEB3RPCURL[str(chain_id)]))
     t1_a, t1_id, t2_a, t2_id = validate_swap(
         web3, token1, token2, chain_id, amount, wallet_address

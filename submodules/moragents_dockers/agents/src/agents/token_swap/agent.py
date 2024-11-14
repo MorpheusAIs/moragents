@@ -12,15 +12,37 @@ logger = logging.getLogger(__name__)
 
 class TokenSwapAgent:
     def __init__(self, config, llm, embeddings):
-        self.config = config
+        self.config = Config.get_instance()
         self.llm = llm
         self.embeddings = embeddings
         self.tools_provided = tools.get_tools()
         self.context = []
 
+    async def set_inch_api_key(self, request):
+        try:
+            if isinstance(request, dict):
+                data = request
+            else:
+                data = await request.json()
+            
+            if "inch_api_key" not in data:
+                logger.warning("Missing required API credentials")
+                return {"error": "Missing 1inch API key"}, 400
+
+            self.config.inch_api_key = data["inch_api_key"]
+            logger.info("1inch API key saved successfully")
+            
+            return {"success": "1inch API key saved successfully"}, 200
+            
+        except Exception as e:
+            logger.error(f"Error setting 1inch API key: {e}")
+            return {"error": str(e)}, 500
+
     def api_request_url(self, method_name, query_params, chain_id):
-        base_url = Config.APIBASEURL + str(chain_id)
-        return f"{base_url}{method_name}?{'&'.join([f'{key}={value}' for key, value in query_params.items()])}"
+        """Build 1inch API request URL with parameters"""
+        base_url = f"{self.config.APIBASEURL}{chain_id}"
+        param_string = "&".join([f"{k}={v}" for k, v in query_params.items()])
+        return f"{base_url}{method_name}?{param_string}"
 
     def check_allowance(self, token_address, wallet_address, chain_id):
         url = self.api_request_url(
@@ -28,7 +50,7 @@ class TokenSwapAgent:
             {"tokenAddress": token_address, "walletAddress": wallet_address},
             chain_id,
         )
-        response = requests.get(url, headers=Config.HEADERS)
+        response = requests.get(url, headers=tools.get_headers())
         data = response.json()
         return data
 
@@ -39,66 +61,78 @@ class TokenSwapAgent:
             else {"tokenAddress": token_address}
         )
         url = self.api_request_url("/approve/transaction", query_params, chain_id)
-        response = requests.get(url, headers=Config.HEADERS)
+        response = requests.get(url, headers=tools.get_headers())
         transaction = response.json()
         return transaction
 
     def build_tx_for_swap(self, swap_params, chain_id):
+        """Build swap transaction using stored API key"""
         url = self.api_request_url("/swap", swap_params, chain_id)
-        swap_transaction = requests.get(url, headers=Config.HEADERS).json()
-        return swap_transaction
+        logger.debug(f"Swap request URL: {url}")
+        
+        response = requests.get(url, headers=tools.get_headers())
+        if response.status_code != 200:
+            logger.error(f"1inch API error: {response.text}")
+            raise ValueError(f"1inch API error: {response.text}")
+            
+        raw_swap_transaction = response.json()
+        return raw_swap_transaction
 
     def get_response(self, message, chain_id, wallet_address):
-        system_prompt = (
-            "Don't make assumptions about the value of the arguments for the function "
-            "they should always be supplied by the user and do not alter the value of the arguments. "
-            "Don't make assumptions about what values to plug into functions. Ask for clarification if a user "
-            "request is ambiguous. you only need the value of token1 we dont need the value of token2. After "
-            "starting from scratch do not assume the name of token1 or token2"
-        )
+        if not self.config.inch_api_key:
+            return "Please set your 1inch API key in Settings before making swap requests.", "assistant", None
+
+        system_message = """You are a helpful assistant that processes token swap requests. 
+        When a user wants to swap tokens, analyze their request and provide a SINGLE tool call with complete information.
+        
+        Always return a single 'swap_agent' tool call with all three required parameters:
+        - token1: the source token
+        - token2: the destination token
+        - value: the amount to swap
+        
+        If any information is missing from the user's request, do not make a tool call. Instead, respond asking for the missing information."""
 
         messages = [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": system_message}
         ]
         messages.extend(message)
-
-        logger.info("Sending request to LLM with %d messages", len(messages))
-
+        
         llm_with_tools = self.llm.bind_tools(self.tools_provided)
 
         try:
             result = llm_with_tools.invoke(messages)
-            logger.info("Received response from LLM: %s", result)
+            
+            if not result.tool_calls:
+                self.context = []  # Clear context when asking for info
+                return "Please specify the tokens you want to swap and the amount.", "assistant", None
 
-            if result.tool_calls:
-                tool_call = result.tool_calls[0]
-                logger.info("Selected tool: %s", tool_call)
-                func_name = tool_call.get("name")
-                args = tool_call.get("args")
-                logger.info("LLM suggested using tool: %s", func_name)
+            # Get the most complete tool call
+            tool_call = max(result.tool_calls, 
+                           key=lambda x: sum(1 for v in x.get("args", {}).values() if v))
+            
+            args = tool_call.get("args", {})
+            tok1 = args.get("token1")
+            tok2 = args.get("token2")
+            value = args.get("value")
+            
+            if not all([tok1, tok2, value]):
+                self.context = []  # Clear context when asking for missing params
+                return "Please specify both tokens and the amount you want to swap.", "assistant", None
 
-                if func_name == "swap_agent":
-                    tok1 = args["token1"]
-                    tok2 = args["token2"]
-                    value = args["value"]
-                    try:
-                        res, role = tools.swap_coins(
-                            tok1, tok2, float(value), chain_id, wallet_address
-                        )
-                    except (
-                        tools.InsufficientFundsError,
-                        tools.TokenNotFoundError,
-                        tools.SwapNotPossibleError,
-                    ) as e:
-                        self.context = []
-                        return str(e), "assistant", None
-                    return res, role, None
-            else:
-                logger.info("LLM provided a direct response without using tools")
-                return result.content, "assistant", "crypto swap agent"
+            try:
+                logger.info(f"Processing swap: {tok1} -> {tok2}, amount: {value}")
+                res, role = tools.swap_coins(tok1, tok2, value, chain_id, wallet_address)
+                if "error" in res:
+                    return res["error"], "assistant", None
+                return res, role, None
+            except (tools.InsufficientFundsError, tools.TokenNotFoundError, tools.SwapNotPossibleError) as e:
+                self.context = []
+                return str(e), "assistant", None
+            
         except Exception as e:
-            logger.error(f"Error in get_response: {str(e)}")
-            return f"An error occurred: {str(e)}", "assistant", None
+            logger.error("Error in get_response: %s", str(e))
+            self.context = []
+            return f"Sorry, there was an error processing your request: {str(e)}", "assistant", None
 
     def get_status(self, flag, tx_hash, tx_type):
         response = ""
@@ -136,21 +170,22 @@ class TokenSwapAgent:
         )
         return response, role, next_turn_agent
 
-    def chat(self, request: ChatRequest):
-        data = request.dict()
+    def chat(self, chat_request: ChatRequest):
         try:
-            if "prompt" in data:
-                prompt = data["prompt"]
-                wallet_address = data["wallet_address"]
-                chain_id = data["chain_id"]
+            if "prompt" in chat_request.dict():
+                prompt = chat_request.prompt.dict()
+                chain_id = chat_request.chain_id
+                wallet_address = chat_request.wallet_address
+                
                 response, role, next_turn_agent = self.generate_response(
                     prompt, chain_id, wallet_address
                 )
                 return {
                     "role": role,
                     "content": response,
-                    "next_turn_agent": next_turn_agent,
+                    "next_turn_agent": next_turn_agent
                 }
+            
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
@@ -189,7 +224,7 @@ class TokenSwapAgent:
                 chain_id = request_data["chain_id"]
                 amount = request_data["amount"]
                 res = self.approve_transaction(token, chain_id, amount)
-                return {"response": res}
+                return res
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:

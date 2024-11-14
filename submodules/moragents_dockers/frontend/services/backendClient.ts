@@ -344,3 +344,40 @@ export const sendClaimStatus = async (
     content: responseBody.data.content,
   } as ChatMessage;
 };
+
+export const setInchApiKey = async (
+  backendClient: Axios,
+  inchApiKey: string
+): Promise<void> => {
+  try {
+    await backendClient.post("/set_inch_api_key", {
+      inch_api_key: inchApiKey,
+    });
+  } catch (error) {
+    console.error("Error setting 1inch API key:", error);
+    throw error;
+  }
+};
+
+export const getSwapQuote = async (
+  backendClient: Axios,
+  params: any
+): Promise<any> => {
+  const inchApiKey = localStorage.getItem("inchApiKey");
+  console.log("Getting swap quote with params:", {
+    ...params,
+    inch_api_key: inchApiKey ? "***" + inchApiKey.slice(-4) : "not set"
+  });
+  
+  try {
+    const response = await backendClient.post("/quote", {
+      ...params,
+      inch_api_key: inchApiKey,
+    });
+    console.log("Swap quote response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting swap quote:", error);
+    throw error;
+  }
+};
