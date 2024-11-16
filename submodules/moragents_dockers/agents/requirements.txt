@@ -18,6 +18,9 @@ python-dateutil
 python-multipart==0.0.12
 beautifulsoup4==4.12.3
 selenium==4.25.0
+cdp-sdk
+aiocdp
+asyncio
 torch
 pytz
 pyshorteners

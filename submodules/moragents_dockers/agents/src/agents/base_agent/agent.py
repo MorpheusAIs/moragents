@@ -177,25 +177,28 @@ class BaseAgent:
         try:
             # Initialize CDP client
             self.client = Cdp.configure(cdp_api_key, cdp_api_secret)
-            
-            # Create a new wallet and save its data
-            wallet = self.wallet_manager.create_wallet()
-            wallet_data = {
-                "wallet_id": wallet.id,
-                "seed": wallet.seed,
-                "default_address_id": wallet.default_address.address
-            }
 
-            # Fund the wallet
-            self.wallet_manager.fund_wallet(wallet, asset_id="eth")
-            self.wallet_manager.fund_wallet(wallet, asset_id="usdc")
+            # You should implement the "fetch" method to retrieve the securely persisted data object,
+            # keyed by the wallet ID.
+            existing_wallet = self.wallet_manager.load_wallet()
+            if existing_wallet:
+                wallet.load_seed(existing_wallet)
+                return {"message": "CDP credentials set and wallet loaded successfully"}, 200
+            
+            else:
+                # Create a new wallet and save its data
+                wallet = self.wallet_manager.create_wallet()
+
+                # Fund the wallet
+                self.wallet_manager.fund_wallet(wallet, asset_id="eth")
+                self.wallet_manager.fund_wallet(wallet, asset_id="usdc")
             
             # Save the wallet data
-            if self.wallet_manager.save_wallet(wallet_data):
+            if self.wallet_manager.save_wallet(wallet):
                 return {"message": "CDP credentials set and wallet saved successfully"}, 200
             else:
                 return {"error": "Failed to save wallet data"}, 500
                 
         except Exception as e:
-            logger.error(f"Error in set_cdp_credentials: {str(e)}")
+            logger.error(f"Error in initialize_cdp_credentials: {str(e)}")
             return {"error": f"Failed to set CDP credentials: {str(e)}"}, 500
