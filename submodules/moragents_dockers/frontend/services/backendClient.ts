@@ -354,7 +354,7 @@ export const setCdpCredentials = async (
   const cdApiKey = localStorage.getItem("cdpApiKey");
   const cdApiSecret = localStorage.getItem("cdpApiSecret");
 
-  await backendClient.post("/set-cdp-credentials", {
+  await backendClient.post("/initialize-cdp-credentials", {
     cdp_api_key: cdApiKey,
     cdp_api_secret: cdApiSecret,
   });

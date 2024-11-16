@@ -1,6 +1,7 @@
 import json
 import threading
 import logging
+import os
 from cdp import Cdp, Wallet
 from datetime import datetime
 from typing import Dict, Any
@@ -24,11 +25,15 @@ class BaseAgent:
         self.tools_provided = tools.get_tools()
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
         self.wallets: Dict[str, Wallet] = {}
+        self.wallet_manager = tools.WalletManager()
+        self.transaction_manager = tools.TransactionManager(self.wallet_manager)
+        self.wallet_file = "wallet.txt"
 
         # Mapping of function names to handler methods
         self.function_handlers = {
             "gasless_usdc_transfer": self.handle_gasless_usdc_transfer,
             "eth_transfer": self.handle_eth_transfer,
+            "initialize_cdp_wallet": self.initialize_cdp_wallet
         }
 
     def chat(self, request):
@@ -123,7 +128,7 @@ class BaseAgent:
             logger.error(f"Function '{func_name}' not supported.")
             return f"Error: Function '{func_name}' not supported.", "assistant", None
 
-    def handle_gasless_usdc_transfer(self, args, chain_id, wallet_address):
+    def handle_gasless_usdc_transfer(self, args):
         toAddress = args.get("toAddress")
         amount = args.get("amount")
         if not toAddress or not amount:
@@ -133,14 +138,14 @@ class BaseAgent:
         logger.info(f"Initiating gasless USDC transfer to {toAddress} of amount {amount}.")
 
         try:
-            res, role = tools.send_gasless_usdc_transaction(toAddress, amount)
+            res, role = self.transaction_manager.send_gasless_usdc_transaction(toAddress, amount)
             logger.info(f"Transfer result: {res}")
             return f"Successfully sent {amount} USDC to {toAddress} gaslessly.", role, None
         except tools.InsufficientFundsError as e:
             logger.error(f"Insufficient funds: {str(e)}")
             return str(e), "assistant", None
 
-    def handle_eth_transfer(self, args, chain_id, wallet_address):
+    def handle_eth_transfer(self, args):
         toAddress = args.get("toAddress")
         amount = args.get("amount")
         if not toAddress or not amount:
@@ -150,15 +155,17 @@ class BaseAgent:
         logger.info(f"Initiating ETH transfer to {toAddress} of amount {amount}.")
 
         try:
-            res, role = tools.send_eth_transaction(toAddress, amount)
+            res, role = self.transaction_manager.send_eth_transaction(toAddress, amount)
             logger.info(f"Transfer result: {res}")
             return f"Successfully sent {amount} ETH to {toAddress}.", role, None
         except tools.InsufficientFundsError as e:
             logger.error(f"Insufficient funds: {str(e)}")
             return str(e), "assistant", None
-
-    def set_cdp_credentials(self, request):
-        """ Set CDP credentials """
+        
+    def initialize_cdp_wallet(self, request):
+        """ 
+        Set CDP credentials and save wallet data
+        """
         data = request.get_json()
 
         cdp_api_key = data.get("cdp_api_key")
@@ -168,7 +175,27 @@ class BaseAgent:
             return {"error": "CDP credentials not found"}, 400
         
         try:
+            # Initialize CDP client
             self.client = Cdp.configure(cdp_api_key, cdp_api_secret)
-            return {"message": "CDP credentials set successfully"}, 200
+            
+            # Create a new wallet and save its data
+            wallet = self.wallet_manager.create_wallet()
+            wallet_data = {
+                "wallet_id": wallet.id,
+                "seed": wallet.seed,
+                "default_address_id": wallet.default_address.address
+            }
+
+            # Fund the wallet
+            self.wallet_manager.fund_wallet(wallet, asset_id="eth")
+            self.wallet_manager.fund_wallet(wallet, asset_id="usdc")
+            
+            # Save the wallet data
+            if self.wallet_manager.save_wallet(wallet_data):
+                return {"message": "CDP credentials set and wallet saved successfully"}, 200
+            else:
+                return {"error": "Failed to save wallet data"}, 500
+                
         except Exception as e:
+            logger.error(f"Error in set_cdp_credentials: {str(e)}")
             return {"error": f"Failed to set CDP credentials: {str(e)}"}, 500

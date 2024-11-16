@@ -26,6 +26,8 @@ const SettingsButton: React.FC = () => {
       accessToken: localStorage.getItem("accessToken") || "",
       accessTokenSecret: localStorage.getItem("accessTokenSecret") || "",
       bearerToken: localStorage.getItem("bearerToken") || "",
+      cdpApiKey: localStorage.getItem("cdpApiKey") || "",
+      cdpApiSecret: localStorage.getItem("cdpApiSecret") || "",
     };
     setCredentials(storedCredentials);
     setDisplayCredentials({
@@ -34,6 +36,8 @@ const SettingsButton: React.FC = () => {
       accessToken: obscureCredential(storedCredentials.accessToken),
       accessTokenSecret: obscureCredential(storedCredentials.accessTokenSecret),
       bearerToken: obscureCredential(storedCredentials.bearerToken),
+      cdpApiKey: obscureCredential(storedCredentials.cdpApiKey),
+      cdpApiSecret: obscureCredential(storedCredentials.cdpApiSecret),
     });
   }, []);
 
@@ -52,6 +56,8 @@ const SettingsButton: React.FC = () => {
       accessToken: obscureCredential(credentials.accessToken),
       accessTokenSecret: obscureCredential(credentials.accessTokenSecret),
       bearerToken: obscureCredential(credentials.bearerToken),
+      cdpApiKey: obscureCredential(credentials.cdpApiKey),
+      cdpApiSecret: obscureCredential(credentials.cdpApiSecret),
     });
     setIsOpen(false);
   };
@@ -73,6 +79,10 @@ const SettingsButton: React.FC = () => {
         return "Access Token Secret";
       case "bearerToken":
         return "Bearer Token";
+      case "cdpApiKey":
+        return "CDP API Key";
+      case "cdpApiSecret":
+        return "CDP API Secret";
       default:
         return key;
     }

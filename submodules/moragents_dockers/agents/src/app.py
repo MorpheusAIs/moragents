@@ -174,6 +174,12 @@ async def set_x_api_key(request: Request):
     )
 
 
+@app.post("/initialize-cdp-credentials")
+async def initialize_cdp_credentials(request: Request):
+    logger.info("Received initialize CDP credentials request")
+    return await delegator.delegate_route("base agent", request, "initialize_cdp_credentials")
+
+
 @app.post("/claim")
 async def claim_agent_claim(request: Request):
     logger.info("Received claim request")
