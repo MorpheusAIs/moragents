@@ -72,7 +72,6 @@ class DCAAgent:
                     "2. Pause active strategies\n"
                     "3. Resume paused strategies\n"
                     "4. Cancel existing strategies\n"
-                    "5. Check strategy status and health"
                 )
             }
         ]
@@ -118,16 +117,15 @@ class DCAAgent:
     def handle_dollar_cost_average(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
         """Handle dollar cost averaging strategy creation"""
         try:
-            res, role = tools.handle_create_dca(
+            res, role = tools.handle_create_dca_strategy(
                 token_address=args["token_address"],
                 amount=args["amount"],
-                interval=args["interval"],
+                interval_type=args["interval_type"],
                 total_periods=args.get("total_periods"),
                 min_price=args.get("min_price"),
                 max_price=args.get("max_price"),
                 max_slippage=args.get("max_slippage", 0.01),
-                stop_loss=args.get("stop_loss"),
-                take_profit=args.get("take_profit")
+                gasless=args.get("gasless", False)
             )
             logger.info(f"DCA Strategy creation result: {res}")
             return f"Successfully created DCA strategy with ID: {res['strategy_id']}", role, None
@@ -141,7 +139,7 @@ class DCAAgent:
     def handle_pause_dca_strategy(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
         """Handle pausing a DCA strategy"""
         try:
-            res, role = tools.handle_pause_dca(args["strategy_id"])
+            res, role = tools.handle_pause_dca_strategy(args["strategy_id"])
             logger.info(f"Strategy pause result: {res}")
             return f"Successfully paused strategy {args['strategy_id']}", role, None
         except tools.StrategyNotFoundError as e:
@@ -154,7 +152,7 @@ class DCAAgent:
     def handle_resume_dca_strategy(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
         """Handle resuming a DCA strategy"""
         try:
-            res, role = tools.handle_resume_dca(args["strategy_id"])
+            res, role = tools.handle_resume_dca_strategy(args["strategy_id"])
             logger.info(f"Strategy resume result: {res}")
             return f"Successfully resumed strategy {args['strategy_id']}", role, None
         except tools.StrategyNotFoundError as e:
@@ -167,7 +165,7 @@ class DCAAgent:
     def handle_cancel_dca_strategy(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
         """Handle cancelling a DCA strategy"""
         try:
-            res, role = tools.handle_cancel_dca(args["strategy_id"])
+            res, role = tools.handle_cancel_dca_strategy(args["strategy_id"])
             logger.info(f"Strategy cancellation result: {res}")
             return f"Successfully cancelled strategy {args['strategy_id']}", role, None
         except tools.StrategyNotFoundError as e:
@@ -175,33 +173,4 @@ class DCAAgent:
             return str(e), "assistant", None
         except tools.ExecutionError as e:
             logger.error(f"Error cancelling strategy: {str(e)}")
-            return str(e), "assistant", None
-
-    def handle_get_status(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
-        """Handle getting strategy status"""
-        try:
-            res, role = tools.handle_get_status(
-                args["strategy_id"],
-                include_history=args.get("include_history", False)
-            )
-            logger.info(f"Strategy status result: {res}")
-            return json.dumps(res, indent=2), role, None
-        except tools.StrategyNotFoundError as e:
-            logger.error(f"Strategy not found: {str(e)}")
-            return str(e), "assistant", None
-        except tools.ExecutionError as e:
-            logger.error(f"Error getting strategy status: {str(e)}")
-            return str(e), "assistant", None
-
-    def handle_check_health(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
-        """Handle checking strategy health"""
-        try:
-            res, role = tools.handle_check_health(args["strategy_id"])
-            logger.info(f"Strategy health check result: {res}")
-            return json.dumps(res, indent=2), role, None
-        except tools.StrategyNotFoundError as e:
-            logger.error(f"Strategy not found: {str(e)}")
-            return str(e), "assistant", None
-        except tools.ExecutionError as e:
-            logger.error(f"Error checking strategy health: {str(e)}")
             return str(e), "assistant", None
