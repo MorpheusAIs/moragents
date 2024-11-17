@@ -4,7 +4,6 @@ protobuf==5.27.2
 scikit-learn==1.5.1
 fastapi==0.115.0
 Werkzeug==2.2.2
-web3==6.20.1
 pymupdf==1.22.5
 faiss-cpu==1.8.0.post1
 feedparser
@@ -18,8 +17,10 @@ python-dateutil
 python-multipart==0.0.12
 beautifulsoup4==4.12.3
 selenium==4.25.0
-cdp-sdk
-aiocdp
+web3>=6.21.0
+cdp-sdk==0.10.3
+aiofiles
+apscheduler
 asyncio
 torch
 pytz

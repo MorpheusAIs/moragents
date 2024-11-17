@@ -178,8 +178,6 @@ class BaseAgent:
             # Initialize CDP client
             self.client = Cdp.configure(cdp_api_key, cdp_api_secret)
 
-            # You should implement the "fetch" method to retrieve the securely persisted data object,
-            # keyed by the wallet ID.
             existing_wallet = self.wallet_manager.load_wallet()
             if existing_wallet:
                 wallet.load_seed(existing_wallet)

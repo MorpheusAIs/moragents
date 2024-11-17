@@ -347,7 +347,7 @@ export const sendClaimStatus = async (
 
 
 // Set CDP credentials
-export const setCdpCredentials = async (
+export const initializeCDPWallet = async (
   backendClient: Axios,
 ): Promise<void> => {
 

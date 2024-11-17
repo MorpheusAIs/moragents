@@ -10,6 +10,8 @@ const SettingsButton: React.FC = () => {
     accessToken: "",
     accessTokenSecret: "",
     bearerToken: "",
+    cdpApiKey: "",
+    cdpApiSecret: "",
   });
   const [displayCredentials, setDisplayCredentials] = useState({
     apiKey: "",
@@ -17,6 +19,8 @@ const SettingsButton: React.FC = () => {
     accessToken: "",
     accessTokenSecret: "",
     bearerToken: "",
+    cdpApiKey: "",
+    cdpApiSecret: "",
   });
 
   useEffect(() => {

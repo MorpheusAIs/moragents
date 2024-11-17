@@ -206,7 +206,7 @@ class DCAAgent:
             logger.error(f"Error checking strategy health: {str(e)}")
             return str(e), "assistant", None
 
-    def set_cdp_credentials(self, request):
+    def initialize_cdp_credentials(self, request):
         """ Set CDP credentials """
         data = request.get_json()
 
