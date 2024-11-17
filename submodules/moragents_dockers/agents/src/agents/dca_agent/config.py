@@ -18,7 +18,5 @@ DELEGATOR_CONFIG = {
 }
 
 class Config:
-
-    CDP_API_KEY = ""
-    CDP_API_SECRET = ""
-    DEFAULT_ACTION = "eth_transfer"
+    
+    DEFAULT_ACTION = "swap"
