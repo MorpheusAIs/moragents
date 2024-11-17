@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Any
 from .config import Config
 from src.agents.base_agent import tools
-
+from src.cdp import CDPWalletManager
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -24,8 +24,7 @@ class BaseAgent:
         self.embeddings = embeddings    
         self.tools_provided = tools.get_tools()
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
-        self.wallets: Dict[str, Wallet] = {}
-        self.wallet_manager = tools.WalletManager()
+        self.wallet_manager = CDPWalletManager()
         self.transaction_manager = tools.TransactionManager(self.wallet_manager)
         self.wallet_file = "wallet.txt"
 
@@ -33,7 +32,6 @@ class BaseAgent:
         self.function_handlers = {
             "gasless_usdc_transfer": self.handle_gasless_usdc_transfer,
             "eth_transfer": self.handle_eth_transfer,
-            "initialize_cdp_wallet": self.initialize_cdp_wallet
         }
 
     def chat(self, request):
@@ -161,42 +159,3 @@ class BaseAgent:
         except tools.InsufficientFundsError as e:
             logger.error(f"Insufficient funds: {str(e)}")
             return str(e), "assistant", None
-        
-    def initialize_cdp_wallet(self, request):
-        """ 
-        Set CDP credentials and save wallet data
-        """
-        data = request.get_json()
-
-        cdp_api_key = data.get("cdp_api_key")
-        cdp_api_secret = data.get("cdp_api_secret")
-
-        if not cdp_api_key or not cdp_api_secret:
-            return {"error": "CDP credentials not found"}, 400
-        
-        try:
-            # Initialize CDP client
-            self.client = Cdp.configure(cdp_api_key, cdp_api_secret)
-
-            existing_wallet = self.wallet_manager.load_wallet()
-            if existing_wallet:
-                wallet.load_seed(existing_wallet)
-                return {"message": "CDP credentials set and wallet loaded successfully"}, 200
-            
-            else:
-                # Create a new wallet and save its data
-                wallet = self.wallet_manager.create_wallet()
-
-                # Fund the wallet
-                self.wallet_manager.fund_wallet(wallet, asset_id="eth")
-                self.wallet_manager.fund_wallet(wallet, asset_id="usdc")
-            
-            # Save the wallet data
-            if self.wallet_manager.save_wallet(wallet):
-                return {"message": "CDP credentials set and wallet saved successfully"}, 200
-            else:
-                return {"error": "Failed to save wallet data"}, 500
-                
-        except Exception as e:
-            logger.error(f"Error in initialize_cdp_credentials: {str(e)}")
-            return {"error": f"Failed to set CDP credentials: {str(e)}"}, 500

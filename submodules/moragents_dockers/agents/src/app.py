@@ -14,6 +14,9 @@ from src.config import Config
 from src.delegator import Delegator
 from src.stores import agent_manager, chat_manager
 from src.models.messages import ChatRequest
+from src.cdp import CDPWalletManager
+
+from cdp import Cdp, Wallet, Transaction
 
 # Constants
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
@@ -48,6 +51,7 @@ embeddings = OllamaEmbeddings(
 
 delegator = Delegator(Config.DELEGATOR_CONFIG, llm, embeddings)
 
+wallet_manager = CDPWalletManager()
 
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
@@ -102,6 +106,43 @@ async def chat(chat_request: ChatRequest):
     except Exception as e:
         logger.error(f"Error in chat route: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/initialize_cdp_credentials")
+async def initialize_cdp_credentials(request: Request):
+    """ 
+    Set CDP credentials and save Base Agent wallet data
+    """
+    data = await request.json()
+    
+    cdp_api_key = data.get("cdp_api_key")
+    cdp_api_secret = data.get("cdp_api_secret")
+
+    if not cdp_api_key or not cdp_api_secret:
+        return {"error": "CDP credentials not found"}, 400
+    
+    try:
+        # Initialize CDP client
+        Cdp.configure(cdp_api_key, cdp_api_secret)
+        
+        wallet_manager = CDPWalletManager()
+        existing_wallet = await wallet_manager.load_wallet()
+
+        if existing_wallet:
+            return {"message": "CDP credentials set and wallet loaded successfully"}, 200
+        
+        # Create and fund new wallet if none exists
+        wallet = await wallet_manager.create_wallet()
+        
+        # Fund the wallet with ETH and USDC
+        for asset_id in ["eth", "usdc"]:
+            tx = await wallet_manager.fund_wallet(wallet, asset_id=asset_id)
+            
+        return {"message": "CDP credentials set and wallet initialized successfully"}, 200
+            
+    except Exception as e:
+        logger.error(f"Error in initialize_cdp_credentials: {str(e)}")
+        return {"error": f"Failed to set CDP credentials: {str(e)}"}, 500
 
 
 @app.post("/tx_status")
@@ -172,13 +213,6 @@ async def set_x_api_key(request: Request):
     return await delegator.delegate_route(
         "tweet sizzler agent", request, "set_x_api_key"
     )
-
-
-@app.post("/initialize-cdp-credentials")
-async def initialize_cdp_credentials(request: Request):
-    logger.info("Received initialize CDP credentials request")
-    return await delegator.delegate_route("base agent", request, "initialize_cdp_credentials")
-
 
 @app.post("/claim")
 async def claim_agent_claim(request: Request):

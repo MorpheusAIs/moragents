@@ -27,11 +27,11 @@ const CDPWalletInitializerButton = () => {
     const backendClient = getHttpClient();
     
     try {
-      // Simulate wallet initialization - replace with actual wallet creation
+
       await initializeCDPWallet(backendClient);
       
       setIsSuccess(true);
-      setFeedbackMessage("Wallet initialized successfully! Address: 0x742d...44e");
+      setFeedbackMessage("Wallet initialized successfully!");
     } catch (error) {
       console.error("Error initializing wallet:", error);
       setIsSuccess(false);

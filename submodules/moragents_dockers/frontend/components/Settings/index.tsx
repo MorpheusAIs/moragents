@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaCog } from "react-icons/fa";
 import classes from "./index.module.css";
+import CDPWalletInitializerButton from "../CDPWalletInitializerButton";
 
 const SettingsButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -101,6 +102,8 @@ const SettingsButton: React.FC = () => {
         <FaCog className={classes.settingsIcon} />
         Settings
       </button>
+
+      <CDPWalletInitializerButton />
 
       {isOpen && (
         <div className={classes.modalOverlay} onClick={() => setIsOpen(false)}>
