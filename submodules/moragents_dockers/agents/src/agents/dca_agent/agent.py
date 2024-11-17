@@ -31,9 +31,9 @@ class DCAAgent:
         # Mapping of function names to handler methods
         self.function_handlers = {
             "handle_dollar_cost_average": self.handle_dollar_cost_average,
-            "handle_pause_dca": self.handle_pause_dca,
-            "handle_resume_dca": self.handle_resume_dca,
-            "handle_cancel_dca": self.handle_cancel_dca,
+            "handle_pause_dca_strategy": self.handle_pause_dca_strategy,
+            "handle_resume_dca_strategy": self.handle_resume_dca_strategy,
+            "handle_cancel_dca_strategy": self.handle_cancel_dca_strategy,
             "handle_get_status": self.handle_get_status,
             "handle_check_health": self.handle_check_health
         }
