@@ -22,11 +22,11 @@ class DCAAgent:
         self.config = config
         self.llm = llm
         self.embeddings = embeddings
-        self.client: Optional[Cdp] = None
+        self.client: Cdp = Cdp()
         self.tools_provided = tools.get_tools()
         self._sync_task: Optional[asyncio.Task] = None
         self._executors: Dict[str, Any] = {}
-        self.wallets: Dict[str, Wallet] = {}
+        self.wallet: Wallet = Wallet()
 
         # Mapping of function names to handler methods
         self.function_handlers = {
@@ -138,7 +138,7 @@ class DCAAgent:
             logger.error(f"Execution error in DCA creation: {str(e)}")
             return str(e), "assistant", None
 
-    def handle_pause_dca(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
+    def handle_pause_dca_strategy(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
         """Handle pausing a DCA strategy"""
         try:
             res, role = tools.handle_pause_dca(args["strategy_id"])
@@ -151,7 +151,7 @@ class DCAAgent:
             logger.error(f"Error pausing strategy: {str(e)}")
             return str(e), "assistant", None
 
-    def handle_resume_dca(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
+    def handle_resume_dca_strategy(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
         """Handle resuming a DCA strategy"""
         try:
             res, role = tools.handle_resume_dca(args["strategy_id"])
@@ -164,7 +164,7 @@ class DCAAgent:
             logger.error(f"Error resuming strategy: {str(e)}")
             return str(e), "assistant", None
 
-    def handle_cancel_dca(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
+    def handle_cancel_dca_strategy(self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]) -> Tuple[str, str, Optional[str]]:
         """Handle cancelling a DCA strategy"""
         try:
             res, role = tools.handle_cancel_dca(args["strategy_id"])
@@ -205,20 +205,3 @@ class DCAAgent:
         except tools.ExecutionError as e:
             logger.error(f"Error checking strategy health: {str(e)}")
             return str(e), "assistant", None
-
-    def initialize_cdp_credentials(self, request):
-        """ Set CDP credentials """
-        data = request.get_json()
-
-        cdp_api_key = data.get("cdp_api_key")
-        cdp_api_secret = data.get("cdp_api_secret")
-
-        if not cdp_api_key or not cdp_api_secret:
-            return {"error": "CDP credentials not found"}, 400
-        
-        try:
-            self.client = Cdp.configure(cdp_api_key, cdp_api_secret)
-            return {"message": "CDP credentials set successfully"}, 200
-        except Exception as e:
-            return {"error": f"Failed to set CDP credentials: {str(e)}"}, 500
-
