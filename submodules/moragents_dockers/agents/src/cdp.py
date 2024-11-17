@@ -33,7 +33,7 @@ class CDPWalletManager:
     async def create_wallet(self) -> Wallet:
         """Create a new wallet"""
         try:
-            wallet = Wallet.create()
+            wallet = Wallet.create("base-mainnet")
             await self._save_wallet_data(wallet)
             logger.info(f"Wallet created: {wallet.default_address}")
             return wallet

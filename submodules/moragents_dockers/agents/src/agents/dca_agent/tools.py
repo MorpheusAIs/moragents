@@ -10,6 +10,7 @@ from pathlib import Path
 import threading
 import asyncio
 from src.cdp import CDPWalletManager
+from cdp import Wallet
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
@@ -257,12 +258,10 @@ class DCAManager:
     ):
         """Execute token purchase transaction"""
         try:
-            # Create the swap transaction
-            tx = wallet.swap(
-                amount=amount,
-                token_address=token_address,
-                slippage_tolerance=float(max_slippage),
-                gasless=gasless
+            tx = wallet.trade(
+                amount,
+                'usdc',
+                'eth',
             )
             
             # Wait for confirmation
