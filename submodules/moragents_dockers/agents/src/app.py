@@ -122,17 +122,13 @@ async def initialize_cdp_credentials(request: Request):
         return {"error": "CDP credentials not found"}, 400
     
     try:
+        
         # Initialize CDP client
-        Cdp.configure('', '')
-        
         wallet_manager = CDPWalletManager()
-        existing_wallet = await wallet_manager.load_wallet()
+        wallet = wallet_manager.load_wallet()
 
-        if existing_wallet:
-            return {"message": "CDP credentials set and wallet loaded successfully"}, 200
-        
-        # Create and fund new wallet if none exists
-        wallet = await wallet_manager.create_wallet()
+        if not wallet:
+            wallet = wallet_manager.create_wallet()
             
         return {"message": "CDP credentials set and wallet initialized successfully"}, 200
             

@@ -30,29 +30,44 @@ class CDPWalletManager:
         self.wallet_file = wallet_file
         self.seed_file = "wallet_seed.json"
 
-    async def create_wallet(self) -> Wallet:
+    # Initialize CDP client
+    Cdp.configure('', '')
+
+    def create_wallet(self) -> Wallet:
         """Create a new wallet"""
         try:
-            wallet = Wallet.create("base-mainnet")
+            wallet = Wallet.create("base-sepolia")
             print(f"Wallet successfully created: {wallet}")
-            await self._save_wallet_data(wallet)
+
+            tx = self.fund_wallet(wallet, "usdc")
+            logger.info(f"Funding transaction initiated: {tx}")
+
+            # Save after funding is initiated
+            success = self._save_wallet_data(wallet)
+            if not success:
+                logger.warning("Failed to save wallet data")
+
             logger.info(f"Wallet created: {wallet.default_address}")
             return wallet
         except Exception as e:
             raise ToolError(f"Failed to create wallet: {str(e)}")
 
-    async def _save_wallet_data(self, wallet: Wallet) -> bool:
+    def _save_wallet_data(self, wallet: Wallet) -> bool:
         """
         Save both wallet data and seed
         """
         try:
-            wallet_data = wallet.export_data().to_dict()
+            # Convert WalletAddress to string representation
+            wallet_data = {
+                'wallet_id': wallet.id,
+                'address': str(wallet.default_address),
+                'network': wallet.network_id,
+                'created_at': datetime.now().isoformat(),
+                'last_updated': datetime.now().isoformat()
+            }
+            
             with open(self.wallet_file, 'w') as f:
-                json.dump({
-                    'wallet_id': wallet.id,
-                    'address': wallet.default_address,
-                    'data': wallet_data
-                }, f, indent=2)
+                json.dump(wallet_data, f, indent=2)
             
             wallet.save_seed(self.seed_file, encrypt=True)
             
@@ -62,7 +77,7 @@ class CDPWalletManager:
             logger.error(f"Error saving wallet data: {str(e)}")
             return False
 
-    async def load_wallet(self) -> Wallet:
+    def load_wallet(self) -> Wallet:
         """
         Load and re-instantiate wallet from saved data
         """
@@ -83,7 +98,7 @@ class CDPWalletManager:
             logger.error(f"Error loading wallet: {str(e)}")
             return None
 
-    async def fund_wallet(self, wallet: Wallet, asset_id: Optional[str] = None) -> Transaction:
+    def fund_wallet(self, wallet: Wallet, asset_id: Optional[str] = None) -> Transaction:
         """Fund Base Agent wallet from faucet"""
         try:
             if asset_id:
@@ -91,16 +106,20 @@ class CDPWalletManager:
             else:
                 tx = wallet.faucet()
             logger.info(f"Faucet transaction sent for {asset_id or 'ETH'}")
-            await self._wait_for_confirmation(tx)
             return tx
         except Exception as e:
             raise InsufficientFundsError(f"Failed to fund wallet: {str(e)}")
 
-    async def _wait_for_confirmation(self, tx: Transaction, timeout: int = 30) -> None:
-        """Wait for transaction confirmation with timeout"""
-        start_time = time.time()
-        while time.time() - start_time < timeout:
-            if tx.is_confirmed():
-                return
-            await time.sleep(2)
-        raise ToolError("Transaction confirmation timeout")
+    def get_wallet_info(self, wallet: Wallet) -> Dict[str, Any]:
+        """Get wallet information in a serializable format"""
+        try:
+            return {
+                'wallet_id': wallet.id,
+                'address': str(wallet.default_address),
+                'network': wallet.network_id,
+                'eth_balance': wallet.get_balance("eth"),
+                'usdc_balance': wallet.get_balance("usdc")
+            }
+        except Exception as e:
+            logger.error(f"Error getting wallet info: {str(e)}")
+            return None

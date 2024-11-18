@@ -2,14 +2,14 @@ import json
 import threading
 import logging
 import os
+import asyncio
 from cdp import Cdp, Wallet
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Tuple
 from .config import Config
 from src.agents.base_agent import tools
 from src.cdp import CDPWalletManager
 from src.models.messages import ChatRequest
-
 
 # Configure logging
 logging.basicConfig(
@@ -27,8 +27,7 @@ class BaseAgent:
         self.embeddings = embeddings    
         self.tools_provided = tools.get_tools()
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
-        self.wallet_manager = CDPWalletManager()
-        self.transaction_manager = tools.TransactionManager(self.wallet_manager)
+        self.transaction_manager = tools.TransactionManager(CDPWalletManager())
         self.context = []
 
         # Mapping of function names to handler methods
@@ -66,28 +65,19 @@ class BaseAgent:
             
             logger.info(f"Result: {result}")
 
-            # Handle the AIMessage response
             if result.tool_calls:
                 # Check for tool calls
-                if result.tool_calls:
-                    tool_call = result.additional_kwargs['tool_calls'][0]
+                tool_call = result.tool_calls[0]
+                logger.info("Selected tool: %s", tool_call)
+                func_name = tool_call.get("name")
+                args = tool_call.get("args")
+                logger.info("LLM suggested using tool: %s", func_name)
                     
-                    # Get function name and arguments
-                    func_name = tool_call['name'].strip().split()[-1]
-                    args = tool_call['args']
-                    
-                    logger.info(f"Function call detected: {func_name}")
-                    logger.info(f"Arguments: {args}")
-                    
-                    return self.handle_function_call(func_name, args, chain_id, wallet_address)
-                else:
-                    # No tool calls, return the content directly
-                    return result.content or "", "assistant", None
-                    
+                return self.handle_function_call(func_name, args, chain_id, wallet_address)
             else:
-                logger.error(f"Unexpected response type: {type(result)}")
-                return "Error: Unexpected response type", "assistant", None
-                
+                # No tool calls, return the content directly
+                return result.content or "", "assistant", None
+                    
         except Exception as e:
             logger.error(f"Error processing LLM response: {str(e)}", exc_info=True)
             return "Error: Unable to process the request.", "assistant", None
@@ -119,7 +109,6 @@ class BaseAgent:
         except Exception as e:
             return {"Error": str(e)}, 500
 
-
     def handle_function_call(self, func_name, args, chain_id, wallet_address):
         handler = self.function_handlers.get(func_name)
         if handler:
@@ -128,7 +117,10 @@ class BaseAgent:
             logger.error(f"Function '{func_name}' not supported.")
             return f"Error: Function '{func_name}' not supported.", "assistant", None
 
-    def handle_gasless_usdc_transfer(self, args):
+    def handle_gasless_usdc_transfer(self, args, chain_id, wallet_address):
+        """
+        Handle gasless USDC transfer with chain_id and wallet_address parameters.
+        """
         toAddress = args.get("toAddress")
         amount = args.get("amount")
         if not toAddress or not amount:
@@ -138,14 +130,22 @@ class BaseAgent:
         logger.info(f"Initiating gasless USDC transfer to {toAddress} of amount {amount}.")
 
         try:
+
             res, role = self.transaction_manager.send_gasless_usdc_transaction(toAddress, amount)
+            
             logger.info(f"Transfer result: {res}")
             return f"Successfully sent {amount} USDC to {toAddress} gaslessly.", role, None
         except tools.InsufficientFundsError as e:
             logger.error(f"Insufficient funds: {str(e)}")
             return str(e), "assistant", None
+        except Exception as e:
+            logger.error(f"Error in transfer: {str(e)}")
+            return f"Error: {str(e)}", "assistant", None
 
-    def handle_eth_transfer(self, args):
+    def handle_eth_transfer(self, args, chain_id, wallet_address):
+        """
+        Handle ETH transfer with chain_id and wallet_address parameters.
+        """
         toAddress = args.get("toAddress")
         amount = args.get("amount")
         if not toAddress or not amount:
@@ -156,8 +156,12 @@ class BaseAgent:
 
         try:
             res, role = self.transaction_manager.send_eth_transaction(toAddress, amount)
+            
             logger.info(f"Transfer result: {res}")
             return f"Successfully sent {amount} ETH to {toAddress}.", role, None
         except tools.InsufficientFundsError as e:
             logger.error(f"Insufficient funds: {str(e)}")
             return str(e), "assistant", None
+        except Exception as e:
+            logger.error(f"Error in transfer: {str(e)}")
+            return f"Error: {str(e)}", "assistant", None
