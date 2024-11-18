@@ -108,7 +108,7 @@ async def chat(chat_request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/initialize_cdp_credentials")
+@app.post("/initialize-cdp-credentials")
 async def initialize_cdp_credentials(request: Request):
     """ 
     Set CDP credentials and save Base Agent wallet data
@@ -123,7 +123,7 @@ async def initialize_cdp_credentials(request: Request):
     
     try:
         # Initialize CDP client
-        Cdp.configure(cdp_api_key, cdp_api_secret)
+        Cdp.configure('', '')
         
         wallet_manager = CDPWalletManager()
         existing_wallet = await wallet_manager.load_wallet()
@@ -133,10 +133,6 @@ async def initialize_cdp_credentials(request: Request):
         
         # Create and fund new wallet if none exists
         wallet = await wallet_manager.create_wallet()
-        
-        # Fund the wallet with ETH and USDC
-        for asset_id in ["eth", "usdc"]:
-            tx = await wallet_manager.fund_wallet(wallet, asset_id=asset_id)
             
         return {"message": "CDP credentials set and wallet initialized successfully"}, 200
             

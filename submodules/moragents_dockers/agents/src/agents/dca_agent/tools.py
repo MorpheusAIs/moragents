@@ -323,9 +323,100 @@ class DCAManager:
             })
         )
 
-    def get_tools(self) -> List[Dict[str, Any]]:
-        """Get tool definitions for LLM function calling"""
-        return [
+    ## Handlers for function calling
+    async def handle_create_dca_strategy(
+        self,
+        token_address: str,
+        amount: str,
+        interval_type: str,
+        total_periods: Optional[int] = None,
+        min_price: Optional[str] = None,
+        max_price: Optional[str] = None,
+        max_slippage: str = "0.01",
+        gasless: bool = False
+    ) -> Dict[str, Any]:
+        """Handler for creating DCA strategy"""
+        try:
+            config = DCAConfig(
+                token_address=token_address,
+                amount=Decimal(amount),
+                interval_type=interval_type,
+                total_periods=total_periods,
+                min_price=Decimal(min_price) if min_price else None,
+                max_price=Decimal(max_price) if max_price else None,
+                max_slippage=Decimal(max_slippage),
+                gasless=gasless
+            )
+            
+            strategy, action = await self.create_strategy(config)
+            return {
+                "success": True,
+                "strategy_id": strategy["id"],
+                "details": strategy
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to create DCA strategy: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+        
+    async def handle_pause_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
+        """Handler for pausing DCA strategy"""
+        try:
+            await self.pause_strategy(strategy_id)
+            return {"success": True}
+        
+        except Exception as e:
+            logger.error(f"Failed to pause DCA strategy: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+        
+    async def handle_resume_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
+        """Handler for resuming DCA strategy"""
+        try:
+            await self.resume_strategy(strategy_id)
+            return {"success": True}
+        
+        except Exception as e:
+            logger.error(f"Failed to resume DCA strategy: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+        
+    async def handle_cancel_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
+        """Handler for canceling DCA strategy"""
+        try:
+            await self.cancel_strategy(strategy_id)
+            return {"success": True}
+        
+        except Exception as e:
+            logger.error(f"Failed to cancel DCA strategy: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+        
+    async def handle_execute_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
+        """Handler for executing DCA strategy"""
+        try:
+            result = await self.execute_strategy(strategy_id)
+            return result.to_dict()
+            
+        except Exception as e:
+            logger.error(f"Failed to execute DCA strategy: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+        
+def get_tools() -> List[Dict[str, Any]]:
+    """Get tool definitions for LLM function calling"""
+    return [
             {
                 "type": "function",
                 "function": {
@@ -460,95 +551,3 @@ class DCAManager:
                 }
             }
         ]
-
-
-    ## Handlers for function calling
-    async def handle_create_dca_strategy(
-        self,
-        token_address: str,
-        amount: str,
-        interval_type: str,
-        total_periods: Optional[int] = None,
-        min_price: Optional[str] = None,
-        max_price: Optional[str] = None,
-        max_slippage: str = "0.01",
-        gasless: bool = False
-    ) -> Dict[str, Any]:
-        """Handler for creating DCA strategy"""
-        try:
-            config = DCAConfig(
-                token_address=token_address,
-                amount=Decimal(amount),
-                interval_type=interval_type,
-                total_periods=total_periods,
-                min_price=Decimal(min_price) if min_price else None,
-                max_price=Decimal(max_price) if max_price else None,
-                max_slippage=Decimal(max_slippage),
-                gasless=gasless
-            )
-            
-            strategy, action = await self.create_strategy(config)
-            return {
-                "success": True,
-                "strategy_id": strategy["id"],
-                "details": strategy
-            }
-            
-        except Exception as e:
-            logger.error(f"Failed to create DCA strategy: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-        
-    async def handle_pause_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
-        """Handler for pausing DCA strategy"""
-        try:
-            await self.pause_strategy(strategy_id)
-            return {"success": True}
-        
-        except Exception as e:
-            logger.error(f"Failed to pause DCA strategy: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-        
-    async def handle_resume_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
-        """Handler for resuming DCA strategy"""
-        try:
-            await self.resume_strategy(strategy_id)
-            return {"success": True}
-        
-        except Exception as e:
-            logger.error(f"Failed to resume DCA strategy: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-        
-    async def handle_cancel_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
-        """Handler for canceling DCA strategy"""
-        try:
-            await self.cancel_strategy(strategy_id)
-            return {"success": True}
-        
-        except Exception as e:
-            logger.error(f"Failed to cancel DCA strategy: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-        
-    async def handle_execute_dca_strategy(self, strategy_id: str) -> Dict[str, Any]:
-        """Handler for executing DCA strategy"""
-        try:
-            result = await self.execute_strategy(strategy_id)
-            return result.to_dict()
-            
-        except Exception as e:
-            logger.error(f"Failed to execute DCA strategy: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }

@@ -8,6 +8,9 @@ from typing import Dict, Any
 from .config import Config
 from src.agents.base_agent import tools
 from src.cdp import CDPWalletManager
+from src.models.messages import ChatRequest
+
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -26,7 +29,7 @@ class BaseAgent:
         self.scheduled_tasks: Dict[str, threading.Thread] = {}
         self.wallet_manager = CDPWalletManager()
         self.transaction_manager = tools.TransactionManager(self.wallet_manager)
-        self.wallet_file = "wallet.txt"
+        self.context = []
 
         # Mapping of function names to handler methods
         self.function_handlers = {
@@ -34,88 +37,87 @@ class BaseAgent:
             "eth_transfer": self.handle_eth_transfer,
         }
 
-    def chat(self, request):
-        try:
-            data = request.get_json()
-            if not data:
-                return {"error": "Invalid request data"}, 400
+    def get_response(self, message, chain_id, wallet_address) -> Tuple[str, str, Optional[str]]:
+        """
+        Get response from LLM and process any tool calls
+        
+        Returns:
+            Tuple[str, str, Optional[str]]: (content, role, next_agent)
+        """
+        system_prompt = (
+            "You are an agent that can perform various financial transactions. "
+            "You have access to the following functions:\n"
+            "1. gasless_usdc_transfer(toAddress: string, amount: string): Transfer USDC to another user without gas fees.\n"
+            "2. eth_transfer(toAddress: string, amount: string): Transfer ETH to another user.\n"
+            "When you need to perform an action, use the appropriate function with the correct arguments."
+        )
 
-            # Handle chat prompt
-            if 'prompt' in data:
-                prompt = data['prompt']
-                wallet_address = data.get('wallet_address')
-                chain_id = data.get('chain_id')
-                response, role, next_turn_agent = self.handle_request(prompt, chain_id, wallet_address)
-                return {"role": role, "content": response, "next_turn_agent": next_turn_agent}
+        messages = [
+            {"role": "system", "content": system_prompt},
+        ]
+        
+        messages.extend(message)
+
+        logger.info("Sending request to LLM with %d messages", len(messages))
+
+        try:
+            llm_with_tools = self.llm.bind_tools(self.tools_provided)
+            result = llm_with_tools.invoke(messages)
+            
+            logger.info(f"Result: {result}")
+
+            # Handle the AIMessage response
+            if result.tool_calls:
+                # Check for tool calls
+                if result.tool_calls:
+                    tool_call = result.additional_kwargs['tool_calls'][0]
+                    
+                    # Get function name and arguments
+                    func_name = tool_call['name'].strip().split()[-1]
+                    args = tool_call['args']
+                    
+                    logger.info(f"Function call detected: {func_name}")
+                    logger.info(f"Arguments: {args}")
+                    
+                    return self.handle_function_call(func_name, args, chain_id, wallet_address)
+                else:
+                    # No tool calls, return the content directly
+                    return result.content or "", "assistant", None
+                    
+            else:
+                logger.error(f"Unexpected response type: {type(result)}")
+                return "Error: Unexpected response type", "assistant", None
+                
+        except Exception as e:
+            logger.error(f"Error processing LLM response: {str(e)}", exc_info=True)
+            return "Error: Unable to process the request.", "assistant", None
+
+    def generate_response(self, prompt, chain_id, wallet_address):
+        self.context.append(prompt)
+        response, role, next_turn_agent = self.get_response(
+            self.context, chain_id, wallet_address
+        )
+        return response, role, next_turn_agent
+
+    def chat(self, request: ChatRequest):
+        data = request.dict()
+        try:
+            if "prompt" in data:
+                prompt = data["prompt"]
+                wallet_address = data["wallet_address"]
+                chain_id = data["chain_id"]
+                response, role, next_turn_agent = self.generate_response(
+                    prompt, chain_id, wallet_address
+                )
+                return {
+                    "role": role,
+                    "content": response,
+                    "next_turn_agent": next_turn_agent,
+                }
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(f"Error in chat method: {str(e)}")
             return {"Error": str(e)}, 500
-
-    def handle_request(self, message, chain_id, wallet_address):
-        logger.info(f"Message: {message}")
-        logger.info(f"Chain ID: {chain_id}")
-        logger.info(f"Wallet Address: {wallet_address}")
-
-        # System prompt that includes descriptions of available functions
-        prompt = [
-            {
-                "role": "system",
-                "content": (
-                    "You are an agent that can perform various financial transactions. "
-                    "You have access to the following functions:\n"
-                    "1. gasless_usdc_transfer(toAddress: string, amount: string): Transfer USDC to another user without gas fees.\n"
-                    "2. eth_transfer(toAddress: string, amount: string): Transfer ETH to another user.\n"
-                    "When you need to perform an action, use the appropriate function with the correct arguments."
-                )
-            }
-        ]
-
-        if isinstance(message, dict):
-            user_content = message.get('content', '')
-        else:
-            user_content = message
-
-        prompt.append({
-            "role": "user",
-            "content": user_content
-        })
-
-        logger.info(f"Prompt: {prompt}")
-
-        result = self.llm.create_chat_completion(
-            messages=prompt,
-            tools=self.tools_provided,
-            tool_choice="auto",
-            temperature=0.01
-        )
-
-        logger.info(f"Result: {result}")
-
-        # Process the LLM's response
-        try:
-            choice = result["choices"][0]["message"]
-            if "tool_calls" in choice:
-                func = choice["tool_calls"][0]['function']
-
-                # remove the prefix from the function name
-                func_name = func["name"].strip().split()[-1]
-                logger.info(f"Function name: {func_name}")
-
-                # Extract arguments
-                args = json.loads(func["arguments"])
-                logger.info(f"Arguments: {args}")
-
-                # Call the appropriate handler
-                return self.handle_function_call(func_name, args, chain_id, wallet_address)
-            else:
-                # No function call; return the assistant's message
-                content = choice.get('content', '')
-                return content, "assistant", None
-        except Exception as e:
-            logger.error(f"Error processing LLM response: {str(e)}")
-            return "Error: Unable to process the request.", "assistant", None
 
 
     def handle_function_call(self, func_name, args, chain_id, wallet_address):

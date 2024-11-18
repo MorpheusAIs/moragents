@@ -16,6 +16,9 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       - BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_HOST=host.docker.internal  
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    network_mode: "bridge"
 
   nginx:
     image: lachsbagel/moragents_dockers-nginx:amd64-0.2.0
@@ -28,3 +31,8 @@ services:
 
 volumes:
   agents_data:
+
+networks:
+  default:
+    driver: bridge
+
