@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 
 from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
@@ -110,7 +111,7 @@ async def chat(chat_request: ChatRequest):
 
 @app.post("/initialize-cdp-credentials")
 async def initialize_cdp_credentials(request: Request):
-    """ 
+    """
     Set CDP credentials and save Base Agent wallet data
     """
     data = await request.json()
@@ -119,22 +120,27 @@ async def initialize_cdp_credentials(request: Request):
     cdp_api_secret = data.get("cdp_api_secret")
 
     if not cdp_api_key or not cdp_api_secret:
-        return {"error": "CDP credentials not found"}, 400
+        return JSONResponse({"error": "CDP credentials not found"}, status_code=400)
     
     try:
+        # Unescape the API secret's newline characters
+        cdp_api_secret = cdp_api_secret.replace('\\n', '\n')
         
-        # Initialize CDP client
+        # Set credentials in CDPWalletManager
+        CDPWalletManager.set_credentials(cdp_api_key, cdp_api_secret)
+        
+        # Initialize the wallet manager and load or create a wallet
         wallet_manager = CDPWalletManager()
         wallet = wallet_manager.load_wallet()
 
         if not wallet:
             wallet = wallet_manager.create_wallet()
             
-        return {"message": "CDP credentials set and wallet initialized successfully"}, 200
-            
+        return {"message": "CDP credentials set and wallet initialized successfully"}
+                
     except Exception as e:
         logger.error(f"Error in initialize_cdp_credentials: {str(e)}")
-        return {"error": f"Failed to set CDP credentials: {str(e)}"}, 500
+        return JSONResponse({"error": f"Failed to set CDP credentials: {str(e)}"}, status_code=500)
 
 
 @app.post("/tx_status")

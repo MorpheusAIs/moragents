@@ -25,13 +25,22 @@ class ConfigurationError(ToolError):
 
 class CDPWalletManager:
     """Class to manage Base Agent wallet operations and persistence"""
-    
+
+    cdp_api_key: Optional[str] = None
+    cdp_api_secret: Optional[str] = None
+
+    @classmethod
+    def set_credentials(cls, cdp_api_key: str, cdp_api_secret: str):
+        cls.cdp_api_key = cdp_api_key
+        cls.cdp_api_secret = cdp_api_secret
+
     def __init__(self, wallet_file: str = "wallet_data.json"):
         self.wallet_file = wallet_file
         self.seed_file = "wallet_seed.json"
-
-    # Initialize CDP client
-    Cdp.configure('', '')
+        
+        # Configure CDP client with the provided credentials
+        Cdp.configure(self.cdp_api_key, self.cdp_api_secret)
+        logger.info("CDP client configured with provided API credentials.")
 
     def create_wallet(self) -> Wallet:
         """Create a new wallet"""
