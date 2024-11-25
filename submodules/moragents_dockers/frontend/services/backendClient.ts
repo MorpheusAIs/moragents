@@ -382,6 +382,45 @@ export const setAvailableAgents = async (
   }
 };
 
+export interface XApiKeys {
+  api_key: string;
+  api_secret: string;
+  access_token: string;
+  access_token_secret: string;
+  bearer_token: string;
+}
+
+export const setXApiKeys = async (
+  backendClient: Axios,
+  keys: XApiKeys
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/set_x_api_key", keys);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set X API keys:", error);
+    throw error;
+  }
+};
+
+export interface CoinbaseApiKeys {
+  cdp_api_key: string;
+  cdp_api_secret: string;
+}
+
+export const setCoinbaseApiKeys = async (
+  backendClient: Axios,
+  keys: CoinbaseApiKeys
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/set_coinbase_api_key", keys);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set Coinbase API keys:", error);
+    throw error;
+  }
+};
+
 // Update the ChatContext or wherever you're initializing the backend client
 export const initializeBackendClient = () => {
   const backendClient = axios.create({

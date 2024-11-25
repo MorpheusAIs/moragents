@@ -10,6 +10,8 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
+import { setCoinbaseApiKeys } from "../../services/backendClient";
+import axios from "axios";
 
 interface CoinbaseCredentials {
   cdpApiKey: string;
@@ -56,11 +58,26 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
     return "•••••" + credential.slice(-5);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Store in localStorage as backup
     Object.entries(credentials).forEach(([key, value]) => {
       localStorage.setItem(key, value);
     });
-    onSave();
+
+    // Send to backend
+    const backendClient = axios.create({
+      baseURL: "http://localhost:8080",
+    });
+
+    try {
+      await setCoinbaseApiKeys(backendClient, {
+        cdp_api_key: credentials.cdpApiKey,
+        cdp_api_secret: credentials.cdpApiSecret,
+      });
+      onSave();
+    } catch (error) {
+      console.error("Failed to save Coinbase credentials to backend:", error);
+    }
   };
 
   return (

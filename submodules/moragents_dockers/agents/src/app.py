@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from src.config import Config
 from src.delegator import Delegator
 from src.models.messages import ChatRequest
-from src.stores import agent_manager, chat_manager
+from src.stores import agent_manager, chat_manager, key_manager
 
 # Constants
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
@@ -167,12 +167,6 @@ async def post_tweet(request: Request):
     return await delegator.delegate_route("tweet sizzler agent", request, "post_tweet")
 
 
-@app.post("/set_x_api_key")
-async def set_x_api_key(request: Request):
-    logger.info("Received set X API key request")
-    return await delegator.delegate_route("tweet sizzler agent", request, "set_x_api_key")
-
-
 @app.post("/claim")
 async def claim_agent_claim(request: Request):
     logger.info("Received claim request")
@@ -198,6 +192,30 @@ async def set_selected_agents(request: Request):
     logger.info(f"Newly selected agents: {agent_manager.get_selected_agents()}")
 
     return {"status": "success", "agents": agent_names}
+
+
+@app.post("/set_x_api_key")
+async def set_x_api_key(request: Request):
+    logger.info("Received set X API key request")
+    data = await request.json()
+    key_manager.set_x_keys(
+        api_key=data.get("api_key"),
+        api_secret=data.get("api_secret"),
+        access_token=data.get("access_token"),
+        access_token_secret=data.get("access_token_secret"),
+        bearer_token=data.get("bearer_token"),
+    )
+    return {"status": "success", "message": "X API keys updated"}
+
+
+@app.post("/set_coinbase_api_key")
+async def set_coinbase_api_key(request: Request):
+    logger.info("Received set Coinbase API key request")
+    data = await request.json()
+    key_manager.set_coinbase_keys(
+        cdp_api_key=data.get("cdp_api_key"), cdp_api_secret=data.get("cdp_api_secret")
+    )
+    return {"status": "success", "message": "Coinbase API keys updated"}
 
 
 if __name__ == "__main__":
