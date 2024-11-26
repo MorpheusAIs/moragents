@@ -226,7 +226,7 @@ export const sendSwapStatus = async (
 export const getMessagesHistory = async (
   backendClient: Axios
 ): Promise<ChatMessage[]> => {
-  const responseBody = await backendClient.get("/messages");
+  const responseBody = await backendClient.get("/chat/messages");
 
   return responseBody.data.messages.map((message: any) => {
     return {
@@ -241,7 +241,7 @@ export const clearMessagesHistory = async (
   backendClient: Axios
 ): Promise<void> => {
   try {
-    await backendClient.get("/clear_messages");
+    await backendClient.get("/chat/clear");
   } catch (error) {
     console.error("Failed to clear message history:", error);
     throw error;
@@ -356,10 +356,9 @@ export const sendClaimStatus = async (
     content: responseBody.data.content,
   } as ChatMessage;
 };
-
 export const getAvailableAgents = async (backendClient: Axios) => {
   try {
-    const response = await backendClient.get("/available-agents");
+    const response = await backendClient.get("/agents/available");
     return response.data;
   } catch (error) {
     console.error("Failed to fetch available agents:", error);
@@ -367,17 +366,17 @@ export const getAvailableAgents = async (backendClient: Axios) => {
   }
 };
 
-export const setAvailableAgents = async (
+export const setSelectedAgents = async (
   backendClient: Axios,
   agents: string[]
 ) => {
   try {
-    const response = await backendClient.post("/available-agents", {
+    const response = await backendClient.post("/agents/selected", {
       agents,
     });
     return response.data;
   } catch (error) {
-    console.error("Failed to set available agents:", error);
+    console.error("Failed to set selected agents:", error);
     throw error;
   }
 };

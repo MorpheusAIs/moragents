@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Box, HStack, Spacer, Button } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SettingsButton } from "../Settings";
+import { CDPWallets } from "./CDPWallets";
 import classes from "./index.module.css";
 import {
   getHttpClient,
@@ -37,6 +38,7 @@ export const HeaderBar: FC<HeaderBarProps> = (props) => {
         <Spacer />
         <HStack spacing={4} flexShrink={0}>
           <Button onClick={handleClearChatHistory}>Clear Chat History</Button>
+          <CDPWallets />
           <Box>
             <SettingsButton />
           </Box>

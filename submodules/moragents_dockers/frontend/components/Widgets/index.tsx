@@ -9,8 +9,13 @@ import {
 } from "../../services/backendClient";
 import { ImageDisplay } from "../ImageDisplay";
 import TradingViewWidget from "./TradingViewWidget";
+import DCAWidget from "./DCAWidget";
 
-export const WIDGET_COMPATIBLE_AGENTS = ["imagen agent", "crypto data agent"];
+export const WIDGET_COMPATIBLE_AGENTS = [
+  "imagen agent",
+  "crypto data agent",
+  "dca agent",
+];
 
 export const shouldOpenWidget = (message: ChatMessage) => {
   if (message.agentName === "crypto data agent") {
@@ -60,6 +65,24 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
       );
     }
 
+    // In the renderWidget function, add this new condition:
+    if (
+      activeWidget?.role === "assistant" &&
+      activeWidget.agentName === "dca agent"
+    ) {
+      return (
+        <Box
+          h="full"
+          w="full"
+          display="flex"
+          flexDirection="column"
+          flexGrow={1}
+        >
+          <DCAWidget />
+        </Box>
+      );
+    }
+
     return null;
   };
 
@@ -78,10 +101,11 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
       flexGrow={1}
     >
       <Text
-        fontSize="xl"
+        fontSize="2xl"
         fontWeight="bold"
         color="white"
         mt={4}
+        mb={8}
         textAlign="center"
         flexShrink={0}
       >

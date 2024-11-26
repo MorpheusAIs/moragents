@@ -1,192 +1,175 @@
-import logging
-import time
-import threading
-from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime
-from cdp import Cdp, Wallet, Transaction
-from src.stores import key_manager
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+from typing import Dict, Any, Tuple
+from cdp import Wallet
 
 
-# Custom exceptions
-class ToolError(Exception):
-    """Base exception for tool operations"""
-
-    pass
-
-
-class InsufficientFundsError(ToolError):
-    """Raised when there are insufficient funds"""
-
-    pass
-
-
-class ConfigurationError(ToolError):
-    """Raised when there are configuration issues"""
-
-    pass
-
-
-# Global CDP client management
-_client: Optional[Cdp] = None
-_client_lock = threading.Lock()
-
-
-def get_cdp_client() -> Cdp:
-    """Get or create CDP client singleton with thread safety"""
-    global _client
-    with _client_lock:
-        if not _client:
-            if not key_manager.has_coinbase_keys():
-                raise ConfigurationError("CDP credentials not found")
-
-            try:
-                keys = key_manager.get_coinbase_keys()
-                _client = Cdp.configure(keys.cdp_api_key, keys.cdp_api_secret)
-            except Exception as e:
-                raise ConfigurationError(f"Failed to initialize CDP client: {str(e)}")
-
-        return _client
-
-
-def reset_cdp_client() -> None:
-    """Reset the CDP client (useful when credentials change)"""
-    global _client
-    with _client_lock:
-        _client = None
-
-
-def create_wallet() -> Wallet:
-    """Create and fund a new wallet"""
+def create_token(
+    agent_wallet: Wallet, name: str, symbol: str, initial_supply: int
+) -> Tuple[Dict[str, Any], str]:
+    """Create a new ERC-20 token"""
     try:
-        wallet = Wallet.create()
-        logger.info(f"Wallet created: {wallet.default_address}")
-        return wallet
-    except Exception as e:
-        raise ToolError(f"Failed to create wallet: {str(e)}")
-
-
-def fund_wallet(wallet: Wallet, asset_id: Optional[str] = None) -> Transaction:
-    """Fund wallet from faucet"""
-    try:
-        if asset_id:
-            tx = wallet.faucet(asset_id=asset_id)
-        else:
-            tx = wallet.faucet()
-        logger.info(f"Faucet transaction sent for {asset_id or 'ETH'}")
-        time.sleep(2)  # Wait for faucet
-        return tx
-    except Exception as e:
-        raise InsufficientFundsError(f"Failed to fund wallet: {str(e)}")
-
-
-def send_gasless_usdc_transaction(toAddress: str, amount: str) -> Tuple[Dict[str, Any], str]:
-    """Send a gasless USDC transaction"""
-    try:
-        # Ensure client is configured
-        client = get_cdp_client()
-        logger.info("CDP client configured")
-
-        # Create and fund wallet
-        wallet = create_wallet()
-
-        # Get ETH and USDC from faucet
-        fund_wallet(wallet)  # ETH for gas
-        fund_wallet(wallet, "usdc")  # USDC for transfer
-
-        # Execute transfer
-        tx = wallet.default_address.transfer(
-            amount=amount, token="usdc", to_address=toAddress, gasless=True
-        ).wait()
-
-        logger.info(f"USDC Transfer completed: {tx.hash}")
+        deployed_contract = agent_wallet.deploy_token(name, symbol, initial_supply)
+        deployed_contract.wait()
 
         return {
             "success": True,
-            "tx_hash": tx.hash,
-            "from": wallet.default_address,
-            "to": toAddress,
-            "amount": amount,
-            "token": "USDC",
-            "timestamp": datetime.now().isoformat(),
-        }, "gasless_usdc_transfer"
-
-    except InsufficientFundsError as e:
-        raise
+            "contract_address": deployed_contract.contract_address,
+            "name": name,
+            "symbol": symbol,
+            "supply": initial_supply,
+        }, "create_token"
     except Exception as e:
-        logger.error(f"Error in gasless USDC transfer: {str(e)}")
-        raise ToolError(f"Failed to send USDC: {str(e)}")
+        raise Exception(f"Failed to create token: {str(e)}")
 
 
-def send_eth_transaction(toAddress: str, amount: str) -> Tuple[Dict[str, Any], str]:
-    """Send an ETH transaction"""
+def transfer_asset(
+    agent_wallet: Wallet, amount: str, asset_id: str, destination_address: str
+) -> Tuple[Dict[str, Any], str]:
+    """Transfer an asset to another address"""
     try:
-        # Ensure client is configured
-        client = get_cdp_client()
-        logger.info("CDP client configured")
+        is_mainnet = agent_wallet.network_id == "base-mainnet"
+        is_usdc = asset_id.lower() == "usdc"
+        gasless = is_mainnet and is_usdc
 
-        # Create and fund wallet
-        wallet = create_wallet()
-        fund_wallet(wallet)  # Get ETH from faucet
-
-        # Execute transfer
-        tx = wallet.transfer(amount=amount, token="eth", to_address=toAddress).wait()
-
-        logger.info(f"ETH Transfer completed: {tx.hash}")
+        transfer = agent_wallet.transfer(
+            amount=amount, asset_id=asset_id, to_address=destination_address, gasless=gasless
+        )
+        transfer.wait()
 
         return {
             "success": True,
-            "tx_hash": tx.hash,
-            "from": wallet.default_address,
-            "to": toAddress,
+            "tx_hash": transfer.hash,
+            "from": agent_wallet.default_address.address_id,
+            "to": destination_address,
             "amount": amount,
-            "token": "ETH",
-            "timestamp": datetime.now().isoformat(),
-        }, "eth_transfer"
-
-    except InsufficientFundsError as e:
-        raise
+            "asset": asset_id,
+        }, "transfer_asset"
     except Exception as e:
-        logger.error(f"Error in ETH transfer: {str(e)}")
-        raise ToolError(f"Failed to send ETH: {str(e)}")
+        raise Exception(f"Failed to transfer asset: {str(e)}")
 
 
-def get_tools() -> List[Dict[str, Any]]:
-    """Get available tool definitions"""
-    return [
-        {
-            "type": "function",
-            "function": {
-                "name": "gasless_usdc_transfer",
-                "description": "Transfer USDC to another user without gas fees",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "toAddress": {"type": "string", "description": "Recipient's address"},
-                        "amount": {"type": "string", "description": "Amount of USDC to transfer"},
-                    },
-                    "required": ["toAddress", "amount"],
-                },
-            },
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "eth_transfer",
-                "description": "Transfer ETH to another user",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "toAddress": {"type": "string", "description": "Recipient's address"},
-                        "amount": {"type": "string", "description": "Amount of ETH to transfer"},
-                    },
-                    "required": ["toAddress", "amount"],
-                },
-            },
-        },
-    ]
+def get_balance(agent_wallet: Wallet, asset_id: str) -> Tuple[Dict[str, Any], str]:
+    """Get balance of a specific asset"""
+    try:
+        balance = agent_wallet.balance(asset_id)
+        return {
+            "success": True,
+            "asset": asset_id,
+            "balance": str(balance),
+            "address": agent_wallet.default_address.address_id,
+        }, "get_balance"
+    except Exception as e:
+        raise Exception(f"Failed to get balance: {str(e)}")
+
+
+def request_eth_from_faucet(agent_wallet: Wallet) -> Tuple[Dict[str, Any], str]:
+    """Request ETH from testnet faucet"""
+    try:
+        if agent_wallet.network_id == "base-mainnet":
+            raise Exception("Faucet only available on testnet")
+
+        faucet_tx = agent_wallet.faucet()
+        return {
+            "success": True,
+            "address": agent_wallet.default_address.address_id,
+        }, "request_eth_from_faucet"
+    except Exception as e:
+        raise Exception(f"Failed to request from faucet: {str(e)}")
+
+
+def deploy_nft(
+    agent_wallet: Wallet, name: str, symbol: str, base_uri: str
+) -> Tuple[Dict[str, Any], str]:
+    """Deploy an ERC-721 NFT contract"""
+    try:
+        deployed_nft = agent_wallet.deploy_nft(name, symbol, base_uri)
+        deployed_nft.wait()
+
+        return {
+            "success": True,
+            "contract_address": deployed_nft.contract_address,
+            "name": name,
+            "symbol": symbol,
+            "base_uri": base_uri,
+        }, "deploy_nft"
+    except Exception as e:
+        raise Exception(f"Failed to deploy NFT: {str(e)}")
+
+
+def mint_nft(
+    agent_wallet: Wallet, contract_address: str, mint_to: str
+) -> Tuple[Dict[str, Any], str]:
+    """Mint an NFT to an address"""
+    try:
+        mint_args = {"to": mint_to, "quantity": "1"}
+        mint_tx = agent_wallet.invoke_contract(
+            contract_address=contract_address, method="mint", args=mint_args
+        )
+        mint_tx.wait()
+
+        return {
+            "success": True,
+            "tx_hash": mint_tx.hash,
+            "contract": contract_address,
+            "recipient": mint_to,
+        }, "mint_nft"
+    except Exception as e:
+        raise Exception(f"Failed to mint NFT: {str(e)}")
+
+
+def swap_assets(
+    agent_wallet: Wallet, amount: str, from_asset_id: str, to_asset_id: str
+) -> Tuple[Dict[str, Any], str]:
+    """Swap one asset for another (Base Mainnet only)"""
+    try:
+        if agent_wallet.network_id != "base-mainnet":
+            raise Exception("Asset swaps only available on Base Mainnet")
+
+        trade = agent_wallet.trade(amount, from_asset_id, to_asset_id)
+        trade.wait()
+
+        return {
+            "success": True,
+            "tx_hash": trade.hash,
+            "from_asset": from_asset_id,
+            "to_asset": to_asset_id,
+            "amount": amount,
+        }, "swap_assets"
+    except Exception as e:
+        raise Exception(f"Failed to swap assets: {str(e)}")
+
+
+def register_basename(
+    agent_wallet: Wallet, basename: str, amount: float = 0.002
+) -> Tuple[Dict[str, Any], str]:
+    """Register a basename for the agent's wallet"""
+    try:
+        address_id = agent_wallet.default_address.address_id
+        is_mainnet = agent_wallet.network_id == "base-mainnet"
+
+        suffix = ".base.eth" if is_mainnet else ".basetest.eth"
+        if not basename.endswith(suffix):
+            basename += suffix
+
+        contract_address = (
+            "0x4cCb0BB02FCABA27e82a56646E81d8c5bC4119a5"
+            if is_mainnet
+            else "0x49aE3cC2e3AA768B1e5654f5D3C6002144A59581"
+        )
+
+        register_tx = agent_wallet.invoke_contract(
+            contract_address=contract_address,
+            method="register",
+            args={"name": basename},
+            amount=amount,
+            asset_id="eth",
+        )
+        register_tx.wait()
+
+        return {
+            "success": True,
+            "tx_hash": register_tx.hash,
+            "basename": basename,
+            "owner": address_id,
+        }, "register_basename"
+    except Exception as e:
+        raise Exception(f"Failed to register basename: {str(e)}")

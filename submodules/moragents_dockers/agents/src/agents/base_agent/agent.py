@@ -7,6 +7,7 @@ from src.agents.base_agent import tools
 from src.models.messages import ChatRequest
 from src.stores import key_manager
 from langchain.schema import HumanMessage, SystemMessage
+from src.agents.base_agent.config import Config
 
 # Configure logging
 logging.basicConfig(
@@ -23,18 +24,12 @@ class BaseAgent:
         self.agent_info = agent_info
         self.llm = llm
         self.embeddings = embeddings
-        self.tools_provided = tools.get_tools()
+        self.config = Config()
         self.client: Optional[Cdp] = None
         self.wallets: Dict[str, Wallet] = {}
 
         # Bind tools to LLM
-        self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
-
-        # Mapping of function names to handler methods
-        self.function_handlers = {
-            "gasless_usdc_transfer": self.handle_gasless_usdc_transfer,
-            "eth_transfer": self.handle_eth_transfer,
-        }
+        self.tool_bound_llm = self.llm.bind_tools(self.config.tools)
 
     def chat(self, request: ChatRequest) -> Dict[str, Any]:
         try:
@@ -72,45 +67,51 @@ class BaseAgent:
             raise e
 
     def initialize_cdp_client(self) -> bool:
-        """Initialize CDP client with stored credentials"""
+        """Initialize CDP client and wallet with stored credentials"""
         try:
             if not key_manager.has_coinbase_keys():
                 logger.warning("CDP credentials not found")
                 return False
 
             keys = key_manager.get_coinbase_keys()
-            self.client = Cdp.configure(keys.cdp_api_key, keys.cdp_api_secret)
+
+            # Configure CDP with credentials
+            self.client = Cdp.configure(
+                keys.CDP_API_KEY,
+                keys.CDP_API_SECRET,
+            )
+
+            # Create wallet for agent
+            self.wallets["default"] = Wallet.create()
+
             return True
         except Exception as e:
-            logger.error(f"CDP client initialization failed: {e}")
+            logger.error(f"CDP client/wallet initialization failed: {e}")
             return False
 
     def handle_request(
-        self, message: str, chain_id: Optional[str], wallet_address: Optional[str]
+        self, message: dict[str, any], chain_id: Optional[str], wallet_address: Optional[str]
     ) -> Tuple[str, str, Optional[str]]:
         logger.info(f"Message: {message}")
         logger.info(f"Chain ID: {chain_id}")
         logger.info(f"Wallet Address: {wallet_address}")
 
-        # System prompt that includes descriptions of available functions
+        # System prompt that includes descriptions of available tools
+        tool_descriptions = "\n".join(
+            f"{tool['name']}: {tool['description']}" for tool in self.config.tools
+        )
+
         messages = [
             SystemMessage(
                 content=(
                     "You are an agent that can perform various financial transactions on Base. "
-                    "You have access to the following functions:\n"
-                    "1. gasless_usdc_transfer(toAddress: string, amount: string): Transfer USDC to another user without gas fees.\n"
-                    "2. eth_transfer(toAddress: string, amount: string): Transfer ETH to another user.\n"
+                    f"You have access to the following functions:\n{tool_descriptions}\n"
                     "When you need to perform an action, use the appropriate function with the correct arguments."
                 )
             ),
         ]
 
-        if isinstance(message, dict):
-            user_content = message.get("content", "")
-        else:
-            user_content = message
-
-        messages.append(HumanMessage(content=user_content))
+        messages.append(HumanMessage(content=message.get("content")))
 
         logger.info(f"Messages: {messages}")
 
@@ -121,76 +122,42 @@ class BaseAgent:
         # Process the LLM's response
         try:
             if result.tool_calls:
+                # Get first tool call
                 tool_call = result.tool_calls[0]
-                func_name = tool_call.function.name.strip().split()[-1]
-                logger.info(f"Function name: {func_name}")
 
-                # Extract arguments
-                args = json.loads(tool_call.function.arguments)
+                # Extract function name and args from the tool call dict
+                func_name = tool_call.get("name")
+                args = tool_call.get("args", {})
+
+                logger.info(f"Function name: {func_name}")
                 logger.info(f"Arguments: {args}")
 
-                # Call the appropriate handler
-                return self.handle_function_call(func_name, args, chain_id, wallet_address)
+                if not func_name:
+                    return "Error: No function name provided in tool call", "assistant", None
+
+                # Execute the tool
+                try:
+                    # Check if function exists in tools by comparing against tool names
+                    available_tools = [tool["name"] for tool in self.config.tools]
+                    if func_name not in available_tools:
+                        return f"Error: Function '{func_name}' not supported.", "assistant", None
+
+                    tool_result, role = getattr(tools, func_name)(self.wallets["default"], **args)
+
+                    success_msg = f"Successfully executed {func_name}"
+                    if isinstance(tool_result, dict) and "tx_hash" in tool_result:
+                        success_msg += f" (tx: {tool_result['tx_hash']})"
+
+                    return success_msg, role, None
+
+                except Exception as e:
+                    logger.error(f"Error executing tool {func_name}: {str(e)}")
+                    return f"Error executing {func_name}: {str(e)}", "assistant", None
             else:
                 # No function call; return the assistant's message
-                content = result.content or ""
+                content = result.content if hasattr(result, "content") else ""
                 return content, "assistant", None
+
         except Exception as e:
             logger.error(f"Error processing LLM response: {str(e)}")
             return "Error: Unable to process the request.", "assistant", None
-
-    def handle_function_call(
-        self,
-        func_name: str,
-        args: Dict[str, Any],
-        chain_id: Optional[str],
-        wallet_address: Optional[str],
-    ) -> Tuple[str, str, Optional[str]]:
-        handler = self.function_handlers.get(func_name)
-        if handler:
-            return handler(args, chain_id, wallet_address)
-        else:
-            logger.error(f"Function '{func_name}' not supported.")
-            return f"Error: Function '{func_name}' not supported.", "assistant", None
-
-    def handle_gasless_usdc_transfer(
-        self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]
-    ) -> Tuple[str, str, Optional[str]]:
-        toAddress = args.get("toAddress")
-        amount = args.get("amount")
-        if not toAddress or not amount:
-            logger.error("Missing 'toAddress' or 'amount' in gasless_usdc_transfer arguments.")
-            return "Error: Missing 'toAddress' or 'amount'.", "assistant", None
-
-        logger.info(f"Initiating gasless USDC transfer to {toAddress} of amount {amount}.")
-
-        try:
-            res, role = tools.send_gasless_usdc_transaction(toAddress, amount)
-            logger.info(f"Transfer result: {res}")
-            return (
-                f"Successfully sent {amount} USDC to {toAddress} gaslessly.",
-                role,
-                None,
-            )
-        except tools.InsufficientFundsError as e:
-            logger.error(f"Insufficient funds: {str(e)}")
-            return str(e), "assistant", None
-
-    def handle_eth_transfer(
-        self, args: Dict[str, Any], chain_id: Optional[str], wallet_address: Optional[str]
-    ) -> Tuple[str, str, Optional[str]]:
-        toAddress = args.get("toAddress")
-        amount = args.get("amount")
-        if not toAddress or not amount:
-            logger.error("Missing 'toAddress' or 'amount' in eth_transfer arguments.")
-            return "Error: Missing 'toAddress' or 'amount'.", "assistant", None
-
-        logger.info(f"Initiating ETH transfer to {toAddress} of amount {amount}.")
-
-        try:
-            res, role = tools.send_eth_transaction(toAddress, amount)
-            logger.info(f"Transfer result: {res}")
-            return f"Successfully sent {amount} ETH to {toAddress}.", role, None
-        except tools.InsufficientFundsError as e:
-            logger.error(f"Insufficient funds: {str(e)}")
-            return str(e), "assistant", None

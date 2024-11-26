@@ -135,7 +135,7 @@ const PrefilledOptions: React.FC<PrefilledOptionsProps> = ({
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch("http://localhost:8080/available-agents");
+        const response = await fetch("http://localhost:8080/agents/available");
         const data = await response.json();
         setSelectedAgents(data.selected_agents);
       } catch (error) {
