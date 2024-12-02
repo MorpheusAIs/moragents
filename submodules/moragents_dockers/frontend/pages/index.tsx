@@ -1,22 +1,21 @@
 import type { NextPage } from "next";
 import { Box, Flex } from "@chakra-ui/react";
-import { LeftSidebar } from "../components/LeftSidebar";
-import { Chat } from "../components/Chat";
+import { LeftSidebar } from "@/components/LeftSidebar";
+import { Chat } from "@/components/Chat";
 import {
   writeMessage,
-  getHttpClient,
-  ChatMessage,
   getMessagesHistory,
   sendSwapStatus,
-  SWAP_STATUS,
   uploadFile,
-} from "../services/backendClient";
+} from "@/services/apiHooks";
+import { getHttpClient, SWAP_STATUS } from "@/services/constants";
+import { ChatMessage } from "@/services/types";
 import { useEffect, useMemo, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
-import { HeaderBar } from "../components/HeaderBar";
-import { availableAgents } from "../config";
-import { WalletRequiredModal } from "../components/WalletRequiredModal";
-import { ErrorBackendModal } from "../components/ErrorBackendModal";
+import { HeaderBar } from "@/components/HeaderBar";
+import { availableAgents } from "@/config";
+import { WalletRequiredModal } from "@/components/WalletRequiredModal";
+import { ErrorBackendModal } from "@/components/ErrorBackendModal";
 
 const Home: NextPage = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);

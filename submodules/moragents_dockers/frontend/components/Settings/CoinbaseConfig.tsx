@@ -10,7 +10,7 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
-import { setCoinbaseApiKeys } from "../../services/backendClient";
+import { setCoinbaseApiKeys } from "@/services/apiHooks";
 import axios from "axios";
 
 interface CoinbaseCredentials {

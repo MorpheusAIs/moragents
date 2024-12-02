@@ -1,22 +1,21 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from langchain.schema import AIMessage, HumanMessage, SystemMessage
-from src.stores import chat_manager
+from langchain.schema import HumanMessage, SystemMessage
+from src.stores import chat_manager_instance, agent_manager_instance
 
 logger = logging.getLogger(__name__)
 
 
 class Delegator:
-    def __init__(self, agent_manager, llm, embeddings):
-        self.agent_manager = agent_manager
+    def __init__(self, llm, embeddings):
         self.llm = llm  # Keep llm instance on delegator
         self.attempted_agents = set()  # Track attempted agents within a chat session
 
         # Load all agents via agent manager
-        self.agent_manager.load_all_agents(llm, embeddings)
-        logger.info(f"Delegator initialized with {len(self.agent_manager.agents)} agents")
-        logger.info(f"Selected agents: {self.agent_manager.get_selected_agents()}")
+        agent_manager_instance.load_all_agents(llm, embeddings)
+        logger.info(f"Delegator initialized with {len(agent_manager_instance.agents)} agents")
+        logger.info(f"Selected agents: {agent_manager_instance.get_selected_agents()}")
 
     def reset_attempted_agents(self):
         """Reset the set of attempted agents"""
@@ -27,18 +26,19 @@ class Delegator:
         """Get available agents that haven't been attempted yet"""
         return [
             agent_config
-            for agent_config in self.agent_manager.get_available_agents()
-            if agent_config["name"] in self.agent_manager.get_selected_agents()
+            for agent_config in agent_manager_instance.get_available_agents()
+            if agent_config["name"] in agent_manager_instance.get_selected_agents()
             and agent_config["name"] not in self.attempted_agents
             and agent_config["name"] != "default agent"  # Exclude default agent
             and not (
-                agent_config["upload_required"] and not chat_manager.get_uploaded_file_status()
+                agent_config["upload_required"]
+                and not chat_manager_instance.get_uploaded_file_status()
             )
         ]
 
     def get_delegator_response(self, prompt: Dict) -> Dict[str, str]:
         """Get appropriate agent based on prompt, excluding previously attempted agents"""
-        logger.info(f"Selected agents: {self.agent_manager.get_selected_agents()}")
+        logger.info(f"Selected agents: {agent_manager_instance.get_selected_agents()}")
         available_agents = self.get_available_unattempted_agents()
         logger.info(f"Available, unattempted agents: {available_agents}")
 
@@ -102,11 +102,11 @@ class Delegator:
         """Delegate chat to specific agent with cascading fallback"""
         logger.info(f"Attempting to delegate chat to agent: {agent_name}")
 
-        if agent_name not in self.agent_manager.get_selected_agents():
+        if agent_name not in agent_manager_instance.get_selected_agents():
             logger.warning(f"Attempted to delegate to unselected agent: {agent_name}")
             return self._try_next_agent(chat_request)
 
-        agent = self.agent_manager.get_agent(agent_name)
+        agent = agent_manager_instance.get_agent(agent_name)
         if not agent:
             logger.error(f"Agent {agent_name} is selected but not loaded")
             return self._try_next_agent(chat_request)

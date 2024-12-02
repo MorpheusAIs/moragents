@@ -1,4 +1,4 @@
-import { ChatMessage } from "../../services/backendClient";
+import { ChatMessage } from "@/services/types";
 
 export type ChatProps = {
   onSubmitMessage: (message: string, file: File | null) => Promise<boolean>;

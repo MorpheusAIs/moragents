@@ -2,23 +2,26 @@ from typing import Dict, Any, Tuple
 from cdp import Wallet
 
 
-def create_token(
-    agent_wallet: Wallet, name: str, symbol: str, initial_supply: int
+def swap_assets(
+    agent_wallet: Wallet, amount: str, from_asset_id: str, to_asset_id: str
 ) -> Tuple[Dict[str, Any], str]:
-    """Create a new ERC-20 token"""
+    """Swap one asset for another (Base Mainnet only)"""
     try:
-        deployed_contract = agent_wallet.deploy_token(name, symbol, initial_supply)
-        deployed_contract.wait()
+        if agent_wallet.network_id != "base-mainnet":
+            raise Exception("Asset swaps only available on Base Mainnet")
+
+        trade = agent_wallet.trade(amount, from_asset_id, to_asset_id)
+        trade.wait()
 
         return {
             "success": True,
-            "contract_address": deployed_contract.contract_address,
-            "name": name,
-            "symbol": symbol,
-            "supply": initial_supply,
-        }, "create_token"
+            "tx_hash": trade.hash,
+            "from_asset": from_asset_id,
+            "to_asset": to_asset_id,
+            "amount": amount,
+        }, "swap_assets"
     except Exception as e:
-        raise Exception(f"Failed to create token: {str(e)}")
+        raise Exception(f"Failed to swap assets: {str(e)}")
 
 
 def transfer_asset(
@@ -59,6 +62,30 @@ def get_balance(agent_wallet: Wallet, asset_id: str) -> Tuple[Dict[str, Any], st
         }, "get_balance"
     except Exception as e:
         raise Exception(f"Failed to get balance: {str(e)}")
+
+
+# -----------------------------------------------------
+# The following functions need to be fleshed out later:
+# -----------------------------------------------------
+
+
+def create_token(
+    agent_wallet: Wallet, name: str, symbol: str, initial_supply: int
+) -> Tuple[Dict[str, Any], str]:
+    """Create a new ERC-20 token"""
+    try:
+        deployed_contract = agent_wallet.deploy_token(name, symbol, initial_supply)
+        deployed_contract.wait()
+
+        return {
+            "success": True,
+            "contract_address": deployed_contract.contract_address,
+            "name": name,
+            "symbol": symbol,
+            "supply": initial_supply,
+        }, "create_token"
+    except Exception as e:
+        raise Exception(f"Failed to create token: {str(e)}")
 
 
 def request_eth_from_faucet(agent_wallet: Wallet) -> Tuple[Dict[str, Any], str]:
@@ -114,28 +141,6 @@ def mint_nft(
         }, "mint_nft"
     except Exception as e:
         raise Exception(f"Failed to mint NFT: {str(e)}")
-
-
-def swap_assets(
-    agent_wallet: Wallet, amount: str, from_asset_id: str, to_asset_id: str
-) -> Tuple[Dict[str, Any], str]:
-    """Swap one asset for another (Base Mainnet only)"""
-    try:
-        if agent_wallet.network_id != "base-mainnet":
-            raise Exception("Asset swaps only available on Base Mainnet")
-
-        trade = agent_wallet.trade(amount, from_asset_id, to_asset_id)
-        trade.wait()
-
-        return {
-            "success": True,
-            "tx_hash": trade.hash,
-            "from_asset": from_asset_id,
-            "to_asset": to_asset_id,
-            "amount": amount,
-        }, "swap_assets"
-    except Exception as e:
-        raise Exception(f"Failed to swap assets: {str(e)}")
 
 
 def register_basename(

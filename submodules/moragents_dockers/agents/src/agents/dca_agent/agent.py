@@ -1,11 +1,10 @@
 import logging
 from typing import Dict, Any, Optional
 
-from cdp import Cdp, Wallet
 from src.models.messages import ChatRequest
 from langchain.schema import HumanMessage, SystemMessage
 from typing import Tuple, Optional
-from src.stores import key_manager
+from src.stores import wallet_manager_instance
 
 from src.agents.dca_agent.tools import get_tools
 
@@ -23,14 +22,14 @@ class DCAAgent:
         self.config = config
         self.llm = llm
         self.embeddings = embeddings
-        self.client: Optional[Cdp] = None
-        self.wallets: Dict[str, Wallet] = {}
+        self.wallet_id = f"dca_agent"
 
         # Get tools and bind to LLM
         self.tools = get_tools()
         self.tool_bound_llm = self.llm.bind_tools(self.tools)
 
-        self.initialize_cdp_client()
+        # Initialize CDP client and create agent wallet
+        self.initialize_agent()
 
     def chat(self, request: ChatRequest):
         """Handle incoming chat requests"""
@@ -39,16 +38,18 @@ class DCAAgent:
             if not data:
                 return {"error": "Invalid request data"}, 400
 
-            # Check CDP client initialization
-            if not self.client and not self.initialize_cdp_client():
+            # Check CDP client initialization and wallet
+            if not wallet_manager_instance.configure_cdp_client():
                 return {
                     "error": "CDP client not initialized. Please set API credentials.",
                     "needs_credentials": True,
                 }, 400
 
+            if not wallet_manager_instance.has_wallet(self.wallet_id):
+                if not self.initialize_agent():
+                    return {"error": "Failed to initialize agent wallet"}, 500
+
             if "prompt" in data:
-                # prompt = data["prompt"]
-                # response, role = self.handle_request(prompt)
                 return {"role": "assistant", "content": "Ready to set up DCA"}
 
             return {"error": "Missing required parameters"}, 400
@@ -96,7 +97,11 @@ class DCAAgent:
                     if func_name not in available_tools:
                         return f"Error: Function '{func_name}' not supported.", "assistant", None
 
-                    tool_result = getattr(self.tools, func_name)(self.wallets["default"], **args)
+                    wallet = wallet_manager_instance.get_wallet(self.wallet_id)
+                    if not wallet:
+                        return "Error: Agent wallet not found", "assistant", None
+
+                    tool_result = getattr(self.tools, func_name)(wallet, **args)
                     return f"Successfully executed {func_name}", "assistant", None
 
                 except Exception as e:
@@ -110,25 +115,19 @@ class DCAAgent:
             logger.error(f"Error processing LLM response: {str(e)}")
             return "Error: Unable to process the request.", "assistant", None
 
-    def initialize_cdp_client(self) -> bool:
-        """Initialize CDP client and wallet with stored credentials"""
+    def initialize_agent(self) -> bool:
+        """Initialize CDP client and create agent wallet if needed"""
         try:
-            if not key_manager.has_coinbase_keys():
-                logger.warning("CDP credentials not found")
+            if not wallet_manager_instance.configure_cdp_client():
+                logger.warning("Failed to configure CDP client")
                 return False
 
-            keys = key_manager.get_coinbase_keys()
-
-            # Configure CDP with credentials
-            self.client = Cdp.configure(
-                keys.CDP_API_KEY,
-                keys.CDP_API_SECRET,
-            )
-
-            # Create wallet for agent
-            self.wallets["default"] = Wallet.create()
+            if not wallet_manager_instance.has_wallet(self.wallet_id):
+                wallet_manager_instance.create_wallet(self.wallet_id)
+                logger.info(f"Created new wallet for DCA agent")
 
             return True
+
         except Exception as e:
-            logger.error(f"CDP client/wallet initialization failed: {e}")
+            logger.error(f"Agent initialization failed: {e}")
             return False

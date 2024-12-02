@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from src.stores import key_manager
+from src.stores import key_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ async def set_x_api_key(request: Request) -> JSONResponse:
     """Set X (Twitter) API keys"""
     logger.info("Received set X API key request")
     data = await request.json()
-    key_manager.set_x_keys(
+    key_manager_instance.set_x_keys(
         api_key=data.get("api_key"),
         api_secret=data.get("api_secret"),
         access_token=data.get("access_token"),
@@ -28,7 +28,7 @@ async def set_coinbase_api_key(request: Request) -> JSONResponse:
     """Set Coinbase API keys"""
     logger.info("Received set Coinbase API key request")
     data = await request.json()
-    key_manager.set_coinbase_keys(
+    key_manager_instance.set_coinbase_keys(
         cdp_api_key=data.get("cdp_api_key"), cdp_api_secret=data.get("cdp_api_secret")
     )
     return JSONResponse(content={"status": "success", "message": "Coinbase API keys updated"})

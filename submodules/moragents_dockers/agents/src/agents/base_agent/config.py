@@ -1,19 +1,16 @@
 class Config:
     tools = [
         {
-            "name": "create_token",
-            "description": "Create a new ERC-20 token",
+            "name": "swap_assets",
+            "description": "Swap one asset for another (Base Mainnet only)",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string", "description": "Name of the token"},
-                    "symbol": {"type": "string", "description": "Symbol of the token"},
-                    "initial_supply": {
-                        "type": "integer",
-                        "description": "Initial supply of tokens",
-                    },
+                    "amount": {"type": "string", "description": "Amount to swap"},
+                    "from_asset_id": {"type": "string", "description": "Asset ID to swap from"},
+                    "to_asset_id": {"type": "string", "description": "Asset ID to swap to"},
                 },
-                "required": ["name", "symbol", "initial_supply"],
+                "required": ["amount", "from_asset_id", "to_asset_id"],
             },
         },
         {
@@ -40,50 +37,54 @@ class Config:
                 "required": ["asset_id"],
             },
         },
-        {
-            "name": "request_eth_from_faucet",
-            "description": "Request ETH from testnet faucet",
-            "parameters": {"type": "object", "properties": {}},
-        },
-        {
-            "name": "mint_nft",
-            "description": "Mint an NFT to an address",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "contract_address": {"type": "string", "description": "NFT contract address"},
-                    "mint_to": {"type": "string", "description": "Address to mint NFT to"},
-                },
-                "required": ["contract_address", "mint_to"],
-            },
-        },
-        {
-            "name": "swap_assets",
-            "description": "Swap one asset for another (Base Mainnet only)",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "amount": {"type": "string", "description": "Amount to swap"},
-                    "from_asset_id": {"type": "string", "description": "Asset ID to swap from"},
-                    "to_asset_id": {"type": "string", "description": "Asset ID to swap to"},
-                },
-                "required": ["amount", "from_asset_id", "to_asset_id"],
-            },
-        },
-        {
-            "name": "register_basename",
-            "description": "Register a basename for the agent's wallet",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "basename": {"type": "string", "description": "Basename to register"},
-                    "amount": {
-                        "type": "number",
-                        "description": "Amount of ETH to pay for registration",
-                        "default": 0.002,
-                    },
-                },
-                "required": ["basename"],
-            },
-        },
+        # TODO: Add more base tools / functionality
+        # {
+        #     "name": "create_token",
+        #     "description": "Create a new ERC-20 token",
+        #     "parameters": {
+        #         "type": "object",
+        #         "properties": {
+        #             "name": {"type": "string", "description": "Name of the token"},
+        #             "symbol": {"type": "string", "description": "Symbol of the token"},
+        #             "initial_supply": {
+        #                 "type": "integer",
+        #                 "description": "Initial supply of tokens",
+        #             },
+        #         },
+        #         "required": ["name", "symbol", "initial_supply"],
+        #     },
+        # },
+        # {
+        #     "name": "request_eth_from_faucet",
+        #     "description": "Request ETH from testnet faucet",
+        #     "parameters": {"type": "object", "properties": {}},
+        # },
+        # {
+        #     "name": "mint_nft",
+        #     "description": "Mint an NFT to an address",
+        #     "parameters": {
+        #         "type": "object",
+        #         "properties": {
+        #             "contract_address": {"type": "string", "description": "NFT contract address"},
+        #             "mint_to": {"type": "string", "description": "Address to mint NFT to"},
+        #         },
+        #         "required": ["contract_address", "mint_to"],
+        #     },
+        # },
+        # {
+        #     "name": "register_basename",
+        #     "description": "Register a basename for the agent's wallet",
+        #     "parameters": {
+        #         "type": "object",
+        #         "properties": {
+        #             "basename": {"type": "string", "description": "Basename to register"},
+        #             "amount": {
+        #                 "type": "number",
+        #                 "description": "Amount of ETH to pay for registration",
+        #                 "default": 0.002,
+        #             },
+        #         },
+        #         "required": ["basename"],
+        #     },
+        # },
     ]

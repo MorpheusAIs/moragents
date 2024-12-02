@@ -46,3 +46,7 @@ class ChatManager:
 
     def get_chat_history(self) -> str:
         return "\n".join([f"{msg['role']}: {msg['content']}" for msg in self.messages])
+
+
+# Create an instance to act as a singleton store
+chat_manager_instance = ChatManager()

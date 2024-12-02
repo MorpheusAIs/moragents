@@ -28,6 +28,11 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
 } from "@chakra-ui/react";
 import { ChevronDownIcon, DownloadIcon, DeleteIcon } from "@chakra-ui/icons";
 
@@ -49,6 +54,7 @@ export const CDPWallets: React.FC = () => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [newWalletName, setNewWalletName] = useState("");
   const [selectedNetwork, setSelectedNetwork] = useState(NETWORKS[0]);
+  const [walletFile, setWalletFile] = useState<File | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [walletToDelete, setWalletToDelete] = useState("");
@@ -116,6 +122,55 @@ export const CDPWallets: React.FC = () => {
       toast({
         title:
           error instanceof Error ? error.message : "Failed to create wallet",
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleRestoreWallet = async () => {
+    if (!walletFile) {
+      toast({
+        title: "Please select a wallet file",
+        status: "warning",
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      const fileContent = await walletFile.text();
+      const walletData = JSON.parse(fileContent);
+
+      const response = await fetch("http://localhost:8080/wallets/restore", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          wallet_id: walletData.wallet_id,
+          wallet_data: walletData,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Wallet restored successfully",
+          status: "success",
+          duration: 3000,
+        });
+        onClose();
+        fetchWallets();
+        setWalletFile(null);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to restore wallet");
+      }
+    } catch (error) {
+      console.error("Error restoring wallet:", error);
+      toast({
+        title:
+          error instanceof Error ? error.message : "Failed to restore wallet",
         status: "error",
         duration: 3000,
       });
@@ -271,40 +326,74 @@ export const CDPWallets: React.FC = () => {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Create New CDP Wallet</ModalHeader>
+          <ModalHeader>CDP Wallet Management</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <VStack spacing={4}>
-              <FormControl>
-                <FormLabel>Wallet Name</FormLabel>
-                <Input
-                  placeholder="Enter wallet name"
-                  value={newWalletName}
-                  onChange={(e) => setNewWalletName(e.target.value)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Network</FormLabel>
-                <Select
-                  value={selectedNetwork}
-                  onChange={(e) => setSelectedNetwork(e.target.value)}
-                >
-                  {NETWORKS.map((network) => (
-                    <option key={network} value={network}>
-                      {network}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-              <Button
-                colorScheme="blue"
-                width="full"
-                mt={4}
-                onClick={handleCreateWallet}
-              >
-                Create Wallet
-              </Button>
-            </VStack>
+            <Tabs isFitted variant="enclosed">
+              <TabList mb="1em">
+                <Tab>Create New</Tab>
+                <Tab>Restore Existing</Tab>
+              </TabList>
+              <TabPanels>
+                <TabPanel>
+                  <VStack spacing={4}>
+                    <FormControl>
+                      <FormLabel>Wallet Name</FormLabel>
+                      <Input
+                        placeholder="Enter wallet name"
+                        value={newWalletName}
+                        onChange={(e) => setNewWalletName(e.target.value)}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel>Network</FormLabel>
+                      <Select
+                        value={selectedNetwork}
+                        onChange={(e) => setSelectedNetwork(e.target.value)}
+                      >
+                        {NETWORKS.map((network) => (
+                          <option key={network} value={network}>
+                            {network}
+                          </option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <Button
+                      colorScheme="blue"
+                      width="full"
+                      mt={4}
+                      onClick={handleCreateWallet}
+                    >
+                      Create Wallet
+                    </Button>
+                  </VStack>
+                </TabPanel>
+                <TabPanel>
+                  <VStack spacing={4}>
+                    <FormControl>
+                      <FormLabel>Upload Wallet File</FormLabel>
+                      <Input
+                        type="file"
+                        accept=".json"
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setWalletFile(e.target.files[0]);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <Button
+                      colorScheme="blue"
+                      width="full"
+                      mt={4}
+                      onClick={handleRestoreWallet}
+                    >
+                      Restore Wallet
+                    </Button>
+                  </VStack>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </ModalBody>
         </ModalContent>
       </Modal>

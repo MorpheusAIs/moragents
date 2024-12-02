@@ -1,8 +1,11 @@
 import importlib
 import logging
+
 from typing import Any, Dict, List, Optional
 from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
+
+from src.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -161,3 +164,7 @@ class AgentManager:
             Optional[Any]: Agent instance if found, None otherwise
         """
         return self.agents.get(agent_name)
+
+
+# Create an instance to act as a singleton store
+agent_manager_instance = AgentManager(Config.AGENTS_CONFIG)

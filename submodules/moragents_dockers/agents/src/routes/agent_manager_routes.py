@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from src.stores import agent_manager
+from src.stores import agent_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +13,8 @@ async def get_available_agents() -> JSONResponse:
     """Get the list of currently available agents"""
     return JSONResponse(
         content={
-            "selected_agents": agent_manager.get_selected_agents(),
-            "available_agents": agent_manager.get_available_agents(),
+            "selected_agents": agent_manager_instance.get_selected_agents(),
+            "available_agents": agent_manager_instance.get_available_agents(),
         }
     )
 
@@ -25,7 +25,7 @@ async def set_selected_agents(request: Request) -> JSONResponse:
     data = await request.json()
     agent_names = data.get("agents", [])
 
-    agent_manager.set_selected_agents(agent_names)
-    logger.info(f"Newly selected agents: {agent_manager.get_selected_agents()}")
+    agent_manager_instance.set_selected_agents(agent_names)
+    logger.info(f"Newly selected agents: {agent_manager_instance.get_selected_agents()}")
 
     return JSONResponse(content={"status": "success", "agents": agent_names})

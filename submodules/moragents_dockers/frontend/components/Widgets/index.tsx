@@ -10,11 +10,13 @@ import {
 import { ImageDisplay } from "../ImageDisplay";
 import TradingViewWidget from "./TradingViewWidget";
 import DCAWidget from "./DCAWidget";
+import BaseSwapWidget from "./BaseSwapWidget";
 
 export const WIDGET_COMPATIBLE_AGENTS = [
   "imagen agent",
   "crypto data agent",
   "dca agent",
+  "base agent",
 ];
 
 export const shouldOpenWidget = (message: ChatMessage) => {
@@ -65,7 +67,6 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
       );
     }
 
-    // In the renderWidget function, add this new condition:
     if (
       activeWidget?.role === "assistant" &&
       activeWidget.agentName === "dca agent"
@@ -79,6 +80,23 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
           flexGrow={1}
         >
           <DCAWidget />
+        </Box>
+      );
+    }
+
+    if (
+      activeWidget?.role === "assistant" &&
+      activeWidget.agentName === "base agent"
+    ) {
+      return (
+        <Box
+          h="full"
+          w="full"
+          display="flex"
+          flexDirection="column"
+          flexGrow={1}
+        >
+          <BaseSwapWidget />
         </Box>
       );
     }

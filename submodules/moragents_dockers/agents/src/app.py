@@ -3,11 +3,11 @@ import os
 import time
 
 import uvicorn
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_ollama import ChatOllama
-from pydantic import BaseModel
+
 from src.config import Config
 from src.delegator import Delegator
 from src.models.messages import ChatRequest
@@ -17,6 +17,7 @@ from src.routes import (
     chat_manager_routes,
     key_manager_routes,
     wallet_manager_routes,
+    workflow_manager_routes,
 )
 
 # Constants
@@ -48,25 +49,25 @@ llm = ChatOllama(
 )
 embeddings = OllamaEmbeddings(model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL)
 
-delegator = Delegator(agent_manager, llm, embeddings)
+delegator = Delegator(llm, embeddings)
 
 # Include base store routes
 app.include_router(agent_manager_routes.router)
 app.include_router(key_manager_routes.router)
 app.include_router(chat_manager_routes.router)
 app.include_router(wallet_manager_routes.router)
-
+app.include_router(workflow_manager_routes.router)
 # Agent route imports
-from src.agents.rag.routes import router as rag_routes
-from src.agents.mor_claims.routes import router as claim_routes
-from src.agents.tweet_sizzler.routes import router as tweet_routes
-from src.agents.token_swap.routes import router as swap_routes
+from src.agents.rag.routes import router as rag_router
+from src.agents.mor_claims.routes import router as claim_router
+from src.agents.tweet_sizzler.routes import router as tweet_router
+from src.agents.token_swap.routes import router as swap_router
 
 # Include agent routes
-app.include_router(rag_routes.router)
-app.include_router(claim_routes.router)
-app.include_router(tweet_routes.router)
-app.include_router(swap_routes.router)
+app.include_router(rag_router)
+app.include_router(claim_router)
+app.include_router(tweet_router)
+app.include_router(swap_router)
 
 
 async def get_active_agent_for_chat(prompt: dict) -> str:

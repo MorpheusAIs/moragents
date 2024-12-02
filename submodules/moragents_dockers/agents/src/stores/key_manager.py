@@ -82,7 +82,10 @@ class KeyManager:
         """Set Coinbase API keys"""
         coinbase_keys = CoinbaseKeys()
         coinbase_keys.cdp_api_key = cdp_api_key
-        coinbase_keys.cdp_api_secret = cdp_api_secret
+        # Handle newline replacement when setting the key
+        coinbase_keys.cdp_api_secret = (
+            cdp_api_secret.replace("\\n", "\n") if cdp_api_secret else None
+        )
         self.keys[Service.COINBASE] = coinbase_keys
         logger.info("Updated Coinbase API keys")
 
@@ -122,3 +125,7 @@ class KeyManager:
     def has_any_keys(self) -> bool:
         """Check if any API keys are stored"""
         return any([self.has_x_keys(), self.has_coinbase_keys()])
+
+
+# Create an instance to act as a singleton store
+key_manager_instance = KeyManager()

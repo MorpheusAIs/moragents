@@ -1,13 +1,11 @@
-import json
 import logging
 from typing import Any, Dict, Optional, Tuple
 
-from cdp import Cdp, Wallet
 from src.agents.base_agent import tools
 from src.models.messages import ChatRequest
-from src.stores import key_manager
 from langchain.schema import HumanMessage, SystemMessage
 from src.agents.base_agent.config import Config
+from src.stores import wallet_manager_instance
 
 # Configure logging
 logging.basicConfig(
@@ -25,8 +23,7 @@ class BaseAgent:
         self.llm = llm
         self.embeddings = embeddings
         self.config = Config()
-        self.client: Optional[Cdp] = None
-        self.wallets: Dict[str, Wallet] = {}
+        self.wallet_id = f"agent_{agent_info['name']}"
 
         # Bind tools to LLM
         self.tool_bound_llm = self.llm.bind_tools(self.config.tools)
@@ -40,11 +37,15 @@ class BaseAgent:
                 return {"error": "Invalid request data"}
 
             # Check CDP client initialization
-            if not self.client and not self.initialize_cdp_client():
+            if not wallet_manager_instance.configure_cdp_client():
                 return {
                     "error": "CDP client not initialized. Please set API credentials.",
                     "needs_credentials": True,
                 }
+
+            # Create agent wallet if it doesn't exist
+            if not wallet_manager_instance.has_wallet(self.wallet_id):
+                wallet_manager_instance.create_wallet(self.wallet_id)
 
             if "prompt" in data:
                 prompt = data["prompt"]
@@ -65,29 +66,6 @@ class BaseAgent:
         except Exception as e:
             logger.error(f"Error in chat method: {str(e)}, agent: {self.agent_info['name']}")
             raise e
-
-    def initialize_cdp_client(self) -> bool:
-        """Initialize CDP client and wallet with stored credentials"""
-        try:
-            if not key_manager.has_coinbase_keys():
-                logger.warning("CDP credentials not found")
-                return False
-
-            keys = key_manager.get_coinbase_keys()
-
-            # Configure CDP with credentials
-            self.client = Cdp.configure(
-                keys.CDP_API_KEY,
-                keys.CDP_API_SECRET,
-            )
-
-            # Create wallet for agent
-            self.wallets["default"] = Wallet.create()
-
-            return True
-        except Exception as e:
-            logger.error(f"CDP client/wallet initialization failed: {e}")
-            return False
 
     def handle_request(
         self, message: dict[str, any], chain_id: Optional[str], wallet_address: Optional[str]
@@ -142,7 +120,12 @@ class BaseAgent:
                     if func_name not in available_tools:
                         return f"Error: Function '{func_name}' not supported.", "assistant", None
 
-                    tool_result, role = getattr(tools, func_name)(self.wallets["default"], **args)
+                    # Get agent's wallet from wallet manager
+                    wallet = wallet_manager_instance.get_wallet(self.wallet_id)
+                    if not wallet:
+                        return "Error: Agent wallet not found", "assistant", None
+
+                    tool_result, role = getattr(tools, func_name)(wallet, **args)
 
                     success_msg = f"Successfully executed {func_name}"
                     if isinstance(tool_result, dict) and "tx_hash" in tool_result:

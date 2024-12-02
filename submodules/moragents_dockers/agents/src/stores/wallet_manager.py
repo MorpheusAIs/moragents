@@ -1,8 +1,9 @@
 import json
 import logging
 from typing import Dict, Optional
-from cdp import Wallet
+from cdp import Cdp, Wallet, WalletData
 from pathlib import Path
+from src.stores import key_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -12,15 +13,50 @@ class WalletManager:
         """Initialize the WalletManager"""
         self.wallets: Dict[str, Wallet] = {}
         self.wallet_data: Dict[str, dict] = {}
+        self.cdp_client: Optional[Cdp] = None
+
+    def configure_cdp_client(self) -> bool:
+        """Configure CDP client with stored credentials if not already configured"""
+        try:
+            if self.cdp_client:
+                return True
+            if not key_manager_instance.has_coinbase_keys():
+                logger.error("CDP credentials not found")
+                return False
+
+            keys = key_manager_instance.get_coinbase_keys()
+            logger.info("Configuring CDP client with stored credentials")
+            self.cdp_client = Cdp.configure(keys.cdp_api_key, keys.cdp_api_secret)
+
+            logger.info("CDP client configured successfully")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to configure CDP client: {str(e)}")
+            return False
 
     def create_wallet(self, wallet_id: str, network_id: Optional[str] = None) -> Wallet:
         """Create a new CDP wallet and store it"""
         try:
+            if not wallet_id:
+                raise ValueError("wallet_id cannot be None or empty")
+
+            if not self.configure_cdp_client():
+                raise ValueError("Failed to configure CDP client - check credentials")
+
+            logger.info(f"Creating new wallet with network ID: {network_id}")
+            logger.info(f"Current wallets: {self.wallets}")
             wallet = Wallet.create(network_id=network_id)
+            if not wallet:
+                raise ValueError("Failed to create wallet - wallet is None")
+
             self.wallets[wallet_id] = wallet
 
             # Export and store wallet data
             wallet_data = wallet.export_data()
+            if not wallet_data:
+                raise ValueError("Failed to export wallet data")
+
             self.wallet_data[wallet_id] = wallet_data.to_dict()
 
             logger.info(f"Created new wallet with ID: {wallet_id}")
@@ -29,6 +65,36 @@ class WalletManager:
         except Exception as e:
             logger.error(f"Failed to create wallet: {str(e)}")
             raise
+
+    def restore_wallet(self, wallet_id: str, wallet_data: dict) -> Optional[Wallet]:
+        """Restore a wallet from exported data"""
+        try:
+            if not wallet_id:
+                raise ValueError("wallet_id cannot be None or empty")
+
+            if not self.configure_cdp_client():
+                raise ValueError("Failed to configure CDP client - check credentials")
+
+            logger.info(f"Restoring wallet with ID: {wallet_id}")
+
+            # Convert dict to WalletData instance
+            wallet_data_obj = WalletData.from_dict(wallet_data)
+
+            # Import wallet from WalletData
+            wallet = Wallet.import_data(wallet_data_obj)
+            if not wallet:
+                raise ValueError("Failed to restore wallet - import returned None")
+
+            # Store in memory
+            self.wallets[wallet_id] = wallet
+            self.wallet_data[wallet_id] = wallet_data
+
+            logger.info(f"Successfully restored wallet {wallet_id}")
+            return wallet
+
+        except Exception as e:
+            logger.error(f"Failed to restore wallet: {str(e)}")
+            return None
 
     def get_wallet(self, wallet_id: str) -> Optional[Wallet]:
         """Get a wallet by ID"""
@@ -109,3 +175,7 @@ class WalletManager:
         except Exception as e:
             logger.error(f"Failed to export wallet: {str(e)}")
             return None
+
+
+# Create an instance to act as a singleton store
+wallet_manager_instance = WalletManager()
