@@ -2,13 +2,12 @@ import React, { FC, ComponentPropsWithoutRef } from "react";
 import Image from "next/image";
 import { Box, HStack, Spacer, Button } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { SettingsButton } from "../Settings";
+import { SettingsButton } from "@/components/Settings";
 import { CDPWallets } from "./CDPWallets";
+import { Workflows } from "./Workflows";
 import classes from "./index.module.css";
-import {
-  getHttpClient,
-  clearMessagesHistory,
-} from "../../services/backendClient";
+import { clearMessagesHistory } from "@/services/apiHooks";
+import { getHttpClient } from "@/services/constants";
 import { useRouter } from "next/router";
 
 export interface HeaderBarProps extends ComponentPropsWithoutRef<"div"> {
@@ -39,6 +38,7 @@ export const HeaderBar: FC<HeaderBarProps> = (props) => {
         <HStack spacing={4} flexShrink={0}>
           <Button onClick={handleClearChatHistory}>Clear Chat History</Button>
           <CDPWallets />
+          <Workflows />
           <Box>
             <SettingsButton />
           </Box>

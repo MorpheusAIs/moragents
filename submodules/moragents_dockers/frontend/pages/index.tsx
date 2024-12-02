@@ -7,6 +7,8 @@ import {
   getMessagesHistory,
   sendSwapStatus,
   uploadFile,
+  setCoinbaseApiKeys,
+  setXApiKeys,
 } from "@/services/apiHooks";
 import { getHttpClient, SWAP_STATUS } from "@/services/constants";
 import { ChatMessage } from "@/services/types";
@@ -25,6 +27,44 @@ const Home: NextPage = () => {
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
 
   useEffect(() => {
+    // Set Coinbase API keys from localStorage if they exist
+    const cdpApiKey = localStorage.getItem("cdpApiKey");
+    const cdpApiSecret = localStorage.getItem("cdpApiSecret");
+
+    if (cdpApiKey && cdpApiSecret) {
+      setCoinbaseApiKeys(getHttpClient(), {
+        cdp_api_key: cdpApiKey,
+        cdp_api_secret: cdpApiSecret,
+      }).catch((error) => {
+        console.error("Failed to set initial Coinbase credentials:", error);
+      });
+    }
+
+    // Set Twitter API keys from localStorage if they exist
+    const apiKey = localStorage.getItem("apiKey");
+    const apiSecret = localStorage.getItem("apiSecret");
+    const accessToken = localStorage.getItem("accessToken");
+    const accessTokenSecret = localStorage.getItem("accessTokenSecret");
+    const bearerToken = localStorage.getItem("bearerToken");
+
+    if (
+      apiKey &&
+      apiSecret &&
+      accessToken &&
+      accessTokenSecret &&
+      bearerToken
+    ) {
+      setXApiKeys(getHttpClient(), {
+        api_key: apiKey,
+        api_secret: apiSecret,
+        access_token: accessToken,
+        access_token_secret: accessTokenSecret,
+        bearer_token: bearerToken,
+      }).catch((error) => {
+        console.error("Failed to set initial Twitter credentials:", error);
+      });
+    }
+
     getMessagesHistory(getHttpClient())
       .then((messages: ChatMessage[]) => {
         setChatHistory([...messages]);

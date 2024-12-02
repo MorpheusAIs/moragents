@@ -34,7 +34,13 @@ import {
   Tab,
   TabPanel,
 } from "@chakra-ui/react";
-import { ChevronDownIcon, DownloadIcon, DeleteIcon } from "@chakra-ui/icons";
+import {
+  ChevronDownIcon,
+  DownloadIcon,
+  DeleteIcon,
+  StarIcon,
+  CopyIcon,
+} from "@chakra-ui/icons";
 
 const NETWORKS = [
   "base-mainnet",
@@ -48,10 +54,12 @@ const NETWORKS = [
 interface Wallet {
   wallet_id: string;
   network_id: string;
+  address: string;
 }
 
 export const CDPWallets: React.FC = () => {
   const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [activeWallet, setActiveWallet] = useState<string | null>(null);
   const [newWalletName, setNewWalletName] = useState("");
   const [selectedNetwork, setSelectedNetwork] = useState(NETWORKS[0]);
   const [walletFile, setWalletFile] = useState<File | null>(null);
@@ -64,10 +72,16 @@ export const CDPWallets: React.FC = () => {
 
   const fetchWallets = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/wallets/list");
-      const data = await response.json();
-      console.log(data);
-      setWallets(data.wallets || []);
+      const [walletsResponse, activeWalletResponse] = await Promise.all([
+        fetch("http://localhost:8080/wallets/list"),
+        fetch("http://localhost:8080/wallets/active"),
+      ]);
+
+      const walletsData = await walletsResponse.json();
+      const activeData = await activeWalletResponse.json();
+
+      setWallets(walletsData.wallets || []);
+      setActiveWallet(activeData.active_wallet_id);
     } catch (error) {
       console.error("Failed to fetch wallets:", error);
       toast({
@@ -81,6 +95,51 @@ export const CDPWallets: React.FC = () => {
   useEffect(() => {
     fetchWallets();
   }, [fetchWallets]);
+
+  const handleCopyAddress = (address: string) => {
+    navigator.clipboard.writeText(address);
+    toast({
+      title: "Address copied to clipboard",
+      status: "success",
+      duration: 2000,
+    });
+  };
+
+  const handleSetActiveWallet = async (walletId: string) => {
+    try {
+      const response = await fetch("http://localhost:8080/wallets/active", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          wallet_id: walletId,
+        }),
+      });
+
+      if (response.ok) {
+        setActiveWallet(walletId);
+        toast({
+          title: "Active wallet set successfully",
+          status: "success",
+          duration: 3000,
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to set active wallet");
+      }
+    } catch (error) {
+      console.error("Error setting active wallet:", error);
+      toast({
+        title:
+          error instanceof Error
+            ? error.message
+            : "Failed to set active wallet",
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
 
   const handleCreateWallet = async () => {
     if (!newWalletName.trim()) {
@@ -101,6 +160,7 @@ export const CDPWallets: React.FC = () => {
         body: JSON.stringify({
           wallet_id: newWalletName,
           network_id: selectedNetwork,
+          set_active: true,
         }),
       });
 
@@ -150,6 +210,7 @@ export const CDPWallets: React.FC = () => {
         body: JSON.stringify({
           wallet_id: walletData.wallet_id,
           wallet_data: walletData,
+          set_active: true,
         }),
       });
 
@@ -186,7 +247,6 @@ export const CDPWallets: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         if (data.status === "success") {
-          // Trigger download of wallet data
           const blob = new Blob([JSON.stringify(data.data, null, 2)], {
             type: "application/json",
           });
@@ -287,8 +347,34 @@ export const CDPWallets: React.FC = () => {
                     <Text fontSize="sm" color="gray.500">
                       Network: {wallet.network_id}
                     </Text>
+                    <Text fontSize="xs" color="gray.400">
+                      {wallet.address}
+                    </Text>
                   </VStack>
                   <HStack>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyAddress(wallet.address);
+                      }}
+                    >
+                      <CopyIcon />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      colorScheme={
+                        activeWallet === wallet.wallet_id ? "yellow" : "gray"
+                      }
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSetActiveWallet(wallet.wallet_id);
+                      }}
+                    >
+                      <StarIcon />
+                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -372,15 +458,26 @@ export const CDPWallets: React.FC = () => {
                   <VStack spacing={4}>
                     <FormControl>
                       <FormLabel>Upload Wallet File</FormLabel>
-                      <Input
-                        type="file"
-                        accept=".json"
-                        onChange={(e) => {
-                          if (e.target.files) {
-                            setWalletFile(e.target.files[0]);
-                          }
-                        }}
-                      />
+                      <Button
+                        as="label"
+                        htmlFor="file-upload"
+                        variant="outline"
+                        width="full"
+                        cursor="pointer"
+                      >
+                        {walletFile ? walletFile.name : "Choose wallet file"}
+                        <input
+                          id="file-upload"
+                          type="file"
+                          accept=".json"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            if (e.target.files) {
+                              setWalletFile(e.target.files[0]);
+                            }
+                          }}
+                        />
+                      </Button>
                     </FormControl>
                     <Button
                       colorScheme="blue"

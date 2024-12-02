@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Optional
 from cdp import Cdp, Wallet, WalletData
 from pathlib import Path
-from src.stores import key_manager_instance
+from src.stores.key_manager import key_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,7 @@ class WalletManager:
         self.wallets: Dict[str, Wallet] = {}
         self.wallet_data: Dict[str, dict] = {}
         self.cdp_client: Optional[Cdp] = None
+        self.active_wallet_id: Optional[str] = None
 
     def configure_cdp_client(self) -> bool:
         """Configure CDP client with stored credentials if not already configured"""
@@ -35,7 +36,9 @@ class WalletManager:
             logger.error(f"Failed to configure CDP client: {str(e)}")
             return False
 
-    def create_wallet(self, wallet_id: str, network_id: Optional[str] = None) -> Wallet:
+    def create_wallet(
+        self, wallet_id: str, network_id: Optional[str] = None, set_active: bool = True
+    ) -> Wallet:
         """Create a new CDP wallet and store it"""
         try:
             if not wallet_id:
@@ -59,6 +62,9 @@ class WalletManager:
 
             self.wallet_data[wallet_id] = wallet_data.to_dict()
 
+            if set_active:
+                self.set_active_wallet(wallet_id)
+
             logger.info(f"Created new wallet with ID: {wallet_id}")
             return wallet
 
@@ -66,7 +72,9 @@ class WalletManager:
             logger.error(f"Failed to create wallet: {str(e)}")
             raise
 
-    def restore_wallet(self, wallet_id: str, wallet_data: dict) -> Optional[Wallet]:
+    def restore_wallet(
+        self, wallet_id: str, wallet_data: dict, set_active: bool = True
+    ) -> Optional[Wallet]:
         """Restore a wallet from exported data"""
         try:
             if not wallet_id:
@@ -89,6 +97,9 @@ class WalletManager:
             self.wallets[wallet_id] = wallet
             self.wallet_data[wallet_id] = wallet_data
 
+            if set_active:
+                self.set_active_wallet(wallet_id)
+
             logger.info(f"Successfully restored wallet {wallet_id}")
             return wallet
 
@@ -99,6 +110,38 @@ class WalletManager:
     def get_wallet(self, wallet_id: str) -> Optional[Wallet]:
         """Get a wallet by ID"""
         return self.wallets.get(wallet_id)
+
+    def get_wallet_address(self, wallet_id: str) -> Optional[str]:
+        """Get the default address for a wallet"""
+        wallet = self.get_wallet(wallet_id)
+        if not wallet:
+            return None
+        return wallet.default_address.address_id
+
+    def get_active_wallet(self) -> Optional[Wallet]:
+        """Get the currently active wallet"""
+        if not self.active_wallet_id:
+            return None
+        return self.wallets.get(self.active_wallet_id)
+
+    def get_active_wallet_id(self) -> Optional[str]:
+        """Get the ID of the currently active wallet"""
+        return self.active_wallet_id
+
+    def set_active_wallet(self, wallet_id: str) -> bool:
+        """Set a wallet as the active wallet"""
+        if not self.has_wallet(wallet_id):
+            logger.error(f"Cannot set active wallet - wallet {wallet_id} not found")
+            return False
+
+        self.active_wallet_id = wallet_id
+        logger.info(f"Set wallet {wallet_id} as active wallet")
+        return True
+
+    def clear_active_wallet(self):
+        """Clear the currently active wallet"""
+        self.active_wallet_id = None
+        logger.info("Cleared active wallet")
 
     def save_wallet(self, wallet_id: str, filepath: str) -> bool:
         """Save wallet data to file"""
@@ -120,7 +163,9 @@ class WalletManager:
             logger.error(f"Failed to save wallet: {str(e)}")
             return False
 
-    def load_wallet(self, wallet_id: str, filepath: str) -> Optional[Wallet]:
+    def load_wallet(
+        self, wallet_id: str, filepath: str, set_active: bool = True
+    ) -> Optional[Wallet]:
         """Load wallet from saved data"""
         try:
             with open(filepath, "r") as f:
@@ -132,6 +177,9 @@ class WalletManager:
             # Store in memory
             self.wallets[wallet_id] = wallet
             self.wallet_data[wallet_id] = wallet_data
+
+            if set_active:
+                self.set_active_wallet(wallet_id)
 
             logger.info(f"Loaded wallet {wallet_id} from {filepath}")
             return wallet
@@ -146,6 +194,8 @@ class WalletManager:
             del self.wallets[wallet_id]
         if wallet_id in self.wallet_data:
             del self.wallet_data[wallet_id]
+        if self.active_wallet_id == wallet_id:
+            self.clear_active_wallet()
         logger.info(f"Removed wallet {wallet_id}")
 
     def has_wallet(self, wallet_id: str) -> bool:
@@ -155,7 +205,12 @@ class WalletManager:
     def list_wallets(self) -> list[dict]:
         """Get list of wallets with their data"""
         return [
-            {"wallet_id": wallet_id, "network_id": wallet.network_id}
+            {
+                "wallet_id": wallet_id,
+                "network_id": wallet.network_id,
+                "is_active": wallet_id == self.active_wallet_id,
+                "address": wallet.default_address.address_id,
+            }
             for wallet_id, wallet in self.wallets.items()
         ]
 

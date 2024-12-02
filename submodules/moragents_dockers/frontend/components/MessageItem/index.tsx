@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Grid, GridItem, Text, Box } from "@chakra-ui/react";
+import { Grid, GridItem, Text } from "@chakra-ui/react";
 import ReactMarkdown from "react-markdown";
 import {
   ChatMessage,
@@ -7,13 +7,13 @@ import {
   ClaimMessagePayload,
   ImageMessageContent,
   CryptoDataMessageContent,
-} from "../../services/backendClient";
-import { Avatar } from "../Avatar";
-import { availableAgents } from "../../config";
-import { SwapMessage } from "../SwapMessage";
-import { ClaimMessage } from "../ClaimMessage/ClaimMessage";
-import { Tweet } from "../Tweet";
-import { ImageDisplay } from "../ImageDisplay";
+  BaseMessageContent,
+} from "@/services/types";
+import { Avatar } from "@/components/Avatar";
+import { availableAgents } from "@/config";
+import { SwapMessage } from "@/components/SwapMessage";
+import { ClaimMessage } from "@/components/ClaimMessage/ClaimMessage";
+import { Tweet } from "@/components/Tweet";
 import styles from "./index.module.css";
 
 type MessageItemProps = {
@@ -63,6 +63,15 @@ export const MessageItem: FC<MessageItemProps> = ({
       return (
         <ReactMarkdown className={styles.messageText}>
           {cryptoDataContent.data}
+        </ReactMarkdown>
+      );
+    }
+
+    if (message.agentName === "base agent") {
+      const baseContent = content as unknown as BaseMessageContent;
+      return (
+        <ReactMarkdown className={styles.messageText}>
+          {baseContent.message}
         </ReactMarkdown>
       );
     }

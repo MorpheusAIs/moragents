@@ -23,10 +23,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { tokens, frequencies } from "./DCAWidget.constants";
-
-interface DCAWidgetProps {
-  onSave?: (config: DCAConfig) => void;
-}
+import axios from "axios";
 
 interface DCAConfig {
   originToken: string;
@@ -39,7 +36,7 @@ interface DCAConfig {
   pauseOnVolatility: boolean;
 }
 
-const DCAWidget: React.FC<DCAWidgetProps> = ({ onSave }) => {
+const DCAWidget: React.FC = () => {
   const toast = useToast();
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const { isOpen, onToggle } = useDisclosure();
@@ -52,7 +49,7 @@ const DCAWidget: React.FC<DCAWidgetProps> = ({ onSave }) => {
     pauseOnVolatility: false,
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (config.originToken === config.destinationToken) {
       toast({
         title: "Invalid Configuration",
@@ -64,14 +61,54 @@ const DCAWidget: React.FC<DCAWidgetProps> = ({ onSave }) => {
       return;
     }
 
-    onSave?.(config);
-    toast({
-      title: "Strategy Saved",
-      description: "Your DCA strategy has been updated",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+    if (config.stepSize <= 0) {
+      toast({
+        title: "Invalid Step Size",
+        description: "Step size must be greater than 0",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/dca/create_strategy",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(config),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.status === "success") {
+        toast({
+          title: "Strategy Created",
+          description: "Your DCA strategy has been created successfully",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      toast({
+        title: "Strategy Creation Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to create DCA strategy",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   const calculateTimeToCompletion = () => {

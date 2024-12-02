@@ -16,31 +16,31 @@ import {
   FormLabel,
   Container,
   useToast,
-  HStack,
+  Input,
 } from "@chakra-ui/react";
 import { tokens } from "./Base.constants";
 
-interface SwapConfig {
-  fromToken: string;
-  toToken: string;
+interface TransferConfig {
+  token: string;
   amount: number;
+  destinationAddress: string;
 }
 
-const BaseSwapWidget: React.FC = () => {
+const BaseTransferWidget: React.FC = () => {
   const toast = useToast();
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  const [config, setConfig] = useState<SwapConfig>({
-    fromToken: "usdc",
-    toToken: "eth",
+  const [config, setConfig] = useState<TransferConfig>({
+    token: "usdc",
     amount: 0,
+    destinationAddress: "",
   });
 
-  const handleSwap = async () => {
-    if (config.fromToken === config.toToken) {
+  const handleTransfer = async () => {
+    if (!config.destinationAddress) {
       toast({
         title: "Invalid Configuration",
-        description: "Source and destination tokens must be different",
+        description: "Destination address is required",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -60,15 +60,15 @@ const BaseSwapWidget: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/base/swap", {
+      const response = await fetch("http://localhost:8080/base/transfer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          fromAsset: config.fromToken,
-          toAsset: config.toToken,
+          asset: config.token,
           amount: config.amount,
+          destinationAddress: config.destinationAddress,
         }),
       });
 
@@ -76,8 +76,8 @@ const BaseSwapWidget: React.FC = () => {
 
       if (data.status === "success") {
         toast({
-          title: "Swap Initiated",
-          description: "Your swap request has been submitted",
+          title: "Transfer Successful",
+          description: data.message,
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -87,9 +87,9 @@ const BaseSwapWidget: React.FC = () => {
       }
     } catch (error) {
       toast({
-        title: "Swap Failed",
+        title: "Transfer Failed",
         description:
-          error instanceof Error ? error.message : "Failed to execute swap",
+          error instanceof Error ? error.message : "Unknown error occurred",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -102,10 +102,10 @@ const BaseSwapWidget: React.FC = () => {
       <VStack align="stretch" spacing={6}>
         <Box textAlign="center">
           <Heading size="md" mb={3} color="white">
-            Base Network Token Swap
+            Base Network Token Transfer
           </Heading>
           <Text fontSize="sm" color="white">
-            Swap tokens directly on the Base Network
+            Transfer tokens directly on the Base Network
           </Text>
         </Box>
 
@@ -117,55 +117,25 @@ const BaseSwapWidget: React.FC = () => {
           borderColor={borderColor}
           borderRadius="md"
         >
-          <HStack spacing={4}>
-            <FormControl>
-              <FormLabel color="white">From Token</FormLabel>
-              <Select
-                value={config.fromToken}
-                onChange={(e) =>
-                  setConfig({ ...config, fromToken: e.target.value })
-                }
-                color="white"
-                sx={{
-                  "& > option": {
-                    color: "black",
-                  },
-                }}
-              >
-                {tokens
-                  .filter((t) => t.symbol !== config.toToken)
-                  .map((token) => (
-                    <option key={token.symbol} value={token.symbol}>
-                      {token.symbol} - {token.name}
-                    </option>
-                  ))}
-              </Select>
-            </FormControl>
-
-            <FormControl>
-              <FormLabel color="white">To Token</FormLabel>
-              <Select
-                value={config.toToken}
-                onChange={(e) =>
-                  setConfig({ ...config, toToken: e.target.value })
-                }
-                color="white"
-                sx={{
-                  "& > option": {
-                    color: "black",
-                  },
-                }}
-              >
-                {tokens
-                  .filter((t) => t.symbol !== config.fromToken)
-                  .map((token) => (
-                    <option key={token.symbol} value={token.symbol}>
-                      {token.symbol} - {token.name}
-                    </option>
-                  ))}
-              </Select>
-            </FormControl>
-          </HStack>
+          <FormControl>
+            <FormLabel color="white">Token</FormLabel>
+            <Select
+              value={config.token}
+              onChange={(e) => setConfig({ ...config, token: e.target.value })}
+              color="white"
+              sx={{
+                "& > option": {
+                  color: "black",
+                },
+              }}
+            >
+              {tokens.map((token) => (
+                <option key={token.symbol} value={token.symbol}>
+                  {token.symbol} - {token.name}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
 
           <FormControl>
             <FormLabel color="white">Amount</FormLabel>
@@ -182,17 +152,34 @@ const BaseSwapWidget: React.FC = () => {
               </NumberInputStepper>
             </NumberInput>
             <Text fontSize="sm" color="gray.400" mt={1}>
-              Amount of {config.fromToken} to swap
+              Amount of {config.token} to transfer
             </Text>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel color="white">Destination Address</FormLabel>
+            <Input
+              value={config.destinationAddress}
+              onChange={(e) =>
+                setConfig({ ...config, destinationAddress: e.target.value })
+              }
+              placeholder="Enter destination address"
+              color="white"
+            />
           </FormControl>
         </VStack>
 
-        <Button colorScheme="green" onClick={handleSwap} size="md" width="100%">
-          Swap Tokens
+        <Button
+          colorScheme="green"
+          onClick={handleTransfer}
+          size="md"
+          width="100%"
+        >
+          Transfer Tokens
         </Button>
       </VStack>
     </Container>
   );
 };
 
-export default BaseSwapWidget;
+export default BaseTransferWidget;

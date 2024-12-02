@@ -23,7 +23,6 @@ class BaseAgent:
         self.llm = llm
         self.embeddings = embeddings
         self.config = Config()
-        self.wallet_id = f"agent_{agent_info['name']}"
 
         # Bind tools to LLM
         self.tool_bound_llm = self.llm.bind_tools(self.config.tools)
@@ -43,21 +42,21 @@ class BaseAgent:
                     "needs_credentials": True,
                 }
 
-            # Create agent wallet if it doesn't exist
-            if not wallet_manager_instance.has_wallet(self.wallet_id):
-                wallet_manager_instance.create_wallet(self.wallet_id)
+            # Check for active wallet
+            active_wallet = wallet_manager_instance.get_active_wallet()
+            if not active_wallet:
+                return {
+                    "error": "No active wallet selected. Please select or create a wallet first."
+                }
 
             if "prompt" in data:
                 prompt = data["prompt"]
                 wallet_address = data.get("wallet_address")
                 chain_id = data.get("chain_id")
-                response, role, next_turn_agent = self.handle_request(
-                    prompt, chain_id, wallet_address
-                )
+                response_content = self.handle_request(prompt, chain_id, wallet_address)
                 return {
-                    "role": role,
-                    "content": response,
-                    "next_turn_agent": next_turn_agent,
+                    "role": "assistant",
+                    "content": response_content,
                 }
             else:
                 logger.error("Missing 'prompt' in chat request data")
@@ -69,7 +68,7 @@ class BaseAgent:
 
     def handle_request(
         self, message: dict[str, any], chain_id: Optional[str], wallet_address: Optional[str]
-    ) -> Tuple[str, str, Optional[str]]:
+    ) -> Dict[str, Any]:
         logger.info(f"Message: {message}")
         logger.info(f"Chain ID: {chain_id}")
         logger.info(f"Wallet Address: {wallet_address}")
@@ -111,36 +110,44 @@ class BaseAgent:
                 logger.info(f"Arguments: {args}")
 
                 if not func_name:
-                    return "Error: No function name provided in tool call", "assistant", None
+                    return {
+                        "message": "Error: No function name provided in tool call",
+                        "actionType": None,
+                    }
 
-                # Execute the tool
-                try:
-                    # Check if function exists in tools by comparing against tool names
-                    available_tools = [tool["name"] for tool in self.config.tools]
-                    if func_name not in available_tools:
-                        return f"Error: Function '{func_name}' not supported.", "assistant", None
-
-                    # Get agent's wallet from wallet manager
-                    wallet = wallet_manager_instance.get_wallet(self.wallet_id)
+                # Handle swap and transfer tools differently
+                if func_name == "swap_assets":
+                    return {"message": "Ready to perform swap", "actionType": "swap"}
+                elif func_name == "transfer_asset":
+                    return {"message": "Ready to perform transfer", "actionType": "transfer"}
+                elif func_name == "get_balance":
+                    # Get active wallet from wallet manager
+                    wallet = wallet_manager_instance.get_active_wallet()
                     if not wallet:
-                        return "Error: Agent wallet not found", "assistant", None
+                        return {"message": "Error: No active wallet found", "actionType": None}
 
-                    tool_result, role = getattr(tools, func_name)(wallet, **args)
+                    try:
+                        tool_result = tools.get_balance(wallet, asset_id=args.get("asset_id"))
+                        balance = tool_result["balance"]
+                        asset = tool_result["asset"]
+                        address = tool_result["address"]
+                        return {
+                            "message": f"Your wallet {address} has a balance of {balance} {asset}",
+                            "actionType": None,
+                        }
+                    except ValueError as e:
+                        return {"message": f"Error: {str(e)}", "actionType": None}
+                else:
+                    return {
+                        "message": f"Error: Function '{func_name}' not supported.",
+                        "actionType": None,
+                    }
 
-                    success_msg = f"Successfully executed {func_name}"
-                    if isinstance(tool_result, dict) and "tx_hash" in tool_result:
-                        success_msg += f" (tx: {tool_result['tx_hash']})"
-
-                    return success_msg, role, None
-
-                except Exception as e:
-                    logger.error(f"Error executing tool {func_name}: {str(e)}")
-                    return f"Error executing {func_name}: {str(e)}", "assistant", None
             else:
                 # No function call; return the assistant's message
                 content = result.content if hasattr(result, "content") else ""
-                return content, "assistant", None
+                return {"message": content, "actionType": None}
 
         except Exception as e:
             logger.error(f"Error processing LLM response: {str(e)}")
-            return "Error: Unable to process the request.", "assistant", None
+            return {"message": "Error: Unable to process the request.", "actionType": None}

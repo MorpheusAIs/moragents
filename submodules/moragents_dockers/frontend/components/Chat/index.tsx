@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import { Flex, Box } from "@chakra-ui/react";
-import { ChatMessage } from "../../services/backendClient";
+import { ChatMessage } from "@/services/types";
 import { useTransactionConfirmations } from "wagmi";
 import { MessageList } from "../MessageList";
 import { ChatInput } from "../ChatInput";

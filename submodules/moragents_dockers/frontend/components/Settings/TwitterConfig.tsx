@@ -10,7 +10,7 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
-import { setXApiKeys } from "../../services/backendClient";
+import { setXApiKeys } from "@/services/apiHooks";
 import axios from "axios";
 
 interface TwitterCredentials {

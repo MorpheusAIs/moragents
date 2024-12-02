@@ -7,6 +7,7 @@ import aiofiles
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from enum import Enum
+from src.agents.dca_agent.tools import DCAActionHandler
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,9 @@ class WorkflowManager:
         self._scheduler_task: Optional[asyncio.Task] = None
         self._action_handlers: Dict[str, Any] = {}
 
+        # Register DCA action handler by default
+        self.register_action_handler("dca_trade", DCAActionHandler())
+
     def register_action_handler(self, action_name: str, handler: Any) -> None:
         """Register a handler for a workflow action"""
         self._action_handlers[action_name] = handler
@@ -131,7 +135,7 @@ class WorkflowManager:
                 raise ValueError(f"No handler registered for action: {workflow.action}")
 
             handler = self._action_handlers[workflow.action]
-            await handler(**workflow.params)
+            await handler.execute(workflow.params)
 
             # Update workflow timing
             workflow.last_run = datetime.now()

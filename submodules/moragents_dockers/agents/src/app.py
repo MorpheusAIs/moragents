@@ -11,7 +11,7 @@ from langchain_ollama import ChatOllama
 from src.config import Config
 from src.delegator import Delegator
 from src.models.messages import ChatRequest
-from src.stores import agent_manager, chat_manager
+from src.stores import agent_manager_instance, chat_manager_instance
 from src.routes import (
     agent_manager_routes,
     chat_manager_routes,
@@ -57,22 +57,29 @@ app.include_router(key_manager_routes.router)
 app.include_router(chat_manager_routes.router)
 app.include_router(wallet_manager_routes.router)
 app.include_router(workflow_manager_routes.router)
+
 # Agent route imports
+from src.agents.crypto_data.routes import router as crypto_router
 from src.agents.rag.routes import router as rag_router
 from src.agents.mor_claims.routes import router as claim_router
 from src.agents.tweet_sizzler.routes import router as tweet_router
 from src.agents.token_swap.routes import router as swap_router
+from src.agents.dca_agent.routes import router as dca_router
+from src.agents.base_agent.routes import router as base_router
 
 # Include agent routes
+app.include_router(crypto_router)
 app.include_router(rag_router)
 app.include_router(claim_router)
 app.include_router(tweet_router)
 app.include_router(swap_router)
+app.include_router(dca_router)
+app.include_router(base_router)
 
 
 async def get_active_agent_for_chat(prompt: dict) -> str:
     """Get the active agent for handling the chat request."""
-    active_agent = agent_manager.get_active_agent()
+    active_agent = agent_manager_instance.get_active_agent()
     if active_agent:
         return active_agent
 
@@ -113,7 +120,7 @@ def validate_agent_response(response: dict, current_agent: str) -> dict:
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
     prompt = chat_request.prompt.dict()
-    chat_manager.add_message(prompt)
+    chat_manager_instance.add_message(prompt)
 
     try:
         delegator.reset_attempted_agents()
@@ -123,7 +130,7 @@ async def chat(chat_request: ChatRequest):
         current_agent, response = delegator.delegate_chat(active_agent, chat_request)
 
         validated_response = validate_agent_response(response, current_agent)
-        chat_manager.add_response(validated_response, current_agent)
+        chat_manager_instance.add_response(validated_response, current_agent)
 
         logger.info(f"Sending response: {validated_response}")
         return validated_response

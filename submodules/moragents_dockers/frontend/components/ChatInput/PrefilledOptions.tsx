@@ -89,8 +89,8 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
     title: "Base Transactions 🔄",
     icon: <Send size={20} />,
     examples: [
-      { text: "Send ETH on Base", agent: "base" },
-      { text: "Check my Base transaction status", agent: "base" },
+      { text: "Send USDC on Base", agent: "base" },
+      { text: "Swap USDC for ETH on Base", agent: "base" },
     ],
   },
   "mor rewards agent": {

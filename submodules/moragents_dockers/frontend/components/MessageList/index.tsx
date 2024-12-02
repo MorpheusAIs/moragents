@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { Box } from "@chakra-ui/react";
-import { ChatMessage } from "../../services/backendClient";
+import { ChatMessage } from "@/services/types";
 import { MessageItem } from "../MessageItem";
 
 type MessageListProps = {

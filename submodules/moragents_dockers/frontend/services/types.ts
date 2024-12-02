@@ -65,6 +65,11 @@ export type CryptoDataMessage = ChatMessageBase & {
   content: CryptoDataMessageContent;
 };
 
+export type BaseMessageContent = {
+  message: string;
+  actionType?: string;
+};
+
 export type SystemMessage = ChatMessageBase & {
   role: "system";
   content: string;

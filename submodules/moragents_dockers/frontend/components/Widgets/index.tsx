@@ -6,11 +6,13 @@ import {
   ChatMessage,
   ImageMessage,
   CryptoDataMessageContent,
-} from "../../services/backendClient";
-import { ImageDisplay } from "../ImageDisplay";
+  BaseMessageContent,
+} from "@/services/types";
+import { ImageDisplay } from "@/components/ImageDisplay";
 import TradingViewWidget from "./TradingViewWidget";
 import DCAWidget from "./DCAWidget";
 import BaseSwapWidget from "./BaseSwapWidget";
+import BaseTransferWidget from "./BaseTransferWidget";
 
 export const WIDGET_COMPATIBLE_AGENTS = [
   "imagen agent",
@@ -88,6 +90,14 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
       activeWidget?.role === "assistant" &&
       activeWidget.agentName === "base agent"
     ) {
+      const content = activeWidget.content as unknown as BaseMessageContent;
+      if (
+        !content.actionType ||
+        !["transfer", "swap"].includes(content.actionType)
+      ) {
+        return null;
+      }
+
       return (
         <Box
           h="full"
@@ -96,7 +106,11 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
           flexDirection="column"
           flexGrow={1}
         >
-          <BaseSwapWidget />
+          {content.actionType === "transfer" ? (
+            <BaseTransferWidget />
+          ) : (
+            <BaseSwapWidget />
+          )}
         </Box>
       );
     }

@@ -1,17 +1,15 @@
 import React, { FC, useState, useMemo, useEffect, useCallback } from "react";
 import {
   ApproveTxPayloadType,
-  getApprovalTxPayload,
-  getHttpClient,
-  getSwapTxPayload,
   SwapMessagePayload,
   SwapTxPayloadType,
-} from "../../services/backendClient";
+} from "@/services/types";
+import { getApprovalTxPayload, getSwapTxPayload } from "@/services/apiHooks";
+import { getHttpClient } from "@/services/constants";
 import {
   Box,
   Button,
   FormControl,
-  FormLabel,
   Input,
   Text,
   HStack,
