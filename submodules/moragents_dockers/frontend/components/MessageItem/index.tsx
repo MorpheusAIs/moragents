@@ -41,7 +41,7 @@ export const MessageItem: FC<MessageItemProps> = ({
 
   const renderContent = () => {
     if (typeof content === "string") {
-      if (message.agentName === "tweet sizzler agent") {
+      if (message.agentName === "tweet sizzler") {
         return <Tweet initialContent={content} selectedAgent={selectedAgent} />;
       }
       return (
@@ -49,7 +49,7 @@ export const MessageItem: FC<MessageItemProps> = ({
       );
     }
 
-    if (message.agentName === "imagen agent") {
+    if (message.agentName === "imagen") {
       const imageContent = content as unknown as ImageMessageContent;
       return (
         <ReactMarkdown className={styles.messageText}>
@@ -58,7 +58,7 @@ export const MessageItem: FC<MessageItemProps> = ({
       );
     }
 
-    if (message.agentName === "crypto data agent") {
+    if (message.agentName === "crypto data") {
       const cryptoDataContent = content as unknown as CryptoDataMessageContent;
       return (
         <ReactMarkdown className={styles.messageText}>
@@ -67,7 +67,7 @@ export const MessageItem: FC<MessageItemProps> = ({
       );
     }
 
-    if (message.agentName === "base agent") {
+    if (message.agentName === "base") {
       const baseContent = content as unknown as BaseMessageContent;
       return (
         <ReactMarkdown className={styles.messageText}>
