@@ -127,7 +127,9 @@ class BaseAgent:
                         return {"message": "Error: No active wallet found", "actionType": None}
 
                     try:
-                        tool_result = tools.get_balance(wallet, asset_id=args.get("asset_id"))
+                        tool_result = tools.get_balance(
+                            wallet, asset_id=args.get("asset_id").lower()
+                        )
                         balance = tool_result["balance"]
                         asset = tool_result["asset"]
                         address = tool_result["address"]

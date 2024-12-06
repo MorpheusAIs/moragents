@@ -15,14 +15,20 @@ import BaseSwapWidget from "./BaseSwapWidget";
 import BaseTransferWidget from "./BaseTransferWidget";
 
 export const WIDGET_COMPATIBLE_AGENTS = [
-  "imagen agent",
-  "crypto data agent",
-  "dca agent",
-  "base agent",
+  "imagen",
+  "crypto data",
+  "dca",
+  "base",
 ];
 
 export const shouldOpenWidget = (message: ChatMessage) => {
-  if (message.agentName === "crypto data agent") {
+  if (message.agentName === "base") {
+    const content = message.content as unknown as BaseMessageContent;
+    return (
+      content.actionType && ["transfer", "swap"].includes(content.actionType)
+    );
+  }
+  if (message.agentName === "crypto data") {
     const content = message.content as unknown as CryptoDataMessageContent;
     return (
       WIDGET_COMPATIBLE_AGENTS.includes(message.agentName) && content.coinId
@@ -40,7 +46,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
   const renderWidget = () => {
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "imagen agent"
+      activeWidget.agentName === "imagen"
     ) {
       return (
         <Box p={4}>
@@ -51,7 +57,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
 
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "crypto data agent"
+      activeWidget.agentName === "crypto data"
     ) {
       const content =
         activeWidget.content as unknown as CryptoDataMessageContent;
@@ -71,7 +77,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
 
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "dca agent"
+      activeWidget.agentName === "dca"
     ) {
       return (
         <Box
@@ -88,7 +94,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
 
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "base agent"
+      activeWidget.agentName === "base"
     ) {
       const content = activeWidget.content as unknown as BaseMessageContent;
       if (

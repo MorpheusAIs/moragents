@@ -21,9 +21,8 @@ class Config:
                 "properties": {
                     "amount": {"type": "string", "description": "Amount to transfer"},
                     "asset_id": {"type": "string", "description": "Asset ID to transfer"},
-                    "destination_address": {"type": "string", "description": "Destination address"},
                 },
-                "required": ["amount", "asset_id", "destination_address"],
+                "required": ["amount", "asset_id"],
             },
         },
         {

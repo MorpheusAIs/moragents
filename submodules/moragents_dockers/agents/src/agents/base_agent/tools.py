@@ -40,7 +40,6 @@ def transfer_asset(
 
         return {
             "success": transfer.status,
-            "tx_hash": transfer.hash,
             "from": agent_wallet.default_address.address_id,
             "to": destination_address,
             "amount": amount,
