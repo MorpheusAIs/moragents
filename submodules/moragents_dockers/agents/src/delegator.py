@@ -53,7 +53,10 @@ class Delegator:
             "Your primary function is to select the correct agent from the list of available agents based on the user's input. "
             "You MUST use the 'select_agent' function to select an agent. "
             "Available agents and their descriptions: You must use one of the available agent names.\n"
-            + "\n".join(f"- {agent['name']}: {agent['description']}" for agent in available_agents)
+            + "\n".join(
+                f"- agent_name: {agent['name']}: {agent['description']}"
+                for agent in available_agents
+            )
         )
 
         tools = [

@@ -42,7 +42,7 @@ const DCAWidget: React.FC = () => {
   const { isOpen, onToggle } = useDisclosure();
 
   const [config, setConfig] = useState<DCAConfig>({
-    originToken: "USDT",
+    originToken: "USDC",
     destinationToken: "BTC",
     stepSize: 100,
     frequency: "weekly",

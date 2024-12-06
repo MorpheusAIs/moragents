@@ -105,15 +105,6 @@ def validate_agent_response(response: dict, current_agent: str) -> dict:
             detail="All available agents failed to process the request",
         )
 
-    if isinstance(response, tuple) and len(response) == 2:
-        error_message, status_code = response
-        logger.error(f"Error from agent: {error_message}")
-        raise HTTPException(status_code=status_code, detail=error_message)
-
-    if not isinstance(response, dict) or "role" not in response or "content" not in response:
-        logger.error(f"Invalid response format: {response}")
-        raise HTTPException(status_code=500, detail="Invalid response format")
-
     return response
 
 
