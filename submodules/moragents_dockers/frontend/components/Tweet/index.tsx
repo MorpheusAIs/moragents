@@ -12,7 +12,6 @@ import {
   useDisclosure,
   Text,
   Box,
-  IconButton,
 } from "@chakra-ui/react";
 import {
   FaPaperPlane,
@@ -20,11 +19,8 @@ import {
   FaTimesCircle,
   FaSync,
 } from "react-icons/fa";
-import {
-  postTweet,
-  getHttpClient,
-  regenerateTweet,
-} from "../../services/backendClient";
+import { postTweet, regenerateTweet } from "@/services/apiHooks";
+import { getHttpClient } from "@/services/constants";
 import styles from "./index.module.css";
 
 type TweetProps = {

@@ -12,6 +12,8 @@ import {
   Flame,
   Globe2,
   Zap,
+  ArrowLeftRight,
+  Gift,
 } from "lucide-react";
 import styles from "./PrefilledOptions.module.css";
 
@@ -30,7 +32,7 @@ type PrefilledOptionsProps = {
 };
 
 const prefilledOptionsMap: Record<string, PrefilledOption> = {
-  "default agent": {
+  default: {
     title: "Default Agent 🔄",
     icon: <Globe2 size={20} />,
     examples: [
@@ -38,7 +40,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "What Morpheus agents are currently active?", agent: "default" },
     ],
   },
-  "imagen agent": {
+  imagen: {
     title: "Generate Images 🎨",
     icon: <Sparkles size={20} />,
     examples: [
@@ -49,7 +51,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       },
     ],
   },
-  "rag agent": {
+  rag: {
     title: "Document Analysis 📄",
     icon: <FileText size={20} />,
     examples: [
@@ -57,7 +59,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "What are the key points in the document?", agent: "rag" },
     ],
   },
-  "crypto data agent": {
+  "crypto data": {
     title: "Crypto Market Data 📊",
     icon: <LineChart size={20} />,
     examples: [
@@ -66,7 +68,15 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "What's the FDV of USDC?", agent: "crypto" },
     ],
   },
-  "tweet sizzler agent": {
+  "token swap": {
+    title: "Token Swaps 💱",
+    icon: <ArrowLeftRight size={20} />,
+    examples: [
+      { text: "Swap ETH for USDC", agent: "swap" },
+      { text: "Exchange my BTC for ETH", agent: "swap" },
+    ],
+  },
+  "tweet sizzler": {
     title: "Tweet Generator 🔥",
     icon: <Flame size={20} />,
     examples: [
@@ -77,7 +87,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       },
     ],
   },
-  "dca agent": {
+  dca: {
     title: "DCA Strategy Planning 💰",
     icon: <DollarSign size={20} />,
     examples: [
@@ -85,15 +95,23 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "Help me create a monthly BTC buying strategy", agent: "dca" },
     ],
   },
-  "base agent": {
+  base: {
     title: "Base Transactions 🔄",
     icon: <Send size={20} />,
     examples: [
-      { text: "Send ETH on Base", agent: "base" },
-      { text: "Check my Base transaction status", agent: "base" },
+      { text: "Send USDC on Base", agent: "base" },
+      { text: "Swap USDC for ETH on Base", agent: "base" },
     ],
   },
-  "mor rewards agent": {
+  "mor claims": {
+    title: "MOR Claims 🎁",
+    icon: <Gift size={20} />,
+    examples: [
+      { text: "Claim my MOR rewards", agent: "claims" },
+      { text: "Help me claim my pending MOR tokens", agent: "claims" },
+    ],
+  },
+  "mor rewards": {
     title: "MOR Rewards Tracking 🏆",
     icon: <Trophy size={20} />,
     examples: [
@@ -101,7 +119,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "Calculate my pending MOR rewards", agent: "rewards" },
     ],
   },
-  "realtime search agent": {
+  "realtime search": {
     title: "Real-Time Search 🔍",
     icon: <Search size={20} />,
     examples: [
@@ -112,7 +130,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "What did Donald Trump say about Bitcoin?", agent: "realtime" },
     ],
   },
-  "crypto news agent": {
+  "crypto news": {
     title: "Crypto News Analysis 📰",
     icon: <Newspaper size={20} />,
     examples: [
@@ -135,7 +153,7 @@ const PrefilledOptions: React.FC<PrefilledOptionsProps> = ({
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch("http://localhost:8080/available-agents");
+        const response = await fetch("http://localhost:8080/agents/available");
         const data = await response.json();
         setSelectedAgents(data.selected_agents);
       } catch (error) {

@@ -1,14 +1,9 @@
 import { useCallback, useState } from "react";
 import { useAccount, useChainId, useSendTransaction } from "wagmi";
-import {
-  sendClaimStatus,
-  ClaimTransactionPayload,
-  sendSwapStatus,
-  getHttpClient,
-  SWAP_STATUS,
-  CLAIM_STATUS,
-} from "../../services/backendClient";
-import { SwapTransaction } from "./types";
+import { sendClaimStatus, sendSwapStatus } from "@/services/apiHooks";
+import { getHttpClient } from "@/services/constants";
+import { SwapTxPayloadType, ClaimTransactionPayload } from "@/services/types";
+import { SWAP_STATUS, CLAIM_STATUS } from "@/services/constants";
 
 export const useChat = (onBackendError: () => void) => {
   const [txHash, setTxHash] = useState<string>("");
@@ -71,7 +66,7 @@ export const useChat = (onBackendError: () => void) => {
   );
 
   const handleSwapSubmit = useCallback(
-    (swapTx: SwapTransaction) => {
+    (swapTx: SwapTxPayloadType) => {
       setTxHash("");
       sendTransaction(
         {

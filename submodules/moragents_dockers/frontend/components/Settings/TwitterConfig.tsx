@@ -10,6 +10,8 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
+import { setXApiKeys } from "@/services/apiHooks";
+import axios from "axios";
 
 interface TwitterCredentials {
   apiKey: string;
@@ -74,11 +76,29 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
     return "•••••" + credential.slice(-5);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Store in localStorage as backup
     Object.entries(credentials).forEach(([key, value]) => {
       localStorage.setItem(key, value);
     });
-    onSave();
+
+    // Send to backend
+    const backendClient = axios.create({
+      baseURL: "http://localhost:8080",
+    });
+
+    try {
+      await setXApiKeys(backendClient, {
+        api_key: credentials.apiKey,
+        api_secret: credentials.apiSecret,
+        access_token: credentials.accessToken,
+        access_token_secret: credentials.accessTokenSecret,
+        bearer_token: credentials.bearerToken,
+      });
+      onSave();
+    } catch (error) {
+      console.error("Failed to save X credentials to backend:", error);
+    }
   };
 
   return (

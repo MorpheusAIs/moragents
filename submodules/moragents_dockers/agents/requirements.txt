@@ -30,3 +30,4 @@ pytz
 pyshorteners
 pillow==11.0.0
 webdriver-manager==4.0.2
+aiofiles==24.1.0

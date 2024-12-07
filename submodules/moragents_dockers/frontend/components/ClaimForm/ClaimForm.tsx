@@ -1,6 +1,6 @@
 import React, { FC, useState } from "react";
 import { Button, VStack, Text } from "@chakra-ui/react";
-import { ClaimMessagePayload, ClaimTransactionPayload, getHttpClient } from "../../services/backendClient";
+import { ClaimMessagePayload, ClaimTransactionPayload } from "@/services/types";
 import { useAccount, useChainId, useSendTransaction } from "wagmi";
 import { parseEther } from "viem";
 
@@ -22,33 +22,39 @@ export const ClaimForm: FC<ClaimFormProps> = ({
   const { address } = useAccount();
   const chainId = useChainId();
 
-const handleClaim = async () => {
-  setIsLoading(true);
-  try {
-    if (!fromMessage?.content?.transactions || !Array.isArray(fromMessage.content.transactions)) {
-      throw new Error("Invalid transaction data");
-    }
-    const transactions: ClaimTransactionPayload[] = fromMessage.content.transactions.map(item => item.transaction);
+  const handleClaim = async () => {
+    setIsLoading(true);
+    try {
+      if (
+        !fromMessage?.content?.transactions ||
+        !Array.isArray(fromMessage.content.transactions)
+      ) {
+        throw new Error("Invalid transaction data");
+      }
+      const transactions: ClaimTransactionPayload[] =
+        fromMessage.content.transactions.map((item) => item.transaction);
 
-    console.log("Transactions to be submitted:", transactions);
+      console.log("Transactions to be submitted:", transactions);
 
-    // Pass the first transaction to onSubmitClaim
-    if (transactions.length > 0) {
-      onSubmitClaim(transactions[0]);
-    } else {
-      throw new Error("No transactions to process");
+      // Pass the first transaction to onSubmitClaim
+      if (transactions.length > 0) {
+        onSubmitClaim(transactions[0]);
+      } else {
+        throw new Error("No transactions to process");
+      }
+    } catch (error) {
+      console.error("Failed to process claim:", error);
+      // Handle error (e.g., show error message to user)
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    console.error("Failed to process claim:", error);
-    // Handle error (e.g., show error message to user)
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <VStack spacing={4} align="stretch">
-      <Text>You have rewards available to claim. Would you like to proceed?</Text>
+      <Text>
+        You have rewards available to claim. Would you like to proceed?
+      </Text>
       <Button onClick={handleClaim} isLoading={isLoading} colorScheme="green">
         Claim Rewards
       </Button>

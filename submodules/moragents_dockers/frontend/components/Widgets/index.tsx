@@ -6,14 +6,29 @@ import {
   ChatMessage,
   ImageMessage,
   CryptoDataMessageContent,
-} from "../../services/backendClient";
-import { ImageDisplay } from "../ImageDisplay";
+  BaseMessageContent,
+} from "@/services/types";
+import { ImageDisplay } from "@/components/ImageDisplay";
 import TradingViewWidget from "./TradingViewWidget";
+import DCAWidget from "./DCAWidget";
+import BaseSwapWidget from "./BaseSwapWidget";
+import BaseTransferWidget from "./BaseTransferWidget";
 
-export const WIDGET_COMPATIBLE_AGENTS = ["imagen agent", "crypto data agent"];
+export const WIDGET_COMPATIBLE_AGENTS = [
+  "imagen",
+  "crypto data",
+  "dca",
+  "base",
+];
 
 export const shouldOpenWidget = (message: ChatMessage) => {
-  if (message.agentName === "crypto data agent") {
+  if (message.agentName === "base") {
+    const content = message.content as unknown as BaseMessageContent;
+    return (
+      content.actionType && ["transfer", "swap"].includes(content.actionType)
+    );
+  }
+  if (message.agentName === "crypto data") {
     const content = message.content as unknown as CryptoDataMessageContent;
     return (
       WIDGET_COMPATIBLE_AGENTS.includes(message.agentName) && content.coinId
@@ -31,7 +46,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
   const renderWidget = () => {
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "imagen agent"
+      activeWidget.agentName === "imagen"
     ) {
       return (
         <Box p={4}>
@@ -42,7 +57,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
 
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "crypto data agent"
+      activeWidget.agentName === "crypto data"
     ) {
       const content =
         activeWidget.content as unknown as CryptoDataMessageContent;
@@ -56,6 +71,52 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
           flexGrow={1}
         >
           <TradingViewWidget symbol={`${content.coinId.toUpperCase()}`} />
+        </Box>
+      );
+    }
+
+    if (
+      activeWidget?.role === "assistant" &&
+      activeWidget.agentName === "dca"
+    ) {
+      return (
+        <Box
+          h="full"
+          w="full"
+          display="flex"
+          flexDirection="column"
+          flexGrow={1}
+        >
+          <DCAWidget />
+        </Box>
+      );
+    }
+
+    if (
+      activeWidget?.role === "assistant" &&
+      activeWidget.agentName === "base"
+    ) {
+      const content = activeWidget.content as unknown as BaseMessageContent;
+      if (
+        !content.actionType ||
+        !["transfer", "swap"].includes(content.actionType)
+      ) {
+        return null;
+      }
+
+      return (
+        <Box
+          h="full"
+          w="full"
+          display="flex"
+          flexDirection="column"
+          flexGrow={1}
+        >
+          {content.actionType === "transfer" ? (
+            <BaseTransferWidget />
+          ) : (
+            <BaseSwapWidget />
+          )}
         </Box>
       );
     }
@@ -78,10 +139,11 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
       flexGrow={1}
     >
       <Text
-        fontSize="xl"
+        fontSize="2xl"
         fontWeight="bold"
         color="white"
         mt={4}
+        mb={8}
         textAlign="center"
         flexShrink={0}
       >

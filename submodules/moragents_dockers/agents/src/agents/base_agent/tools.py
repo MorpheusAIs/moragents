@@ -1,287 +1,175 @@
-import logging
-import time
-<<<<<<< HEAD:submodules/moragents_dockers/agents/src/agents/base_agent/tools.py
-
-import requests
-from cdp import Cdp, Transaction, Wallet
-from src.agents.base_agent.config import Config
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+from typing import Dict, Any
+from cdp import Wallet
 
 
-class InsufficientFundsError(Exception):
-    pass
-
-
-def send_gasless_usdc_transaction(toAddress, amount):
-
-    client = Cdp.configure("", "")
-=======
-import threading
-from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime
-from cdp import Cdp, Wallet, Transaction
-from flask import current_app
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
-
-# Custom exceptions
-class ToolError(Exception):
-    """Base exception for tool operations"""
-    pass
-
-class InsufficientFundsError(ToolError):
-    """Raised when there are insufficient funds"""
-    pass
->>>>>>> domsteil/main:submodules/moragents_dockers/agents/src/base_agent/src/tools.py
-
-class ConfigurationError(ToolError):
-    """Raised when there are configuration issues"""
-    pass
-
-# Global CDP client management
-_client: Optional[Cdp] = None
-_client_lock = threading.Lock()
-
-def get_cdp_client() -> Cdp:
-    """Get or create CDP client singleton with thread safety"""
-    global _client
-    with _client_lock:
-        if not _client:
-            # Get credentials from Flask config
-            api_key = current_app.config.get("cdpApiKey")
-            api_secret = current_app.config.get("cdpApiSecret")
-            
-            if not api_key or not api_secret:
-                raise ConfigurationError("CDP credentials not found in config")
-            
-            try:
-                _client = Cdp.configure(
-                    api_key,
-                    api_secret
-                )
-            except Exception as e:
-                raise ConfigurationError(f"Failed to initialize CDP client: {str(e)}")
-        
-        return _client
-
-<<<<<<< HEAD:submodules/moragents_dockers/agents/src/agents/base_agent/tools.py
-    eth_faucet_tx = wallet1.faucet()
-
-    usdc_faucet_tx = wallet1.faucet(asset_id="usdc")
-=======
-def reset_cdp_client() -> None:
-    """Reset the CDP client (useful when credentials change)"""
-    global _client
-    with _client_lock:
-        _client = None
->>>>>>> domsteil/main:submodules/moragents_dockers/agents/src/base_agent/src/tools.py
-
-async def create_wallet() -> Wallet:
-    """Create and fund a new wallet"""
+def swap_assets(
+    agent_wallet: Wallet, amount: str, from_asset_id: str, to_asset_id: str
+) -> Dict[str, Any]:
+    """Swap one asset for another (Base Mainnet only)"""
     try:
-        wallet = Wallet.create()
-        logger.info(f"Wallet created: {wallet.default_address}")
-        return wallet
-    except Exception as e:
-        raise ToolError(f"Failed to create wallet: {str(e)}")
+        if agent_wallet.network_id != "base-mainnet":
+            raise Exception("Asset swaps only available on Base Mainnet")
 
-async def fund_wallet(wallet: Wallet, asset_id: Optional[str] = None) -> Transaction:
-    """Fund wallet from faucet"""
-    try:
-        if asset_id:
-            tx = wallet.faucet(asset_id=asset_id)
-        else:
-            tx = wallet.faucet()
-        logger.info(f"Faucet transaction sent for {asset_id or 'ETH'}")
-        time.sleep(2)  # Wait for faucet
-        return tx
-    except Exception as e:
-        raise InsufficientFundsError(f"Failed to fund wallet: {str(e)}")
+        trade = agent_wallet.trade(amount, from_asset_id, to_asset_id)
+        trade.wait()
 
-async def send_gasless_usdc_transaction(
-    toAddress: str,
-    amount: str
-) -> Tuple[Dict[str, Any], str]:
-    """Send a gasless USDC transaction"""
-    try:
-        # Ensure client is configured
-        client = get_cdp_client()
-        logger.info("CDP client configured")
-
-        # Create and fund wallet
-        wallet = await create_wallet()
-        
-        # Get ETH and USDC from faucet
-        await fund_wallet(wallet)  # ETH for gas
-        await fund_wallet(wallet, "usdc")  # USDC for transfer
-        
-        # Execute transfer
-        tx = wallet.default_address.transfer(
-            amount=amount,
-            token="usdc",
-            to_address=toAddress,
-            gasless=True
-        ).wait()
-        
-        logger.info(f"USDC Transfer completed: {tx.hash}")
-        
         return {
-            'success': True,
-            'tx_hash': tx.hash,
-            'from': wallet.default_address,
-            'to': toAddress,
-            'amount': amount,
-            'token': 'USDC',
-            'timestamp': datetime.now().isoformat()
-        }, "gasless_usdc_transfer"
-
-    except InsufficientFundsError as e:
-        raise
-    except Exception as e:
-        logger.error(f"Error in gasless USDC transfer: {str(e)}")
-        raise ToolError(f"Failed to send USDC: {str(e)}")
-
-async def send_eth_transaction(
-    toAddress: str,
-    amount: str
-) -> Tuple[Dict[str, Any], str]:
-    """Send an ETH transaction"""
-    try:
-        # Ensure client is configured
-        client = get_cdp_client()
-        logger.info("CDP client configured")
-
-        # Create and fund wallet
-        wallet = await create_wallet()
-        await fund_wallet(wallet)  # Get ETH from faucet
-        
-        # Execute transfer
-        tx = wallet.transfer(
-            amount=amount,
-            token="eth",
-            to_address=toAddress
-        ).wait()
-        
-        logger.info(f"ETH Transfer completed: {tx.hash}")
-        
-        return {
-            'success': True,
-            'tx_hash': tx.hash,
-            'from': wallet.default_address,
-            'to': toAddress,
-            'amount': amount,
-            'token': 'ETH',
-            'timestamp': datetime.now().isoformat()
-        }, "eth_transfer"
-
-<<<<<<< HEAD:submodules/moragents_dockers/agents/src/agents/base_agent/tools.py
-    return {"success": "Transfer transaction successful"}, "gasless_usdc_transfer"
-
-
-def send_eth_transaction(toAddress, amount):
-
-    client = Cdp.configure("", "")
-
-    logger.info(f"Client successfully configured: {client}")
-
-    wallet1 = Wallet.create()
-
-    logger.info(f"Wallet successfully created: {wallet1}")
-    logger.info(f"Wallet address: {wallet1.default_address}")
-
-    faucet_tx = wallet1.faucet()
-
-    logger.info(f"Faucet transaction successfully sent: {faucet_tx}")
-
-    logger.info(f"Faucet transaction successfully completed: {faucet_tx}")
-
-    address = wallet1.default_address
-
-    logger.info(f"Address: {address}")
-
-    time.sleep(2)
-
-    transfer = wallet1.transfer(amount, "eth", toAddress).wait()
-
-    logger.info(f"Transfer transaction: {transfer}")
-
-    return {"success": "Transfer transaction successful"}, "eth_transfer"
-
-
-def get_tools():
-=======
-    except InsufficientFundsError as e:
-        raise
-    except Exception as e:
-        logger.error(f"Error in ETH transfer: {str(e)}")
-        raise ToolError(f"Failed to send ETH: {str(e)}")
-
-def get_tools() -> List[Dict[str, Any]]:
-    """Get available tool definitions"""
->>>>>>> domsteil/main:submodules/moragents_dockers/agents/src/base_agent/src/tools.py
-    return [
-        {
-            "type": "function",
-            "function": {
-                "name": "gasless_usdc_transfer",
-                "description": "Transfer USDC to another user without gas fees",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-<<<<<<< HEAD:submodules/moragents_dockers/agents/src/agents/base_agent/tools.py
-                        "toAddress": {"type": "string", "description": "Recipient's address."},
-                        "amount": {"type": "string", "description": "Amount of USDC to transfer."},
-=======
-                        "toAddress": {
-                            "type": "string",
-                            "description": "Recipient's address"
-                        },
-                        "amount": {
-                            "type": "string",
-                            "description": "Amount of USDC to transfer"
-                        }
->>>>>>> domsteil/main:submodules/moragents_dockers/agents/src/base_agent/src/tools.py
-                    },
-                    "required": ["toAddress", "amount"],
-                },
-            },
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "eth_transfer",
-                "description": "Transfer ETH to another user",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-<<<<<<< HEAD:submodules/moragents_dockers/agents/src/agents/base_agent/tools.py
-                        "toAddress": {"type": "string", "description": "Recipient's address."},
-                        "amount": {"type": "string", "description": "Amount of ETH to transfer."},
-                    },
-                    "required": ["toAddress", "amount"],
-                },
-            },
-        },
-    ]
-=======
-                        "toAddress": {
-                            "type": "string",
-                            "description": "Recipient's address"
-                        },
-                        "amount": {
-                            "type": "string",
-                            "description": "Amount of ETH to transfer"
-                        }
-                    },
-                    "required": ["toAddress", "amount"]
-                }
-            }
+            "success": True,
+            "tx_hash": trade.hash,
+            "from_asset": from_asset_id,
+            "to_asset": to_asset_id,
+            "amount": amount,
         }
-    ]
->>>>>>> domsteil/main:submodules/moragents_dockers/agents/src/base_agent/src/tools.py
+    except Exception as e:
+        raise Exception(f"Failed to swap assets: {str(e)}")
+
+
+def transfer_asset(
+    agent_wallet: Wallet, amount: str, asset_id: str, destination_address: str
+) -> Dict[str, Any]:
+    """Transfer an asset to another address"""
+    try:
+        # Create the transfer
+        gasless = agent_wallet.network_id == "base-mainnet" and asset_id.lower() == "usdc"
+        transfer = agent_wallet.default_address.transfer(
+            amount=amount, asset_id=asset_id, destination=destination_address, gasless=gasless
+        )
+
+        # Wait for transfer to settle and return status
+        transfer.wait()
+
+        return {
+            "success": transfer.status,
+            "from": agent_wallet.default_address.address_id,
+            "to": destination_address,
+            "amount": amount,
+            "asset": asset_id,
+            "transaction_link": transfer.transaction_link,
+        }
+
+    except Exception as e:
+        raise Exception(f"Failed to transfer asset: {str(e)}")
+
+
+def get_balance(agent_wallet: Wallet, asset_id: str) -> Dict[str, Any]:
+    """Get balance of a specific asset"""
+    try:
+        balance = agent_wallet.balance(asset_id)
+        return {
+            "success": True,
+            "asset": asset_id,
+            "balance": str(balance),
+            "address": agent_wallet.default_address.address_id,
+        }
+    except Exception as e:
+        raise Exception(f"Failed to get balance: {str(e)}")
+
+
+# -----------------------------------------------------
+# The following functions need to be fleshed out later:
+# -----------------------------------------------------
+
+
+def create_token(
+    agent_wallet: Wallet, name: str, symbol: str, initial_supply: int
+) -> Dict[str, Any]:
+    """Create a new ERC-20 token"""
+    try:
+        deployed_contract = agent_wallet.deploy_token(name, symbol, initial_supply)
+        deployed_contract.wait()
+
+        return {
+            "success": True,
+            "contract_address": deployed_contract.contract_address,
+            "name": name,
+            "symbol": symbol,
+            "supply": initial_supply,
+        }
+    except Exception as e:
+        raise Exception(f"Failed to create token: {str(e)}")
+
+
+def request_eth_from_faucet(agent_wallet: Wallet) -> Dict[str, Any]:
+    """Request ETH from testnet faucet"""
+    try:
+        if agent_wallet.network_id == "base-mainnet":
+            raise Exception("Faucet only available on testnet")
+
+        faucet_tx = agent_wallet.faucet()
+        return {
+            "success": True,
+            "address": agent_wallet.default_address.address_id,
+        }
+    except Exception as e:
+        raise Exception(f"Failed to request from faucet: {str(e)}")
+
+
+def deploy_nft(agent_wallet: Wallet, name: str, symbol: str, base_uri: str) -> Dict[str, Any]:
+    """Deploy an ERC-721 NFT contract"""
+    try:
+        deployed_nft = agent_wallet.deploy_nft(name, symbol, base_uri)
+        deployed_nft.wait()
+
+        return {
+            "success": True,
+            "contract_address": deployed_nft.contract_address,
+            "name": name,
+            "symbol": symbol,
+            "base_uri": base_uri,
+        }
+    except Exception as e:
+        raise Exception(f"Failed to deploy NFT: {str(e)}")
+
+
+def mint_nft(agent_wallet: Wallet, contract_address: str, mint_to: str) -> Dict[str, Any]:
+    """Mint an NFT to an address"""
+    try:
+        mint_args = {"to": mint_to, "quantity": "1"}
+        mint_tx = agent_wallet.invoke_contract(
+            contract_address=contract_address, method="mint", args=mint_args
+        )
+        mint_tx.wait()
+
+        return {
+            "success": True,
+            "tx_hash": mint_tx.hash,
+            "contract": contract_address,
+            "recipient": mint_to,
+        }
+    except Exception as e:
+        raise Exception(f"Failed to mint NFT: {str(e)}")
+
+
+def register_basename(agent_wallet: Wallet, basename: str, amount: float = 0.002) -> Dict[str, Any]:
+    """Register a basename for the agent's wallet"""
+    try:
+        address_id = agent_wallet.default_address.address_id
+        is_mainnet = agent_wallet.network_id == "base-mainnet"
+
+        suffix = ".base.eth" if is_mainnet else ".basetest.eth"
+        if not basename.endswith(suffix):
+            basename += suffix
+
+        contract_address = (
+            "0x4cCb0BB02FCABA27e82a56646E81d8c5bC4119a5"
+            if is_mainnet
+            else "0x49aE3cC2e3AA768B1e5654f5D3C6002144A59581"
+        )
+
+        register_tx = agent_wallet.invoke_contract(
+            contract_address=contract_address,
+            method="register",
+            args={"name": basename},
+            amount=amount,
+            asset_id="eth",
+        )
+        register_tx.wait()
+
+        return {
+            "success": True,
+            "tx_hash": register_tx.hash,
+            "basename": basename,
+            "owner": address_id,
+        }
+    except Exception as e:
+        raise Exception(f"Failed to register basename: {str(e)}")
