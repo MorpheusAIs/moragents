@@ -112,13 +112,21 @@ class WorkflowManager:
         """Main scheduler loop that checks and executes due workflows"""
         while True:
             try:
+                logger.info("Workflow scheduler checking for due workflows...")
                 now = datetime.now()
+                active_workflows = [
+                    w for w in self.workflows.values() if w.status == WorkflowStatus.ACTIVE
+                ]
+                logger.info(f"Found {len(active_workflows)} active workflows")
+
                 for workflow in self.workflows.values():
+                    logger.debug(f"Checking workflow {workflow.id} ({workflow.name})")
                     if (
                         workflow.status == WorkflowStatus.ACTIVE
                         and workflow.next_run
                         and now >= workflow.next_run
                     ):
+                        logger.info(f"Executing workflow {workflow.id} ({workflow.name})")
                         await self._execute_workflow(workflow)
 
                 # Sleep for a short interval before next check
