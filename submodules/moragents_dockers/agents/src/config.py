@@ -19,7 +19,7 @@ class Config:
             {
                 "path": "src.agents.default.agent",
                 "class": "DefaultAgent",
-                "description": "Must be used for meta-queries that ask about active agents, and also for general purpose queries that don't match other agents' specialties.",
+                "description": "Must be used for meta-queries that ask about active Morpheus agents, and also for general, simple questions",
                 "name": "default",
                 "human_readable_name": "Default General Purpose",
                 "upload_required": False,
@@ -33,12 +33,12 @@ class Config:
                 "upload_required": False,
             },
             {
-                "path": "src.agents.rag.agent",
-                "class": "RagAgent",
-                "description": "Must be used anytime an upload or uploaded document is referred to.",
-                "name": "rag",
-                "human_readable_name": "Document Assistant",
-                "upload_required": True,
+                "path": "src.agents.base_agent.agent",
+                "class": "BaseAgent",
+                "description": "Handles transactions on the Base crypto network. Use when the user makes any reference to Base, base, the base network, or Coinbase",
+                "name": "base",
+                "human_readable_name": "Base Transaction Manager",
+                "upload_required": False,
             },
             {
                 "path": "src.agents.crypto_data.agent",
@@ -60,7 +60,7 @@ class Config:
             {
                 "path": "src.agents.tweet_sizzler.agent",
                 "class": "TweetSizzlerAgent",
-                "description": "Generates and posts engaging tweets. Use when the query explicitly mentions Twitter, tweeting, or X platform.",
+                "description": "Generates engaging tweets. Use ONLY when the query explicitly mentions Twitter, tweeting, or the X platform.",
                 "name": "tweet sizzler",
                 "human_readable_name": "Tweet / X-Post Generator",
                 "upload_required": False,
@@ -68,18 +68,18 @@ class Config:
             {
                 "path": "src.agents.dca_agent.agent",
                 "class": "DCAAgent",
-                "description": "Allows users to set up a DCA strategy. Enables the set up of a dollar-cost averaging strategy for crypto purchases or trades.",
+                "description": "Sets up DCA strategies. Use when the user requests to set up a dollar-cost averaging strategy for crypto purchases or trades.",
                 "name": "dca",
                 "human_readable_name": "DCA Strategy Manager",
                 "upload_required": False,
             },
             {
-                "path": "src.agents.base_agent.agent",
-                "class": "BaseAgent",
-                "description": "If the user wants to run any transactions on Base, base, the base network, or makes any reference to Coinbase",
-                "name": "base",
-                "human_readable_name": "Base Transaction Manager",
-                "upload_required": False,
+                "path": "src.agents.rag.agent",
+                "class": "RagAgent",
+                "description": "Must be used anytime an upload or uploaded document is referred to.",
+                "name": "rag",
+                "human_readable_name": "Document Assistant",
+                "upload_required": True,
             },
             # DISABLED:
             #
