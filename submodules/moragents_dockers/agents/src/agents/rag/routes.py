@@ -13,7 +13,7 @@ async def upload_file(file: UploadFile = File(...)):
     """Upload a file for RAG processing"""
     logger.info("Received upload request")
     try:
-        rag_agent = agent_manager_instance.get_agent("rag agent")
+        rag_agent = agent_manager_instance.get_agent("rag")
         if not rag_agent:
             return JSONResponse(
                 status_code=400,

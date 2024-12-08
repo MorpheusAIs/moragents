@@ -13,7 +13,7 @@ async def tx_status(request: Request):
     """Check transaction status"""
     logger.info("Received tx_status request")
     try:
-        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,
@@ -36,7 +36,7 @@ async def allowance(request: Request):
     """Get token allowance"""
     logger.info("Received allowance request")
     try:
-        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,
@@ -58,7 +58,7 @@ async def approve(request: Request):
     """Approve token spending"""
     logger.info("Received approve request")
     try:
-        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,
@@ -80,7 +80,7 @@ async def swap(request: Request):
     """Execute token swap"""
     logger.info("Received swap request")
     try:
-        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,

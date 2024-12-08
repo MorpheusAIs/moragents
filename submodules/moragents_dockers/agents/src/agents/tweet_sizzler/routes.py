@@ -13,7 +13,7 @@ async def regenerate_tweet():
     """Regenerate a tweet"""
     logger.info("Received regenerate tweet request")
     try:
-        tweet_agent = agent_manager_instance.get_agent("tweet sizzler agent")
+        tweet_agent = agent_manager_instance.get_agent("tweet sizzler")
         if not tweet_agent:
             return JSONResponse(
                 status_code=400,
@@ -36,7 +36,7 @@ async def post_tweet(request: Request):
     """Post a tweet"""
     logger.info("Received post tweet request")
     try:
-        tweet_agent = agent_manager_instance.get_agent("tweet sizzler agent")
+        tweet_agent = agent_manager_instance.get_agent("tweet sizzler")
         if not tweet_agent:
             return JSONResponse(
                 status_code=400,
