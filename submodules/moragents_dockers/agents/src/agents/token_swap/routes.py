@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from src.stores import chat_manager, agent_manager
+from src.stores import chat_manager_instance, agent_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ async def tx_status(request: Request):
     """Check transaction status"""
     logger.info("Received tx_status request")
     try:
-        swap_agent = agent_manager.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,
@@ -21,7 +21,7 @@ async def tx_status(request: Request):
             )
 
         response = await swap_agent.tx_status(request)
-        chat_manager.add_message(response)
+        chat_manager_instance.add_message(response)
         return response
     except Exception as e:
         logger.error(f"Failed to check tx status: {str(e)}")
@@ -36,7 +36,7 @@ async def allowance(request: Request):
     """Get token allowance"""
     logger.info("Received allowance request")
     try:
-        swap_agent = agent_manager.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,
@@ -58,7 +58,7 @@ async def approve(request: Request):
     """Approve token spending"""
     logger.info("Received approve request")
     try:
-        swap_agent = agent_manager.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,
@@ -80,7 +80,7 @@ async def swap(request: Request):
     """Execute token swap"""
     logger.info("Received swap request")
     try:
-        swap_agent = agent_manager.get_agent("crypto swap agent")
+        swap_agent = agent_manager_instance.get_agent("crypto swap agent")
         if not swap_agent:
             return JSONResponse(
                 status_code=400,

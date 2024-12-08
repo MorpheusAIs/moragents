@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from src.stores import chat_manager, agent_manager
+from src.stores import chat_manager_instance, agent_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ async def claim(request: Request):
     """Process a claim request"""
     logger.info("Received claim request")
     try:
-        claim_agent = agent_manager.get_agent("claim agent")
+        claim_agent = agent_manager_instance.get_agent("claim agent")
         if not claim_agent:
             return JSONResponse(
                 status_code=400,
@@ -21,7 +21,7 @@ async def claim(request: Request):
             )
 
         response = await claim_agent.claim(request)
-        chat_manager.add_message(response)
+        chat_manager_instance.add_message(response)
         return response
     except Exception as e:
         logger.error(f"Failed to process claim: {str(e)}")

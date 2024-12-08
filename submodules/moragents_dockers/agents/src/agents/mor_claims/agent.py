@@ -2,7 +2,7 @@ import logging
 
 from src.agents.mor_claims import tools
 from src.models.messages import ChatRequest
-from src.stores import agent_manager
+from src.stores import agent_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class MorClaimsAgent:
         state = self.conversation_state[wallet_address]["state"]
 
         if state == "initial":
-            agent_manager.set_active_agent(self.agent_info["name"])
+            agent_manager_instance.set_active_agent(self.agent_info["name"])
 
             rewards = {
                 0: tools.get_current_user_reward(wallet_address, 0),
@@ -117,7 +117,7 @@ class MorClaimsAgent:
             data = request.dict()
             wallet_address = data["wallet_address"]
             transactions = self.conversation_state[wallet_address]["transactions"]
-            agent_manager.clear_active_agent()
+            agent_manager_instance.clear_active_agent()
             return {"transactions": transactions}
         except Exception as e:
             return {"error": str(e)}, 500
