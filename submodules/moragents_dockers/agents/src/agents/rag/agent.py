@@ -88,12 +88,7 @@ class RagAgent:
         retrieved_docs = self.retriever.invoke(prompt)
         formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
         formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
-        selected_agents = agent_manager_instance.get_selected_agents()
-        agent_descriptions = "\n".join([f"- {agent['description']}" for agent in selected_agents])
-        system_prompt = f"""
-        You are a helpful assistant. Use the provided context to respond to the following question.
-        The following agents are currently available:
-        {agent_descriptions}"""
+        system_prompt = "You are a helpful assistant. Use the provided context to respond to the following question."
 
         messages = [
             {
