@@ -15,7 +15,7 @@ class Delegator:
         # Load all agents via agent manager
         agent_manager_instance.load_all_agents(llm, embeddings)
         logger.info(f"Delegator initialized with {len(agent_manager_instance.agents)} agents")
-        logger.info(f"Selected agents: {agent_manager_instance.get_selected_agents()}")
+        logger.info(f"Active agents: {agent_manager_instance.get_selected_agents()}")
 
     def reset_attempted_agents(self):
         """Reset the set of attempted agents"""
@@ -29,7 +29,6 @@ class Delegator:
             for agent_config in agent_manager_instance.get_available_agents()
             if agent_config["name"] in agent_manager_instance.get_selected_agents()
             and agent_config["name"] not in self.attempted_agents
-            and agent_config["name"] != "default agent"  # Exclude default agent
             and not (
                 agent_config["upload_required"]
                 and not chat_manager_instance.get_uploaded_file_status()
@@ -38,25 +37,22 @@ class Delegator:
 
     def get_delegator_response(self, prompt: Dict) -> Dict[str, str]:
         """Get appropriate agent based on prompt, excluding previously attempted agents"""
-        logger.info(f"Selected agents: {agent_manager_instance.get_selected_agents()}")
         available_agents = self.get_available_unattempted_agents()
         logger.info(f"Available, unattempted agents: {available_agents}")
 
         if not available_agents:
             # If no specialized agents are available, use default agent as last resort
-            if "default agent" not in self.attempted_agents:
-                return {"agent": "default agent"}
+            if "default" not in self.attempted_agents:
+                return {"agent": "default"}
             raise ValueError("No remaining agents available for current state")
 
         system_prompt = (
             "Your name is Morpheus. "
             "Your primary function is to select the correct agent from the list of available agents based on the user's input. "
             "You MUST use the 'select_agent' function to select an agent. "
-            "Available agents and their descriptions: You must use one of the available agent names.\n"
-            + "\n".join(
-                f"- agent_name: {agent['name']}: {agent['description']}"
-                for agent in available_agents
-            )
+            "Available agents and their descriptions in the format `{agent_name}: {agent_description}`"
+            "You must use one of the available agent names.\n"
+            + "\n".join(f"- {agent['name']}: {agent['description']}" for agent in available_agents)
         )
 
         tools = [

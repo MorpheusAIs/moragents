@@ -33,20 +33,21 @@ class BaseAgent:
             logger.info(f"Received chat request: {data}")
 
             if not data:
-                return {"error": "Invalid request data"}
+                return {"role": "assistant", "content": "Invalid request data. Please try again."}
 
             # Check CDP client initialization
             if not wallet_manager_instance.configure_cdp_client():
                 return {
-                    "error": "CDP client not initialized. Please set API credentials.",
-                    "needs_credentials": True,
+                    "role": "assistant",
+                    "content": "CDP client not initialized. Please set API credentials.",
                 }
 
             # Check for active wallet
             active_wallet = wallet_manager_instance.get_active_wallet()
             if not active_wallet:
                 return {
-                    "error": "No active wallet selected. Please select or create a wallet first."
+                    "role": "assistant",
+                    "content": "No active wallet selected. Please select or create a wallet first.",
                 }
 
             if "prompt" in data:
@@ -60,7 +61,10 @@ class BaseAgent:
                 }
             else:
                 logger.error("Missing 'prompt' in chat request data")
-                return {"error": "Missing required parameters"}
+                return {
+                    "role": "assistant",
+                    "content": "Missing required parameters. Please provide a prompt.",
+                }
 
         except Exception as e:
             logger.error(f"Error in chat method: {str(e)}, agent: {self.agent_info['name']}")
