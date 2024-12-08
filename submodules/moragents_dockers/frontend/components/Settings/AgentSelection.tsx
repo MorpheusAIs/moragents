@@ -76,6 +76,7 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
       const data = await response.json();
       if (data.status === "success") {
         onSave(data.agents);
+        window.location.reload();
       }
     } catch (error) {
       console.error("Failed to save selection:", error);
