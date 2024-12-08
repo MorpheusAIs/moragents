@@ -5,7 +5,6 @@ import requests
 from src.agents.token_swap import tools
 from src.agents.token_swap.config import Config
 from src.models.messages import ChatRequest
-from src.stores import agent_manager
 
 logger = logging.getLogger(__name__)
 

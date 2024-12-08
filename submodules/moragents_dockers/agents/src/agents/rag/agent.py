@@ -7,7 +7,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 from src.models.messages import ChatRequest
-from src.stores import agent_manager, chat_manager
+from src.stores import agent_manager_instance, chat_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +73,7 @@ class RagAgent:
 
         try:
             await self.handle_file_upload(file)
-            chat_manager.set_uploaded_file(True)
+            chat_manager_instance.set_uploaded_file(True)
             return {
                 "role": "assistant",
                 "content": "You have successfully uploaded the text",
@@ -86,7 +86,7 @@ class RagAgent:
         retrieved_docs = self.retriever.invoke(prompt)
         formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
         formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
-        selected_agents = agent_manager.get_selected_agents()
+        selected_agents = agent_manager_instance.get_selected_agents()
         agent_descriptions = "\n".join([f"- {agent['description']}" for agent in selected_agents])
         system_prompt = f"""
         You are a helpful assistant. Use the provided context to respond to the following question.
@@ -108,7 +108,7 @@ class RagAgent:
             data = request.dict()
             if "prompt" in data:
                 prompt = data["prompt"]["content"]
-                if chat_manager.get_uploaded_file_status():
+                if chat_manager_instance.get_uploaded_file_status():
                     response = self._get_rag_response(prompt)
                 else:
                     response = "Please upload a file first"
