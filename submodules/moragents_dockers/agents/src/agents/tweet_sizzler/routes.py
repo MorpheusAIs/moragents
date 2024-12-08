@@ -20,7 +20,7 @@ async def regenerate_tweet():
                 content={"status": "error", "message": "Tweet sizzler agent not found"},
             )
 
-        response = await tweet_agent.generate_tweet()
+        response = tweet_agent.generate_tweet()
         chat_manager_instance.add_message(response)
         return response
     except Exception as e:
