@@ -13,7 +13,7 @@ async def process_data(data: dict):
     """Process crypto data"""
     logger.info("Data Agent: Received process_data request")
     try:
-        crypto_agent = agent_manager_instance.get_agent("crypto data agent")
+        crypto_agent = agent_manager_instance.get_agent("crypto data")
         if not crypto_agent:
             return JSONResponse(
                 status_code=400,

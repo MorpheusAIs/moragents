@@ -13,7 +13,7 @@ async def claim(request: Request):
     """Process a claim request"""
     logger.info("Received claim request")
     try:
-        claim_agent = agent_manager_instance.get_agent("claim agent")
+        claim_agent = agent_manager_instance.get_agent("claim")
         if not claim_agent:
             return JSONResponse(
                 status_code=400,

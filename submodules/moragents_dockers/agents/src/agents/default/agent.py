@@ -23,7 +23,7 @@ class DefaultAgent:
                 # Build list of human readable names for selected agents
                 selected_agents_info = []
                 for agent in available_agents:
-                    if agent["name"] in selected_agent_names and agent["name"] != "default agent":
+                    if agent["name"] in selected_agent_names and agent["name"] != "default":
                         human_name = agent.get("human_readable_name", agent["name"])
                         selected_agents_info.append(f"- {human_name}: {agent['description']}")
 
