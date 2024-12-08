@@ -56,7 +56,10 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
     icon: <FileText size={20} />,
     examples: [
       { text: "Summarize the uploaded document", agent: "rag" },
-      { text: "What are the key points in the document?", agent: "rag" },
+      {
+        text: "What are the key points in this uploaded document?",
+        agent: "rag",
+      },
     ],
   },
   "crypto data": {

@@ -76,7 +76,7 @@ class Config:
             {
                 "path": "src.agents.rag.agent",
                 "class": "RagAgent",
-                "description": "Must be used anytime an upload or uploaded document is referred to.",
+                "description": "Answers questions about a document. Must be used anytime an upload, a document, Documents, or uploaded document is mentioned",
                 "name": "rag",
                 "human_readable_name": "Document Assistant",
                 "upload_required": True,
