@@ -17,7 +17,7 @@ from src.routes import (
     chat_manager_routes,
     key_manager_routes,
     wallet_manager_routes,
-    workflow_manager_routes,
+    workflow_manager_routes
 )
 
 # Constants
@@ -40,6 +40,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.on_event("startup")
+async def startup_event():
+    await workflow_manager_instance.initialize()
 
 
 @app.on_event("startup")

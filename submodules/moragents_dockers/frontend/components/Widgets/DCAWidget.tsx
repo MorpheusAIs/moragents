@@ -94,6 +94,7 @@ const DCAWidget: React.FC = () => {
           duration: 3000,
           isClosable: true,
         });
+        window.location.reload();
       } else {
         throw new Error(data.message);
       }

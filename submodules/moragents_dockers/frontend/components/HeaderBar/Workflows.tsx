@@ -217,7 +217,7 @@ export const Workflows: React.FC = () => {
                     </Text>
                     {workflow.next_run && (
                       <Text fontSize="xs" color="gray.400">
-                        Next run: {new Date(workflow.next_run).toLocaleString()}
+                        Next run: {new Date(workflow.next_run).toLocaleString()} UTC
                       </Text>
                     )}
                   </VStack>
