@@ -86,22 +86,20 @@ class DCAActionHandler:
             if balance < dca_params.step_size:
                 raise ValueError(f"Insufficient {dca_params.origin_token} balance")
 
-            # Get current price
-            price = await wallet.get_token_price(dca_params.destination_token)
-
-            # Check price threshold
+            # Check price threshold, if necessary
             if dca_params.price_threshold and price > dca_params.price_threshold:
+                price = await wallet.get_token_price(dca_params.destination_token)
                 logger.info(
                     f"Price {price} above threshold {dca_params.price_threshold}, skipping trade"
                 )
                 return
 
-            # Check volatility if enabled
-            if dca_params.pause_on_volatility:
-                volatility = await self._check_volatility(wallet, dca_params.destination_token)
-                if volatility > 0.1:  # 10% threshold
-                    logger.info(f"High volatility detected ({volatility}), skipping trade")
-                    return
+            # TODO: Re-enable check for volatility if enabled
+            # if dca_params.pause_on_volatility:
+            #     volatility = await self._check_volatility(wallet, dca_params.destination_token)
+            #     if volatility > 0.1:  # 10% threshold
+            #         logger.info(f"High volatility detected ({volatility}), skipping trade")
+            #         return
 
             # Execute trade
             trade = await wallet.trade(
@@ -139,6 +137,7 @@ class DCAActionHandler:
 def get_frequency_seconds(frequency: str) -> int:
     """Convert frequency string to seconds"""
     frequencies = {
+        "minute": 60,
         "hourly": 3600,
         "daily": 86400,
         "weekly": 604800,

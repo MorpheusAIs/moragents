@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from src.stores import workflow_manager_instance
+from src.stores import workflow_manager_instance, wallet_manager_instance
 from src.agents.dca_agent.tools import DCAParams, create_dca_workflow
 
 router = APIRouter(prefix="/dca", tags=["dca"])
@@ -33,6 +33,7 @@ async def create_strategy(data: dict):
                 Decimal(str(data["priceThreshold"])) if data.get("priceThreshold") else None
             ),
             pause_on_volatility=data.get("pauseOnVolatility", False),
+            wallet_id=wallet_manager_instance.active_wallet_id,
         )
 
         # Create workflow configuration

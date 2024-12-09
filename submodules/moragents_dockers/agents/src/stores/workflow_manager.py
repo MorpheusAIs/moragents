@@ -112,13 +112,21 @@ class WorkflowManager:
         """Main scheduler loop that checks and executes due workflows"""
         while True:
             try:
+                logger.info("Workflow scheduler checking for due workflows...")
                 now = datetime.now()
+                active_workflows = [
+                    w for w in self.workflows.values() if w.status == WorkflowStatus.ACTIVE
+                ]
+                logger.info(f"Found {len(active_workflows)} active workflows")
+
                 for workflow in self.workflows.values():
+                    logger.debug(f"Checking workflow {workflow.id} ({workflow.name})")
                     if (
                         workflow.status == WorkflowStatus.ACTIVE
                         and workflow.next_run
                         and now >= workflow.next_run
                     ):
+                        logger.info(f"Executing workflow {workflow.id} ({workflow.name})")
                         await self._execute_workflow(workflow)
 
                 # Sleep for a short interval before next check
@@ -141,6 +149,31 @@ class WorkflowManager:
             workflow.last_run = datetime.now()
             workflow.next_run = workflow.last_run + workflow.interval
             workflow.updated_at = datetime.now()
+
+            # Check if we should keep or remove the workflow
+            should_remove = False
+
+            # Check if total investment amount is reached (for DCA workflows)
+            if workflow.action == "dca_trade" and "total_investment_amount" in workflow.params:
+                total_invested = workflow.params.get("total_invested", 0)
+                total_target = float(workflow.params["total_investment_amount"])
+                step_size = float(workflow.params["step_size"])
+
+                # Update total invested amount
+                total_invested += step_size
+                workflow.params["total_invested"] = total_invested
+
+                # Check if we've reached the target
+                if total_invested >= total_target:
+                    workflow.status = WorkflowStatus.COMPLETED
+                    should_remove = True
+                    logger.info(
+                        f"Workflow {workflow.id} completed - reached total investment target"
+                    )
+
+            # Remove completed/failed workflows, keep active ones
+            if should_remove:
+                del self.workflows[workflow.id]
 
             await self._save_workflows(self._workflows_to_dict())
             logger.info(f"Successfully executed workflow {workflow.id}")

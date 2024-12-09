@@ -11,7 +11,7 @@ from langchain_ollama import ChatOllama
 from src.config import Config
 from src.delegator import Delegator
 from src.models.messages import ChatRequest
-from src.stores import agent_manager_instance, chat_manager_instance
+from src.stores import agent_manager_instance, chat_manager_instance, workflow_manager_instance
 from src.routes import (
     agent_manager_routes,
     chat_manager_routes,
@@ -40,6 +40,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    await workflow_manager_instance.initialize()
+
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 

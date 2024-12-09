@@ -28,6 +28,7 @@ export const tokens = [
 ];
 
 export const frequencies = [
+  { value: "minute", label: "Every Minute" },
   { value: "hourly", label: "Hourly" },
   { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },
