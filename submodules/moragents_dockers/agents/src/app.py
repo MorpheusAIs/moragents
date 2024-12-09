@@ -44,6 +44,12 @@ app.add_middleware(
 async def startup_event():
     await workflow_manager_instance.initialize()
 
+
+@app.on_event("startup")
+async def startup_event():
+    await workflow_manager_instance.initialize()
+
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 llm = ChatOllama(
