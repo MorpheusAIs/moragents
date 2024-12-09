@@ -120,7 +120,7 @@ class WorkflowManager:
                 logger.info(f"Found {len(active_workflows)} active workflows")
 
                 for workflow in self.workflows.values():
-                    logger.debug(f"Checking workflow {workflow.id} ({workflow.name})")
+                    logger.info(f"Checking workflow {workflow.id} ({workflow.name})")
                     if (
                         workflow.status == WorkflowStatus.ACTIVE
                         and workflow.next_run

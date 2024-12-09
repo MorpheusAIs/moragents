@@ -35,7 +35,6 @@ async def swap(data: dict):
             to_asset_id=data["toAsset"],
         )
 
-        logger.info(f"Swap executed successfully. Transaction hash: {result['tx_hash']}")
         return {
             "status": "success",
             "message": "Swap executed successfully",

@@ -4,6 +4,7 @@ from datetime import timedelta
 from dataclasses import dataclass
 from decimal import Decimal
 from src.stores import wallet_manager_instance
+from src.agents.base_agent.tools import get_balance, swap_assets
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +43,8 @@ class DCAParams:
     @classmethod
     def from_dict(cls, data: dict) -> "DCAParams":
         return cls(
-            origin_token=data["origin_token"],
-            destination_token=data["destination_token"],
+            origin_token=data["origin_token"].lower(),
+            destination_token=data["destination_token"].lower(),
             step_size=Decimal(data["step_size"]),
             total_investment_amount=(
                 Decimal(data["total_investment_amount"])
@@ -82,17 +83,17 @@ class DCAActionHandler:
                 raise ValueError(f"Wallet {dca_params.wallet_id} not found")
 
             # Check balance
-            balance = await wallet.get_balance(dca_params.origin_token)
-            if balance < dca_params.step_size:
+            balance_result = get_balance(wallet, dca_params.origin_token)
+            if Decimal(balance_result["balance"]) < dca_params.step_size:
                 raise ValueError(f"Insufficient {dca_params.origin_token} balance")
 
-            # Check price threshold, if necessary
-            if dca_params.price_threshold and price > dca_params.price_threshold:
-                price = await wallet.get_token_price(dca_params.destination_token)
-                logger.info(
-                    f"Price {price} above threshold {dca_params.price_threshold}, skipping trade"
-                )
-                return
+            # TODO: Re-enable check price threshold
+            # price = await wallet.get_token_price(dca_params.destination_token)
+            # if dca_params.price_threshold and price > dca_params.price_threshold:
+            #     logger.info(
+            #         f"Price {price} above threshold {dca_params.price_threshold}, skipping trade"
+            #     )
+            #     return
 
             # TODO: Re-enable check for volatility if enabled
             # if dca_params.pause_on_volatility:
@@ -101,13 +102,15 @@ class DCAActionHandler:
             #         logger.info(f"High volatility detected ({volatility}), skipping trade")
             #         return
 
-            # Execute trade
-            trade = await wallet.trade(
-                float(dca_params.step_size), dca_params.origin_token, dca_params.destination_token
+            # Execute trade using swap_assets
+            swap_assets(
+                agent_wallet=wallet,
+                amount=str(dca_params.step_size),
+                from_asset_id=dca_params.origin_token,
+                to_asset_id=dca_params.destination_token,
             )
 
-            result = await trade.wait()
-            logger.info(f"DCA trade executed: {result.transaction_hash}")
+            logger.info(f"DCA trade executed successfully")
 
         except Exception as e:
             logger.error(f"DCA execution failed: {e}")

@@ -17,8 +17,8 @@ async def create_strategy(data: dict):
 
         # Convert frontend config to DCA params
         dca_params = DCAParams(
-            origin_token=data["originToken"],
-            destination_token=data["destinationToken"],
+            origin_token=data["originToken"].lower(),
+            destination_token=data["destinationToken"].lower(),
             step_size=Decimal(str(data["stepSize"])),
             total_investment_amount=(
                 Decimal(str(data["totalInvestmentAmount"]))

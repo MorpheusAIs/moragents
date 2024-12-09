@@ -4,11 +4,7 @@ import {
   Box,
   Text,
   Select,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
+  Input,
   Button,
   useColorModeValue,
   Heading,
@@ -29,12 +25,29 @@ interface SwapConfig {
 const BaseSwapWidget: React.FC = () => {
   const toast = useToast();
   const borderColor = useColorModeValue("gray.200", "gray.700");
+  const [inputValue, setInputValue] = useState("0");
 
   const [config, setConfig] = useState<SwapConfig>({
     fromToken: "usdc",
-    toToken: "eth",
+    toToken: "weth",
     amount: 0,
   });
+
+  const handleAmountChange = (value: string) => {
+    // Allow empty string, "0", decimal point, and valid numbers
+    if (value === "" || value === "0" || value === ".") {
+      setInputValue(value);
+      setConfig({ ...config, amount: 0 });
+      return;
+    }
+
+    // Validate the input matches a valid number pattern
+    // This allows: "123", "123.456", ".123", "123."
+    if (/^\d*\.?\d*$/.test(value) && value !== ".") {
+      setInputValue(value);
+      setConfig({ ...config, amount: parseFloat(value) });
+    }
+  };
 
   const handleSwap = async () => {
     if (config.fromToken === config.toToken) {
@@ -169,18 +182,13 @@ const BaseSwapWidget: React.FC = () => {
 
           <FormControl>
             <FormLabel color="white">Amount</FormLabel>
-            <NumberInput
-              value={config.amount}
-              onChange={(_, value) => setConfig({ ...config, amount: value })}
-              min={0}
-              precision={6}
-            >
-              <NumberInputField color="white" />
-              <NumberInputStepper>
-                <NumberIncrementStepper color="white" />
-                <NumberDecrementStepper color="white" />
-              </NumberInputStepper>
-            </NumberInput>
+            <Input
+              value={inputValue}
+              onChange={(e) => handleAmountChange(e.target.value)}
+              placeholder="0.0"
+              color="white"
+              type="text"
+            />
             <Text fontSize="sm" color="gray.400" mt={1}>
               Amount of {config.fromToken} to swap
             </Text>

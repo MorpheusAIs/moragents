@@ -1,5 +1,8 @@
+import logging
 from typing import Dict, Any
 from cdp import Wallet
+
+logger = logging.getLogger(__name__)
 
 
 def swap_assets(
@@ -10,17 +13,41 @@ def swap_assets(
         if agent_wallet.network_id != "base-mainnet":
             raise Exception("Asset swaps only available on Base Mainnet")
 
-        trade = agent_wallet.trade(amount, from_asset_id, to_asset_id)
+        from_asset_id = from_asset_id.lower()
+        to_asset_id = to_asset_id.lower()
+        logger.info(f"Attempting swap on Base Mainnet:")
+        logger.info(f"From asset: {from_asset_id}")
+        logger.info(f"To asset: {to_asset_id}")
+        logger.info(f"Amount: {amount}")
+
+        # Check wallet balance
+        balance = agent_wallet.balance(from_asset_id)
+        logger.info(f"Wallet balance of {from_asset_id}: {balance}")
+
+        if float(balance) < float(amount):
+            raise Exception(f"Insufficient balance. Have {balance}, need {amount}")
+
+        try:
+            trade = agent_wallet.trade(amount, from_asset_id, to_asset_id)
+            logger.info(f"Trade constructed: {trade}")
+        except Exception as e:
+            if "internal" in str(e).lower():
+                raise Exception(
+                    "Not enough ETH. Please ensure you have sufficient ETH for gas fees."
+                )
+            raise e
+
         trade.wait()
+        logger.info(f"Trade completed")
 
         return {
             "success": True,
-            "tx_hash": trade.hash,
             "from_asset": from_asset_id,
             "to_asset": to_asset_id,
             "amount": amount,
         }
     except Exception as e:
+        logger.error(f"Swap failed: {str(e)}", exc_info=True)
         raise Exception(f"Failed to swap assets: {str(e)}")
 
 

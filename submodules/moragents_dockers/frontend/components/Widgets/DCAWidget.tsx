@@ -43,7 +43,7 @@ const DCAWidget: React.FC = () => {
 
   const [config, setConfig] = useState<DCAConfig>({
     originToken: "USDC",
-    destinationToken: "BTC",
+    destinationToken: "WETH",
     stepSize: 100,
     frequency: "weekly",
     pauseOnVolatility: false,
