@@ -5,15 +5,21 @@
 Python for AI Agents, JS for UI. Runs in your favorite browser. Made possible by Docker.
 Fully Extensible! Add your own agents and have them automatically invoked based on user intent.
 
-![UI 1](images/tweet_sizzler.png)
+![UI 1](images/gasless-usdc-base-agent.png)
 
-![UI 2](images/real-time-info.png)
+![UI 2](images/dca-strategy-agent.png)
 
-![UI 3](images/mor_rewards.png)
+![UI 3](images/image-generator.png)
 
-![UI 4](images/price-fetcher-realtime-news.png)
+![UI 4](images/tweet_sizzler.png)
 
-![UI 5](images/moragents_chatpdf.png)
+![UI 5](images/real-time-info.png)
+
+![UI 6](images/mor_rewards.png)
+
+![UI 7](images/price-fetcher-realtime-news.png)
+
+![UI 8](images/moragents_chatpdf.png)
 
 ---
 

@@ -1,6 +1,6 @@
 [Setup]
 AppName=MORagents
-AppVersion=0.2.0
+AppVersion=0.2.1
 DefaultDirName={commonpf}\MORagents
 OutputDir=.\MORagentsWindowsInstaller
 OutputBaseFilename=MORagentsSetup
