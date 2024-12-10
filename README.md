@@ -61,8 +61,6 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
    1. For Mac on Apple Silicon M1, M2, M3, M4 (arm64)
       1. Download and run MORagents installer [MORagents021-apple.pkg](https://drive.proton.me/urls/AG19JG17JC#EYS7RDpLVVWK)
       > SHA256 b4e7126410561f986ba116af567e7ac05b9eb59e7f1dcbaca3d7cd85b69a30c4 MORagents021-apple.pkg
-   2. For Mac on Intel (x86_64)
-      1. *Coming Soon* 
 2. Wait several minutes for background files to download and then your browser should automatically open to http://localhost:3333
     > Note: After installation is complete, the MORagents app icon will bounce for several minutes on your dock, and then stop. This is normal behavior as it's downloading <7GB of files in the background. You can open "Activity Monitor" and in the Network tab see that it's downloading.
 
