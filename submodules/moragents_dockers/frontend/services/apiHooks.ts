@@ -1,122 +1,19 @@
-import axios, { Axios } from "axios";
-
-export type ChatMessageBase = {
-  role: "user" | "assistant" | "swap" | "claim";
-};
-
-export type UserOrAssistantMessage = ChatMessageBase & {
-  role: "user" | "assistant";
-  content: string;
-  agentName?: string;
-};
-
-export const SWAP_STATUS = {
-  CANCELLED: "cancelled",
-  SUCCESS: "success",
-  FAIL: "failed",
-  INIT: "initiated",
-};
-
-export const CLAIM_STATUS = {
-  SUCCESS: "success",
-  FAIL: "failed",
-  INIT: "initiated",
-};
-
-export type SwapTxPayloadType = {
-  dstAmount: string;
-  tx: {
-    data: string;
-    from: string;
-    gas: number;
-    gasPrice: string;
-    to: string;
-    value: string;
-  };
-};
-
-export type ApproveTxPayloadType = {
-  data: string;
-  gasPrice: string;
-  to: string;
-  value: string;
-};
-
-export type SwapMessagePayload = {
-  amount: string;
-  dst: string;
-  dst_address: string;
-  dst_amount: string | number;
-  quote: string;
-  src: string;
-  src_address: string;
-  src_amount: string | number;
-};
-
-export type SwapMessage = ChatMessageBase & {
-  role: "swap";
-  content: SwapMessagePayload;
-};
-
-export type SystemMessage = ChatMessageBase & {
-  role: "system";
-  content: string;
-};
-
-export type ClaimTransactionPayload = {
-  to: string;
-  data: string;
-  value: string;
-  gas: string;
-  chainId: string;
-};
-
-export type ClaimMessagePayload = {
-  content: {
-    transactions: {
-      pool: number;
-      transaction: ClaimTransactionPayload;
-    }[];
-    claim_tx_cb: string;
-  };
-  role: "claim";
-};
-
-export type ClaimMessage = ChatMessageBase & {
-  role: "claim";
-  content: ClaimMessagePayload;
-};
-
-// Update the ChatMessage type to include ClaimMessage
-export type ChatMessage =
-  | UserOrAssistantMessage
-  | SwapMessage
-  | SystemMessage
-  | ClaimMessage;
-
-export type ChatsListItem = {
-  index: number; //  index at chats array
-  title: string; // title of the chat (first message content)
-};
-
-export const getHttpClient = () => {
-  return axios.create({
-    baseURL: "http://localhost:8080",
-  });
-};
+import { Axios } from "axios";
+import {
+  ChatMessage,
+  ClaimTransactionPayload,
+  SwapTxPayloadType,
+  XApiKeys,
+  CoinbaseApiKeys,
+} from "./types";
 
 export const getChats = async () => {
-  // now chats will be stored at local storage
-
   const chats = localStorage.getItem("chats");
   if (chats) {
     return JSON.parse(chats);
   }
-
   return [];
 };
-
-//
 
 export const getAllowance = async (
   backendClient: Axios,
@@ -124,7 +21,7 @@ export const getAllowance = async (
   tokenAddress: string,
   walletAddress: string
 ) => {
-  return await backendClient.post("/allowance", {
+  return await backendClient.post("/swap/allowance", {
     chain_id: chainId,
     tokenAddress: tokenAddress,
     walletAddress: walletAddress,
@@ -138,7 +35,7 @@ export const getApprovalTxPayload = async (
   amount: number,
   decimals: number
 ) => {
-  return await backendClient.post("/approve", {
+  return await backendClient.post("/swap/approve", {
     chain_id: chainId,
     tokenAddress: tokenAddress,
     amount: BigInt(amount * 10 ** decimals).toString(),
@@ -149,7 +46,7 @@ export const uploadFile = async (backendClient: Axios, file: File) => {
   const formData = new FormData();
   formData.append("file", file);
   console.log("Uploading file:", file);
-  return await backendClient.post("/upload", formData, {
+  return await backendClient.post("/rag/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -167,7 +64,7 @@ export const getSwapTxPayload = async (
   decimals: number
 ): Promise<SwapTxPayloadType> => {
   return (
-    await backendClient.post("/swap", {
+    await backendClient.post("/swap/swap", {
       src: token0,
       dst: token1,
       walletAddress: walletAddress,
@@ -186,12 +83,12 @@ export const sendSwapStatus = async (
   txHash?: string,
   swapType?: number
 ): Promise<ChatMessage> => {
-  const responseBody = await backendClient.post("/tx_status", {
+  const responseBody = await backendClient.post("/swap/tx_status", {
     chain_id: chainId,
     wallet_address: walletAddress,
     status: swapStatus,
     tx_hash: txHash || "",
-    tx_type: swapType === 0 ? "swap" : "approve", // 0 is swap, 1 is approve
+    tx_type: swapType === 0 ? "swap" : "approve",
   });
 
   return {
@@ -203,7 +100,7 @@ export const sendSwapStatus = async (
 export const getMessagesHistory = async (
   backendClient: Axios
 ): Promise<ChatMessage[]> => {
-  const responseBody = await backendClient.get("/messages");
+  const responseBody = await backendClient.get("/chat/messages");
 
   return responseBody.data.messages.map((message: any) => {
     return {
@@ -218,7 +115,7 @@ export const clearMessagesHistory = async (
   backendClient: Axios
 ): Promise<void> => {
   try {
-    await backendClient.get("/clear_messages");
+    await backendClient.get("/chat/clear");
   } catch (error) {
     console.error("Failed to clear message history:", error);
     throw error;
@@ -235,6 +132,7 @@ export const writeMessage = async (
   const newMessage: ChatMessage = {
     role: "user",
     content: message,
+    agentName: "user",
   };
 
   history.push(newMessage);
@@ -250,18 +148,6 @@ export const writeMessage = async (
     });
   } catch (e) {
     console.error(e);
-
-    // resp = {
-    //     data: {
-    //         content: "Sorry, I'm not available right now. Please try again later."
-    //     }
-    // };
-  } finally {
-    console.log("Finally write message");
-    // history.push({
-    //     role: 'assistant',
-    //     content: resp?.data.content || "Unknown error occurred."
-    // });
   }
 
   return await getMessagesHistory(backendClient);
@@ -290,7 +176,7 @@ export const postTweet = async (
   }
 
   try {
-    await backendClient.post("/post_tweet", {
+    await backendClient.post("/tweet/post", {
       post_content: content,
       api_key: apiKey,
       api_secret: apiSecret,
@@ -308,7 +194,7 @@ export const regenerateTweet = async (
   backendClient: Axios
 ): Promise<string> => {
   try {
-    const response = await backendClient.post("/regenerate_tweet");
+    const response = await backendClient.post("/tweet/regenerate");
     return response.data;
   } catch (error) {
     console.error("Error regenerating tweet:", error);
@@ -320,7 +206,7 @@ export const getClaimTxPayload = async (
   backendClient: Axios,
   transactions: ClaimTransactionPayload[]
 ): Promise<ClaimTransactionPayload[]> => {
-  const response = await backendClient.post("/claim", { transactions });
+  const response = await backendClient.post("/claim/claim", { transactions });
   return response.data.transactions;
 };
 
@@ -331,7 +217,7 @@ export const sendClaimStatus = async (
   claimStatus: string,
   txHash?: string
 ): Promise<ChatMessage> => {
-  const responseBody = await backendClient.post("/tx_status", {
+  const responseBody = await backendClient.post("/claim/tx_status", {
     chain_id: chainId,
     wallet_address: walletAddress,
     status: claimStatus,
@@ -343,4 +229,55 @@ export const sendClaimStatus = async (
     role: responseBody.data.role,
     content: responseBody.data.content,
   } as ChatMessage;
+};
+
+export const getAvailableAgents = async (backendClient: Axios) => {
+  try {
+    const response = await backendClient.get("/agents/available");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch available agents:", error);
+    throw error;
+  }
+};
+
+export const setSelectedAgents = async (
+  backendClient: Axios,
+  agents: string[]
+) => {
+  try {
+    const response = await backendClient.post("/agents/selected", {
+      agents,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set selected agents:", error);
+    throw error;
+  }
+};
+
+export const setXApiKeys = async (
+  backendClient: Axios,
+  keys: XApiKeys
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/keys/x", keys);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set X API keys:", error);
+    throw error;
+  }
+};
+
+export const setCoinbaseApiKeys = async (
+  backendClient: Axios,
+  keys: CoinbaseApiKeys
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/keys/coinbase", keys);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set Coinbase API keys:", error);
+    throw error;
+  }
 };

@@ -59,3 +59,6 @@ MORagentsWindowsInstaller.zip
 
 ## app
 MORagents.app
+
+## lint
+.pytest_cache/

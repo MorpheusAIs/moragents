@@ -1,9 +1,9 @@
-import requests
 import logging
 import time
-from web3 import Web3
 
+import requests
 from src.agents.token_swap.config import Config
+from web3 import Web3
 
 
 class InsufficientFundsError(Exception):
@@ -21,9 +21,7 @@ class SwapNotPossibleError(Exception):
 def search_tokens(query, chain_id, limit=1, ignore_listed="false"):
     endpoint = f"/v1.2/{chain_id}/search"
     params = {"query": query, "limit": limit, "ignore_listed": ignore_listed}
-    response = requests.get(
-        Config.INCH_URL + endpoint, params=params, headers=Config.HEADERS
-    )
+    response = requests.get(Config.INCH_URL + endpoint, params=params, headers=Config.HEADERS)
     if response.status_code == 200:
         return response.json()
     else:
@@ -31,21 +29,15 @@ def search_tokens(query, chain_id, limit=1, ignore_listed="false"):
         return None
 
 
-def get_token_balance(
-    web3: Web3, wallet_address: str, token_address: str, abi: list
-) -> int:
+def get_token_balance(web3: Web3, wallet_address: str, token_address: str, abi: list) -> int:
     """Get the balance of an ERC-20 token for a given wallet address."""
     if (
         not token_address
     ):  # If no token address is provided, assume checking ETH or native token balance
         return web3.eth.get_balance(web3.to_checksum_address(wallet_address))
     else:
-        contract = web3.eth.contract(
-            address=web3.to_checksum_address(token_address), abi=abi
-        )
-        return contract.functions.balanceOf(
-            web3.to_checksum_address(wallet_address)
-        ).call()
+        contract = web3.eth.contract(address=web3.to_checksum_address(token_address), abi=abi)
+        return contract.functions.balanceOf(web3.to_checksum_address(wallet_address)).call()
 
 
 def eth_to_wei(amount_in_eth: float) -> int:
@@ -73,9 +65,7 @@ def validate_swap(web3: Web3, token1, token2, chain_id, amount, wallet_address):
         time.sleep(2)
         if not t1:
             raise TokenNotFoundError(f"Token {token1} not found.")
-        t1_bal = get_token_balance(
-            web3, wallet_address, t1[0]["address"], Config.ERC20_ABI
-        )
+        t1_bal = get_token_balance(web3, wallet_address, t1[0]["address"], Config.ERC20_ABI)
         smallest_amount = convert_to_smallest_unit(web3, amount, t1[0]["address"])
 
     # Check if token2 is the native token
@@ -102,9 +92,7 @@ def validate_swap(web3: Web3, token1, token2, chain_id, amount, wallet_address):
 def get_quote(token1, token2, amount_in_wei, chain_id):
     endpoint = f"/v6.0/{chain_id}/quote"
     params = {"src": token1, "dst": token2, "amount": int(amount_in_wei)}
-    response = requests.get(
-        Config.QUOTE_URL + endpoint, params=params, headers=Config.HEADERS
-    )
+    response = requests.get(Config.QUOTE_URL + endpoint, params=params, headers=Config.HEADERS)
     if response.status_code == 200:
         return response.json()
     else:
@@ -127,9 +115,7 @@ def convert_to_smallest_unit(web3: Web3, amount: float, token_address: str) -> i
     return int(amount * (10**decimals))
 
 
-def convert_to_readable_unit(
-    web3: Web3, smallest_unit_amount: int, token_address: str
-) -> float:
+def convert_to_readable_unit(web3: Web3, smallest_unit_amount: int, token_address: str) -> float:
     decimals = get_token_decimals(web3, token_address)
     return smallest_unit_amount / (10**decimals)
 
@@ -137,9 +123,7 @@ def convert_to_readable_unit(
 def swap_coins(token1, token2, amount, chain_id, wallet_address):
     """Swap two crypto coins with each other"""
     web3 = Web3(Web3.HTTPProvider(Config.WEB3RPCURL[str(chain_id)]))
-    t1_a, t1_id, t2_a, t2_id = validate_swap(
-        web3, token1, token2, chain_id, amount, wallet_address
-    )
+    t1_a, t1_id, t2_a, t2_id = validate_swap(web3, token1, token2, chain_id, amount, wallet_address)
 
     time.sleep(2)
     t1_address = "" if t1_a == Config.INCH_NATIVE_TOKEN_ADDRESS else t1_a

@@ -1,6 +1,6 @@
 [Setup]
 AppName=MORagents
-AppVersion=0.2.0
+AppVersion=0.2.1
 DefaultDirName={commonpf}\MORagents
 OutputDir=.\MORagentsWindowsInstaller
 OutputBaseFilename=MORagentsSetup
@@ -98,7 +98,7 @@ end;
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
-  
+
   { Skip EULA page if already accepted }
   if (PageID = EULAPage.ID) and EULAAccepted then
     Result := True;

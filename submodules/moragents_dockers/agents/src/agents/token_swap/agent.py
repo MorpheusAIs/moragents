@@ -1,11 +1,10 @@
 import json
-import requests
 import logging
 
+import requests
 from src.agents.token_swap import tools
 from src.agents.token_swap.config import Config
 from src.models.messages import ChatRequest
-from src.stores import agent_manager
 
 logger = logging.getLogger(__name__)
 
@@ -123,17 +122,13 @@ class TokenSwapAgent:
         if flag != "initiated":
             self.context = []
             self.context.append({"role": "assistant", "content": response})
-            self.context.append(
-                {"role": "user", "content": "okay lets start again from scratch"}
-            )
+            self.context.append({"role": "user", "content": "okay lets start again from scratch"})
 
         return {"role": "assistant", "content": response}
 
     def generate_response(self, prompt, chain_id, wallet_address):
         self.context.append(prompt)
-        response, role, next_turn_agent = self.get_response(
-            self.context, chain_id, wallet_address
-        )
+        response, role, next_turn_agent = self.get_response(self.context, chain_id, wallet_address)
         return response, role, next_turn_agent
 
     def chat(self, request: ChatRequest):
@@ -154,7 +149,8 @@ class TokenSwapAgent:
             else:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            return {"Error": str(e)}, 500
+            logger.error(f"Error in chat method: {str(e)}, request: {request}")
+            raise e
 
     def tx_status(self, data):
         try:

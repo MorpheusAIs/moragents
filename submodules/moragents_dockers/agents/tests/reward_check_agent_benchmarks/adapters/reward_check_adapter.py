@@ -1,5 +1,6 @@
 from submodules.moragents_dockers.agents.src.claim_agent.src.tools import get_current_user_reward
 
+
 class RewardCheckAdapter:
     def __init__(self):
         pass

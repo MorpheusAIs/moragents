@@ -1,12 +1,12 @@
-import time
 import logging
+import time
 import webbrowser
 
+from runtime_setup_linux import main as linux_setup
 from runtime_setup_macos import main as macos_setup
 from runtime_setup_windows import main as windows_setup
-from runtime_setup_linux import main as linux_setup
-from utils.logger_config import setup_logger
 from utils.host_utils import get_os_and_arch
+from utils.logger_config import setup_logger
 
 # Configure logging
 logger = setup_logger(__name__)

@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { SwapForm } from "../SwapForm";
-import { SwapMessagePayload } from "../../services/backendClient";
+import { SwapMessagePayload } from "@/services/types";
 import { Box, Text } from "@chakra-ui/react";
 
 type SwapMessageProps = {

@@ -1,9 +1,14 @@
 # submodules/benchmarks/news_agent_benchmarks/benchmarks.py
 
-import pytest
 import logging
+
+import pytest
+
 from submodules.moragents_dockers.agents.tests.news_agent_benchmarks.config import Config
-from submodules.moragents_dockers.agents.tests.news_agent_benchmarks.helpers import ask_news_agent, extract_classification
+from submodules.moragents_dockers.agents.tests.news_agent_benchmarks.helpers import (
+    ask_news_agent,
+    extract_classification,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,11 +28,15 @@ def test_news_classification():
         classification = extract_classification(response)
 
         if classification == "UNKNOWN":
-            logger.warning(f"Test case {i + 1} resulted in UNKNOWN classification. Response: {response}")
+            logger.warning(
+                f"Test case {i + 1} resulted in UNKNOWN classification. Response: {response}"
+            )
             assert False, f"Test case {i + 1} failed: Could not determine classification"
         else:
             # Check if the classification matches the expected classification
-            assert classification == expected_classification, f"Test case {i + 1} failed: Expected {expected_classification}, but got {classification}"
+            assert (
+                classification == expected_classification
+            ), f"Test case {i + 1} failed: Expected {expected_classification}, but got {classification}"
 
         logger.info(f"Test case {i + 1} passed: Correctly classified as {classification}")
 

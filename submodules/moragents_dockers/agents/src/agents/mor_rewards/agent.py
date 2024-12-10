@@ -42,9 +42,7 @@ class MorRewardsAgent:
             if "prompt" in data and "wallet_address" in data:
                 prompt = data["prompt"]
                 wallet_address = data["wallet_address"]
-                response, role, next_turn_agent = self.get_response(
-                    prompt, wallet_address
-                )
+                response, role, next_turn_agent = self.get_response(prompt, wallet_address)
                 return {
                     "role": role,
                     "content": response,
@@ -54,5 +52,5 @@ class MorRewardsAgent:
                 logger.warning("Missing required parameters in request")
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(f"Error in chat method: {str(e)}")
-            return {"Error": str(e)}, 500
+            logger.error(f"Error in chat method: {str(e)}, request: {request}")
+            raise e

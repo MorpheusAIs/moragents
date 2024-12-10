@@ -1,60 +1,58 @@
-import importlib
 import logging
-import json
+from typing import Any, Dict, List, Optional, Tuple
 
-from langchain.schema import SystemMessage, HumanMessage, AIMessage
+from langchain.schema import HumanMessage, SystemMessage
+from src.stores import chat_manager_instance, agent_manager_instance
 
 logger = logging.getLogger(__name__)
 
-# Configurable default agent
-DEFAULT_AGENT = "general purpose and context-based rag agent"
-
 
 class Delegator:
-    def __init__(self, config, llm, embeddings):
-        self.config = config
-        self.llm = llm  # This is now a ChatOllama instance
-        self.embeddings = embeddings
-        self.agents = self.load_agents(config)
-        logger.info("Delegator initialized with %d agents", len(self.agents))
+    def __init__(self, llm, embeddings):
+        self.llm = llm  # Keep llm instance on delegator
+        self.attempted_agents = set()  # Track attempted agents within a chat session
 
-    def load_agents(self, config):
-        agents = {}
-        for agent_info in config["agents"]:
-            try:
-                module = importlib.import_module(agent_info["path"])
-                agent_class = getattr(module, agent_info["class"])
-                agent_instance = agent_class(
-                    agent_info,
-                    self.llm,
-                    self.embeddings,
-                )
-                agents[agent_info["name"]] = agent_instance
-                logger.info("Loaded agent: %s", agent_info["name"])
-            except Exception as e:
-                logger.error("Failed to load agent %s: %s", agent_info["name"], str(e))
-        return agents
+        # Load all agents via agent manager
+        agent_manager_instance.load_all_agents(llm, embeddings)
+        logger.info(f"Delegator initialized with {len(agent_manager_instance.agents)} agents")
+        logger.info(f"Active agents: {agent_manager_instance.get_selected_agents()}")
 
-    def get_delegator_response(self, prompt, upload_state):
-        available_agents = [
-            agent_info["name"]
-            for agent_info in self.config["agents"]
-            if not (agent_info["upload_required"] and not upload_state)
+    def reset_attempted_agents(self):
+        """Reset the set of attempted agents"""
+        self.attempted_agents = set()
+        logger.info("Reset attempted agents")
+
+    def get_available_unattempted_agents(self) -> List[Dict]:
+        """Get available agents that haven't been attempted yet"""
+        return [
+            agent_config
+            for agent_config in agent_manager_instance.get_available_agents()
+            if agent_config["name"] in agent_manager_instance.get_selected_agents()
+            and agent_config["name"] not in self.attempted_agents
+            and not (
+                agent_config["upload_required"]
+                and not chat_manager_instance.get_uploaded_file_status()
+            )
         ]
-        logger.info(f"Available agents: {available_agents}")
 
-        agent_descriptions = "\n".join(
-            f"- {agent_info['name']}: {agent_info['description']}"
-            for agent_info in self.config["agents"]
-            if agent_info["name"] in available_agents
-        )
+    def get_delegator_response(self, prompt: Dict) -> Dict[str, str]:
+        """Get appropriate agent based on prompt, excluding previously attempted agents"""
+        available_agents = self.get_available_unattempted_agents()
+        logger.info(f"Available, unattempted agents: {available_agents}")
+
+        if not available_agents:
+            # If no specialized agents are available, use default agent as last resort
+            if "default" not in self.attempted_agents:
+                return {"agent": "default"}
+            raise ValueError("No remaining agents available for current state")
 
         system_prompt = (
             "Your name is Morpheus. "
-            "Your primary function is to select the correct agent based on the user's input. "
+            "Your primary function is to select the correct agent from the list of available agents based on the user's input. "
             "You MUST use the 'select_agent' function to select an agent. "
-            f"Available agents and their descriptions: {agent_descriptions}\n"
-            "Analyze the user's input and select the most appropriate agent. "
+            "Available agents and their descriptions in the format `{agent_name}: {agent_description}`"
+            "You must use one of the available agent names.\n"
+            + "\n".join(f"- {agent['name']}: {agent['description']}" for agent in available_agents)
         )
 
         tools = [
@@ -66,63 +64,74 @@ class Delegator:
                     "properties": {
                         "agent": {
                             "type": "string",
-                            "enum": available_agents,
-                            "description": "The name of the agent to be used to respond to the user query",
-                        },
+                            "enum": [agent["name"] for agent in available_agents],
+                            "description": "The name of the agent to be used",
+                        }
                     },
                     "required": ["agent"],
                 },
             }
         ]
 
-        agent_selection_llm = self.llm.bind_tools(tools)
-
+        agent_selection_llm = self.llm.bind_tools(tools, tool_choice="select_agent")
         messages = [
             SystemMessage(content=system_prompt),
-            HumanMessage(content=prompt),
+            HumanMessage(content=prompt["content"]),
         ]
 
         result = agent_selection_llm.invoke(messages)
         tool_calls = result.tool_calls
+
         if not tool_calls:
-            raise ValueError("No agent was selected by the model.")
+            raise ValueError("No agent was selected by the model")
 
         selected_agent = tool_calls[0]
         logger.info(f"Selected agent: {selected_agent}")
-        selected_agent_name = selected_agent.get("args").get("agent")
+        selected_agent_name = selected_agent.get("args", {}).get("agent")
+
+        # Track this agent as attempted
+        self.attempted_agents.add(selected_agent_name)
+        logger.info(
+            f"Added {selected_agent_name} to attempted agents. Current attempts: {self.attempted_agents}"
+        )
 
         return {"agent": selected_agent_name}
 
-    def delegate_chat(self, agent_name, request):
+    def delegate_chat(self, agent_name: str, chat_request: Any) -> Tuple[Optional[str], Any]:
+        """Delegate chat to specific agent with cascading fallback"""
         logger.info(f"Attempting to delegate chat to agent: {agent_name}")
-        agent = self.agents.get(agent_name)
-        if agent:
-            logger.info(f"Successfully found agent: {agent_name}")
-            try:
-                result = agent.chat(request)
-                logger.info(f"Chat delegation to {agent_name} completed successfully")
-                logger.info(f"Response from {agent_name}: {result}")
-                return agent_name, result
-            except Exception as e:
-                logger.error(f"Error during chat delegation to {agent_name}: {str(e)}")
-                return {"error": f"Chat delegation to {agent_name} failed"}, 500
-        else:
-            logger.warning(f"Attempted to delegate to non-existent agent: {agent_name}")
-            return {"error": f"No such agent registered: {agent_name}"}, 400
 
-    def delegate_route(self, agent_name, request, method_name):
-        agent = self.agents.get(agent_name)
-        if agent:
-            if hasattr(agent, method_name):
-                logger.info("Delegating %s to agent: %s", method_name, agent_name)
-                method = getattr(agent, method_name)
-                return method(request)
-            else:
-                logger.warning(
-                    "Method %s not found in agent %s", method_name, agent_name
-                )
-                return {
-                    "error": f"No such method '{method_name}' in agent '{agent_name}'"
-                }, 400
-        logger.warning("Attempted to delegate to non-existent agent: %s", agent_name)
-        return {"error": "No such agent registered"}, 400
+        if agent_name not in agent_manager_instance.get_selected_agents():
+            logger.warning(f"Attempted to delegate to unselected agent: {agent_name}")
+            return self._try_next_agent(chat_request)
+
+        agent = agent_manager_instance.get_agent(agent_name)
+        if not agent:
+            logger.error(f"Agent {agent_name} is selected but not loaded")
+            return self._try_next_agent(chat_request)
+
+        try:
+            result = agent.chat(chat_request)
+            logger.info(f"Chat delegation to {agent_name} completed successfully")
+            return agent_name, result
+        except Exception as e:
+            logger.error(f"Error during chat delegation to {agent_name}: {str(e)}")
+            return self._try_next_agent(chat_request)
+
+    def _try_next_agent(self, chat_request: Any) -> Tuple[Optional[str], Any]:
+        """Try to get a response from the next best available agent"""
+        try:
+            # Get next best agent
+            result = self.get_delegator_response(chat_request.prompt.dict())
+
+            if "agent" not in result:
+                return None, {"error": "No suitable agent found"}
+
+            next_agent = result["agent"]
+            logger.info(f"Cascading to next agent: {next_agent}")
+
+            return self.delegate_chat(next_agent, chat_request)
+        except ValueError as ve:
+            # No more agents available
+            logger.error(f"No more agents available: {str(ve)}")
+            return None, {"error": "All available agents have been attempted without success"}

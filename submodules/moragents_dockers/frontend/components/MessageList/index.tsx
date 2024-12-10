@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { Box } from "@chakra-ui/react";
-import { ChatMessage } from "../../services/backendClient";
+import { ChatMessage } from "@/services/types";
 import { MessageItem } from "../MessageItem";
 
 type MessageListProps = {
@@ -26,7 +26,7 @@ export const MessageList: FC<MessageListProps> = ({
       sx={{
         overflowY: "scroll",
         overflowX: "hidden",
-        height: "calc(100vh - 200px)",
+        height: "100%",
         "::-webkit-scrollbar": {
           width: "8px",
           backgroundColor: "transparent",
