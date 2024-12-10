@@ -1,8 +1,8 @@
-import requests
 import logging
+
+import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 from src.agents.crypto_data.config import Config
 
 
@@ -13,9 +13,7 @@ def get_most_similar(text, data):
     text_vector = vectorizer.transform([text])
     similarity_scores = cosine_similarity(text_vector, sentence_vectors)
     top_indices = similarity_scores.argsort()[0][-20:]
-    top_matches = [
-        data[item] for item in top_indices if similarity_scores[0][item] > 0.5
-    ]
+    top_matches = [data[item] for item in top_indices if similarity_scores[0][item] > 0.5]
     return top_matches
 
 
@@ -35,6 +33,20 @@ def get_coingecko_id(text, type="coin"):
             raise ValueError("Invalid type specified")
     except requests.exceptions.RequestException as e:
         logging.error(f"API request failed: {str(e)}")
+        raise
+
+
+def get_tradingview_symbol(coingecko_id):
+    """Convert a CoinGecko ID to a TradingView symbol."""
+    url = f"{Config.COINGECKO_BASE_URL}/coins/{coingecko_id}"
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        symbol = data.get("symbol", "").upper()
+        return f"CRYPTO:{symbol}USD" if symbol else None
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Failed to get TradingView symbol: {str(e)}")
         raise
 
 
@@ -171,9 +183,7 @@ def get_nft_floor_price_tool(nft_name):
         floor_price = get_floor_price(nft_name)
         if floor_price is None:
             return Config.FLOOR_PRICE_FAILURE_MESSAGE
-        return Config.FLOOR_PRICE_SUCCESS_MESSAGE.format(
-            nft_name=nft_name, floor_price=floor_price
-        )
+        return Config.FLOOR_PRICE_SUCCESS_MESSAGE.format(nft_name=nft_name, floor_price=floor_price)
     except requests.exceptions.RequestException:
         return Config.API_ERROR_MESSAGE
 
@@ -185,9 +195,7 @@ def get_protocol_total_value_locked_tool(protocol_name):
         if tvl is None:
             return Config.TVL_FAILURE_MESSAGE
         protocol, tvl_value = list(tvl.items())[0][0], list(tvl.items())[0][1]
-        return Config.TVL_SUCCESS_MESSAGE.format(
-            protocol_name=protocol_name, tvl=tvl_value
-        )
+        return Config.TVL_SUCCESS_MESSAGE.format(protocol_name=protocol_name, tvl=tvl_value)
     except requests.exceptions.RequestException:
         return Config.API_ERROR_MESSAGE
 
@@ -209,9 +217,7 @@ def get_coin_market_cap_tool(coin_name):
         market_cap = get_market_cap(coin_name)
         if market_cap is None:
             return Config.MARKET_CAP_FAILURE_MESSAGE
-        return Config.MARKET_CAP_SUCCESS_MESSAGE.format(
-            coin_name=coin_name, market_cap=market_cap
-        )
+        return Config.MARKET_CAP_SUCCESS_MESSAGE.format(coin_name=coin_name, market_cap=market_cap)
     except requests.exceptions.RequestException:
         return Config.API_ERROR_MESSAGE
 

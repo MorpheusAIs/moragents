@@ -1,19 +1,23 @@
 import subprocess
 import time
 
-from utils.logger_config import setup_logger
 from config import AgentDockerConfig, AgentDockerConfigDeprecate
+from utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
 docker_path = "docker"
 
+
 def check_docker_installed():
     try:
-        subprocess.run([docker_path, "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(
+            [docker_path, "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
+
 
 def start_docker():
     try:
@@ -33,6 +37,7 @@ def start_docker():
         logger.info("Waiting for Docker engine to start...")
         time.sleep(2)
 
+
 def delete_docker_image(image_name):
     try:
         list_command = [docker_path, "images", "--format", "{{.Repository}}:{{.Tag}}"]
@@ -46,36 +51,50 @@ def delete_docker_image(image_name):
     except subprocess.CalledProcessError as e:
         logger.warning(f"Error deleting image: {e}")
 
+
 def list_containers_for_image(image_name):
     try:
         output = subprocess.check_output(
-            [docker_path, "ps", "-a", "--filter", f"ancestor={image_name}", "--format", "{{.ID}}"])
+            [docker_path, "ps", "-a", "--filter", f"ancestor={image_name}", "--format", "{{.ID}}"]
+        )
         containers = output.decode().strip().split("\n")
         return [container for container in containers if container]
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to list containers for image '{image_name}': {e}")
         return []
 
+
 def remove_container(container):
     try:
-        subprocess.run([docker_path, "rm", "-f", container], check=True, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL)
+        subprocess.run(
+            [docker_path, "rm", "-f", container],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
     except subprocess.CalledProcessError as e:
         logger.error(f"Failed to remove container '{container}': {e}")
 
+
 def docker_image_present_on_host(image_name):
     try:
-        subprocess.run([docker_path, "inspect", image_name], check=True, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL)
+        subprocess.run(
+            [docker_path, "inspect", image_name],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
         return True
     except (subprocess.CalledProcessError, TypeError):
         return False
+
 
 def remove_containers_for_image(image_name):
     containers = list_containers_for_image(image_name)
     for container in containers:
         remove_container(container)
         logger.info(f"Removed container '{container}' for image '{image_name}'")
+
 
 def remove_containers_by_name(container_name):
     try:
@@ -92,11 +111,13 @@ def remove_containers_by_name(container_name):
     except subprocess.CalledProcessError as e:
         logger.error(f"Error removing container '{container_name}': {str(e)}")
 
+
 def migration_remove_old_images():
     for image_name in AgentDockerConfigDeprecate.OLD_IMAGE_NAMES:
         if docker_image_present_on_host(image_name):
             delete_docker_image(image_name)
             logger.info(f"Deleted image '{image_name}' from previous release")
+
 
 def pull_docker_images():
     for image_name in AgentDockerConfig.get_current_image_names():
@@ -107,15 +128,18 @@ def pull_docker_images():
             logger.error(f"Failed to pull image {image_name}: {e}")
             raise
 
+
 def start_ollama_server():
     ollama_path = "ollama"
 
     try:
         print(f"Attempting to start Ollama server using: {ollama_path}")
-        subprocess.Popen([ollama_path, "serve"], 
-                         stdout=subprocess.PIPE, 
-                         stderr=subprocess.PIPE, 
-                         creationflags=subprocess.CREATE_NO_WINDOW)
+        subprocess.Popen(
+            [ollama_path, "serve"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        )
         print("Ollama server started successfully.")
     except Exception as e:
         print(f"Failed to start Ollama server: {e}")
@@ -140,23 +164,47 @@ def docker_setup():
     remove_containers_by_name("nginx")
 
     # Spin up Agent container
-    subprocess.run([
-        docker_path, "run", "-d", "--name", "agents",
-        "-p", "8080:5000", "--restart", "always",
-        "-v", "/var/lib/agents", "-v", "/app/src",
-        AgentDockerConfig.get_current_image_names()[1]  # agents image
-    ], check=True)
+    subprocess.run(
+        [
+            docker_path,
+            "run",
+            "-d",
+            "--name",
+            "agents",
+            "-p",
+            "8080:5000",
+            "--restart",
+            "always",
+            "-v",
+            "/var/lib/agents",
+            "-v",
+            "/app/src",
+            AgentDockerConfig.get_current_image_names()[1],  # agents image
+        ],
+        check=True,
+    )
 
     # Spin up Nginx container
-    subprocess.run([
-        docker_path, "run", "-d", "--name", "nginx", "-p", "3333:80",
-        AgentDockerConfig.get_current_image_names()[0]  # nginx image
-    ], check=True)
+    subprocess.run(
+        [
+            docker_path,
+            "run",
+            "-d",
+            "--name",
+            "nginx",
+            "-p",
+            "3333:80",
+            AgentDockerConfig.get_current_image_names()[0],  # nginx image
+        ],
+        check=True,
+    )
+
 
 def main():
     # main() called every time the app is opened (from main.py). Put all app open code here.
     start_ollama_server()
     docker_setup()
+
 
 if __name__ == "__main__":
     docker_setup()

@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { ClaimForm } from "../ClaimForm/ClaimForm";
-import { ClaimMessagePayload } from "../../services/backendClient";
+import { ClaimMessagePayload } from "@/services/types";
 
 type ClaimMessageProps = {
   isActive: boolean;

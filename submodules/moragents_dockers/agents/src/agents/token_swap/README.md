@@ -50,9 +50,9 @@ To run:
 
 Your agent should expose the following endpoints:
 
-### 1. Chat 
-This is the main endpoint for chatting with the agent. 
- 
+### 1. Chat
+This is the main endpoint for chatting with the agent.
+
 ```http://127.0.0.1:5000/```
 
 The chat API accepts inputs in OpenAI chat completion format - see the example below:
@@ -65,14 +65,14 @@ data = {'prompt':message,'chain_id':56}
 response = requests.post(url, json=data)
 ```
 
-The response will also be in this format. 
+The response will also be in this format.
 
 ```sh
-response = {"role":"assistant","content":"To proceed with the swap, I need to know which crypto currency you want to 
+response = {"role":"assistant","content":"To proceed with the swap, I need to know which crypto currency you want to
 buy in exchange for 1 ETH. Could you please specify the target crypto currency?"}
 ```
 
-If the agent has enough information (buy token, sell token, amount) it will then look up the token addresses on the current chain. 
+If the agent has enough information (buy token, sell token, amount) it will then look up the token addresses on the current chain.
 
 If the token symbols are valid, it will then check the user has sufficient balance of the sell token.
 
@@ -91,12 +91,12 @@ response = {"role": "swap",
 
 If the user wants to perform a swap based on the quote, the following steps are required:
 
-    1) Check allowance 
+    1) Check allowance
     2) If allowance < swap amount, send an approve transaction
     3) If allowance >= swap amount, send a swap transaction
 
 
-### 2. Check Allowance 
+### 2. Check Allowance
 
  ```http://127.0.0.1:5000/allowance```
 
@@ -130,7 +130,7 @@ url='http://127.0.0.1:5000/approve
 
 ```
 
-### 4. Generate Swap tx 
+### 4. Generate Swap tx
 
 ```http://127.0.0.1:5000/swap```
 
@@ -156,7 +156,7 @@ url='http://127.0.0.1:5000/swap
 ```http://127.0.0.1:5000/tx_status```
 
 This endpoint is used to inform the back-end of the status of transactions that have been signed by the user's wallet on the front-end.
-	
+
 Status values:
 
 * "initiated" = tx has been sent to the wallet

@@ -1,18 +1,19 @@
 # submodules/benchmarks/news_agent_benchmarks/helpers.py
 
-import requests
 import logging
+
+import requests
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 def ask_news_agent(article_text: str, url: str) -> dict:
-    headers = {'Content-Type': 'application/json'}
+    headers = {"Content-Type": "application/json"}
     payload = {
         "prompt": {
             "role": "user",
-            "content": f"Classify if this article is relevant to cryptocurrency price movements: {article_text}"
+            "content": f"Classify if this article is relevant to cryptocurrency price movements: {article_text}",
         }
     }
     response = requests.post(url, headers=headers, json=payload)
@@ -27,7 +28,7 @@ def extract_classification(response: dict) -> str:
         logger.warning(f"Unexpected response type: {type(response)}")
         return "UNKNOWN"
 
-    content = response.get('content')
+    content = response.get("content")
 
     if content is None:
         logger.warning("Response content is None")

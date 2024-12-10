@@ -3,6 +3,7 @@ import { Grid, GridItem, Text, Box } from "@chakra-ui/react";
 import { Avatar } from "../Avatar";
 import { Loader } from "../Loader";
 import { availableAgents } from "../../config";
+import styles from "./index.module.css";
 
 type LoadingIndicatorProps = {
   selectedAgent: string;
@@ -11,43 +12,27 @@ type LoadingIndicatorProps = {
 export const LoadingIndicator: FC<LoadingIndicatorProps> = ({
   selectedAgent,
 }) => {
+  const agentName = availableAgents[selectedAgent]?.name || "Undefined Agent";
+
   return (
     <Grid
-      templateAreas={`
-        "avatar name"
-        "avatar message"
-      `}
-      templateColumns={"0fr 3fr"}
-      bg={"#020804"}
-      color={"white"}
-      borderRadius={4}
-      mb={2}
-      gap={2}
+      templateAreas={`"avatar name" "avatar message"`}
+      templateColumns="0fr 3fr"
+      className={styles.messageGrid}
     >
       <GridItem area="avatar">
-        <Avatar
-          isAgent={true}
-          agentName={availableAgents[selectedAgent]?.name || "Undefined Agent"}
-        />
+        <Avatar isAgent={true} agentName={agentName} />
       </GridItem>
       <GridItem area="name">
-        <Text
-          sx={{
-            fontSize: "16px",
-            fontWeight: "bold",
-            lineHeight: "125%",
-            mt: 1,
-            ml: 2,
-          }}
-        >
-          {availableAgents[selectedAgent]?.name || "Undefined Agent"}
-        </Text>
+        <Text className={styles.nameText}>{agentName}</Text>
       </GridItem>
       <GridItem area="message">
-        <Box sx={{ fontSize: "16px", lineHeight: "125%", mt: 4, mb: 5, ml: 2 }}>
+        <Box className={styles.messageText}>
           <Loader />
         </Box>
       </GridItem>
     </Grid>
   );
 };
+
+export default LoadingIndicator;

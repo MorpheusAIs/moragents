@@ -56,6 +56,10 @@ resources/*
 ## installer
 MORagentsWindowsInstaller
 MORagentsWindowsInstaller.zip
+build_assets/macOS/MORAgentsInstaller.pkg
 
 ## app
 MORagents.app
+
+## lint
+.pytest_cache/

@@ -1,19 +1,24 @@
-import os
 import logging
+import os
 import time
+
 import uvicorn
-
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
-from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
+from langchain_ollama import ChatOllama
 
 from src.config import Config
 from src.delegator import Delegator
-from src.stores import agent_manager, chat_manager
 from src.models.messages import ChatRequest
+from src.stores import agent_manager_instance, chat_manager_instance, workflow_manager_instance
+from src.routes import (
+    agent_manager_routes,
+    chat_manager_routes,
+    key_manager_routes,
+    wallet_manager_routes,
+    workflow_manager_routes
+)
 
 # Constants
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
@@ -35,6 +40,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.on_event("startup")
+async def startup_event():
+    await workflow_manager_instance.initialize()
+
+
+@app.on_event("startup")
+async def startup_event():
+    await workflow_manager_instance.initialize()
+
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -42,56 +56,84 @@ llm = ChatOllama(
     model=Config.OLLAMA_MODEL,
     base_url=Config.OLLAMA_URL,
 )
-embeddings = OllamaEmbeddings(
-    model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL
-)
+embeddings = OllamaEmbeddings(model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL)
 
-delegator = Delegator(Config.DELEGATOR_CONFIG, llm, embeddings)
+delegator = Delegator(llm, embeddings)
+
+# Include base store routes
+app.include_router(agent_manager_routes.router)
+app.include_router(key_manager_routes.router)
+app.include_router(chat_manager_routes.router)
+app.include_router(wallet_manager_routes.router)
+app.include_router(workflow_manager_routes.router)
+
+# Agent route imports
+from src.agents.crypto_data.routes import router as crypto_router
+from src.agents.rag.routes import router as rag_router
+from src.agents.mor_claims.routes import router as claim_router
+from src.agents.tweet_sizzler.routes import router as tweet_router
+from src.agents.token_swap.routes import router as swap_router
+from src.agents.dca_agent.routes import router as dca_router
+from src.agents.base_agent.routes import router as base_router
+
+# Include agent routes
+app.include_router(crypto_router)
+app.include_router(rag_router)
+app.include_router(claim_router)
+app.include_router(tweet_router)
+app.include_router(swap_router)
+app.include_router(dca_router)
+app.include_router(base_router)
+
+
+async def get_active_agent_for_chat(prompt: dict) -> str:
+    """Get the active agent for handling the chat request."""
+    active_agent = agent_manager_instance.get_active_agent()
+    if active_agent:
+        return active_agent
+
+    logger.info("No active agent, getting delegator response")
+    start_time = time.time()
+    result = delegator.get_delegator_response(prompt)
+    logger.info(f"Delegator response time: {time.time() - start_time:.2f} seconds")
+    logger.info(f"Delegator response: {result}")
+
+    if "agent" not in result:
+        logger.error(f"Missing 'agent' key in delegator response: {result}")
+        raise ValueError("Invalid delegator response: missing 'agent' key")
+
+    return result["agent"]
+
+
+def validate_agent_response(response: dict, current_agent: str) -> dict:
+    """Validate and process the agent's response."""
+    if not current_agent:
+        logger.error("All agents failed to provide a valid response")
+        raise HTTPException(
+            status_code=500,
+            detail="All available agents failed to process the request",
+        )
+
+    return response
 
 
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
     prompt = chat_request.prompt.dict()
-    chat_manager.add_message(prompt)
+    chat_manager_instance.add_message(prompt)
 
     try:
-        active_agent = agent_manager.get_active_agent()
-
-        if not active_agent:
-            logger.info("No active agent, getting delegator response")
-
-            start_time = time.time()
-            result = delegator.get_delegator_response(
-                prompt["content"], chat_manager.get_uploaded_file_status()
-            )
-
-            end_time = time.time()
-
-            logger.info(f"Delegator response time: {end_time - start_time:.2f} seconds")
-            logger.info(f"Delegator response: {result}")
-
-            if "agent" not in result:
-                logger.error(f"Missing 'agent' key in delegator response: {result}")
-                raise ValueError("Invalid delegator response: missing 'agent' key")
-
-            active_agent = result["agent"]
+        delegator.reset_attempted_agents()
+        active_agent = await get_active_agent_for_chat(prompt)
 
         logger.info(f"Delegating chat to active agent: {active_agent}")
         current_agent, response = delegator.delegate_chat(active_agent, chat_request)
 
-        if isinstance(response, tuple) and len(response) == 2:
-            error_message, status_code = response
-            logger.error(f"Error from agent: {error_message}")
-            raise HTTPException(status_code=status_code, detail=error_message)
+        validated_response = validate_agent_response(response, current_agent)
+        chat_manager_instance.add_response(validated_response, current_agent)
 
-        if isinstance(response, dict) and "role" in response and "content" in response:
-            chat_manager.add_response(response, current_agent or "Unknown")
-
-            logger.info(f"Sending response: {response}")
-            return response
-        else:
-            logger.error(f"Invalid response format: {response}")
-            raise HTTPException(status_code=500, detail="Invalid response format")
+        logger.info(f"Sending response: {validated_response}")
+        return validated_response
 
     except TimeoutError:
         logger.error("Chat request timed out")
@@ -102,82 +144,6 @@ async def chat(chat_request: ChatRequest):
     except Exception as e:
         logger.error(f"Error in chat route: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/tx_status")
-async def swap_agent_tx_status(request: Request):
-    logger.info("Received tx_status request")
-    response = await delegator.delegate_route("crypto swap agent", request, "tx_status")
-    chat_manager.add_message(response)
-    return response
-
-
-@app.get("/messages")
-async def get_messages():
-    logger.info("Received get_messages request")
-    return {"messages": chat_manager.get_messages()}
-
-
-@app.get("/clear_messages")
-async def clear_messages():
-    logger.info("Clearing message history")
-    chat_manager.clear_messages()
-    return {"response": "successfully cleared message history"}
-
-
-@app.post("/allowance")
-async def swap_agent_allowance(request: Request):
-    logger.info("Received allowance request")
-    return delegator.delegate_route("crypto swap agent", request, "get_allowance")
-
-
-@app.post("/approve")
-async def swap_agent_approve(request: Request):
-    logger.info("Received approve request")
-    return delegator.delegate_route("crypto swap agent", request, "approve")
-
-
-@app.post("/swap")
-async def swap_agent_swap(request: Request):
-    logger.info("Received swap request")
-    return delegator.delegate_route("crypto swap agent", request, "swap")
-
-
-@app.post("/upload")
-async def rag_agent_upload(file: UploadFile = File(...)):
-    logger.info("Received upload request")
-    response = await delegator.delegate_route(
-
-        "general purpose and context-based rag agent", {"file": file}, "upload_file"
-    )
-    chat_manager.add_message(response)
-    return response
-
-
-@app.post("/regenerate_tweet")
-async def regenerate_tweet():
-    logger.info("Received generate tweet request")
-    return delegator.delegate_route("tweet sizzler agent", None, "generate_tweet")
-
-
-@app.post("/post_tweet")
-async def post_tweet(request: Request):
-    logger.info("Received x post request")
-    return await delegator.delegate_route("tweet sizzler agent", request, "post_tweet")
-
-
-@app.post("/set_x_api_key")
-async def set_x_api_key(request: Request):
-    logger.info("Received set X API key request")
-    return await delegator.delegate_route(
-        "tweet sizzler agent", request, "set_x_api_key"
-    )
-
-
-@app.post("/claim")
-async def claim_agent_claim(request: Request):
-    logger.info("Received claim request")
-    return delegator.delegate_route("claim agent", request, "claim")
 
 
 if __name__ == "__main__":

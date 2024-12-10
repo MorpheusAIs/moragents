@@ -1,16 +1,16 @@
 # MORagents
-Welcome to the world of Web3 agents! If you're interested in building and using agents locally, this document will guide you through the principles and 
+Welcome to the world of Web3 agents! If you're interested in building and using agents locally, this document will guide you through the principles and
 current projects underway.
 
 ### Principles:
-1. **Agents cannot execute decisions**: Agents should not be given private keys or allowed to make transactions on their own. They can only construct transaction 
+1. **Agents cannot execute decisions**: Agents should not be given private keys or allowed to make transactions on their own. They can only construct transaction
 payloads for a user's approval. This is due to the limitations of current LLMs in understanding complex transactions and the risk of [gaslighting](https://arxiv.org/abs/2311.04235).
 2. **Local installation**: Agents should run on the user's laptop, typically with 8-16 GB of RAM. This allows for faster execution and better performance.
-3. **No private keys**: Agents must not have access to private keys or be able to execute transactions independently. User's cryptographic approval is essential for any 
+3. **No private keys**: Agents must not have access to private keys or be able to execute transactions independently. User's cryptographic approval is essential for any
 transaction.
 
 ### Current Projects:
-1. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents): 
+1. **lachsbagel on Discord** - [this repo](https://github.com/MorpheusAIs/moragents):
    1. Architecture
 2. **IODmitri, SanatSharma, LachsBagel on GitHhub**
    1. [HideNSeek](https://github.com/MorpheusAIs/HideNSeek): An algorithm for verifying and fingerprinting which model a compute provider is actually running
@@ -25,10 +25,10 @@ transaction.
    4. CICD builds for Linux and macOS (apple and intel)
    5. Vulnerability scanning of dependencies and code
 4. GenLayer
-   1. (pending) [FeedBuzz](https://github.com/yeagerai/feedbuzz-contracts) - AI filtered logging system to surface user demand and failure modes for new functionality  
+   1. (pending) [FeedBuzz](https://github.com/yeagerai/feedbuzz-contracts) - AI filtered logging system to surface user demand and failure modes for new functionality
 5. **CliffordAttractor on Discord** - Following Assume 16GB+ RAM:
    1. Developed a [price fetcher agent](submodules/moragents_dockers/agents/src/data_agent) using CoinGecko.
-   2. A [web interface](submodules/moragents_dockers/frontend) which is served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other 
+   2. A [web interface](submodules/moragents_dockers/frontend) which is served by the local Docker installation and integrated with Rainbow, enabling the use of MetaMask, WalletConnect, and other
    EVM-based wallets.
    3. (NEEDS REFACTORING DUE TO 1INCH CHANGE) [Swap agent](submodules/moragents_dockers/agents/src/swap_agent) which can iteratively ask users to provide needed details for disambiguation.
    4. [General-purpose agent](https://github.com/MorpheusAIs/moragents/pull/34) that can ingest arbitrary documents, such as PDFs, for basic document QA and text generation.
@@ -57,7 +57,7 @@ Pending Lumerin's work. Eventually Agent Builders will be able to permission-les
 
 
 ### How to Contribute:
-- If you are working on an agent which can provide value through open models and relies on processing public data, please reach out to lachsbagel on Discord (link below)   
+- If you are working on an agent which can provide value through open models and relies on processing public data, please reach out to lachsbagel on Discord (link below)
   - Otherwise, you are more than welcome to publish your agent to the registry when it goes live pending Lumerin's work and any other necessary pieces which come up to better ensure security and verifiability of models in non-local execution environments.
 - If you are working on security and/or verifiability of models and the runtime, please reach out to LachsBagel on the Morpheus Discord.
   - Currently looking at [Hyperbolic.xyz](https://hyperbolic.xyz) and [6079](https://docs.6079.ai/technology/6079-proof-of-inference-protocol). See more ecosystem members [here](https://mor.org/ecosystem).

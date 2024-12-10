@@ -55,12 +55,12 @@ start_time=$(date +%s)
 while ! is_app_running "Docker Desktop"; do
     current_time=$(date +%s)
     elapsed_time=$((current_time - start_time))
-    
+
     if [ $elapsed_time -ge $timeout ]; then
         log_message "Warning: Docker Desktop did not start within the specified timeout."
         break
     fi
-    
+
     sleep 5
 done
 

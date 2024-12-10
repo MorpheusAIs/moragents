@@ -4,20 +4,17 @@ import ReactMarkdown from "react-markdown";
 import {
   ChatMessage,
   SwapMessagePayload,
-  UserOrAssistantMessage,
   ClaimMessagePayload,
-} from "../../services/backendClient";
-import { Avatar } from "../Avatar";
-import { availableAgents } from "../../config";
-import { SwapMessage } from "../SwapMessage";
-import { ClaimMessage } from "../ClaimMessage/ClaimMessage";
-import { Tweet } from "../Tweet";
+  ImageMessageContent,
+  CryptoDataMessageContent,
+  BaseMessageContent,
+} from "@/services/types";
+import { Avatar } from "@/components/Avatar";
+import { availableAgents } from "@/config";
+import { SwapMessage } from "@/components/SwapMessage";
+import { ClaimMessage } from "@/components/ClaimMessage/ClaimMessage";
+import { Tweet } from "@/components/Tweet";
 import styles from "./index.module.css";
-
-const TWEET_AGENT = "tweet sizzler agent";
-const SWAP_AGENT = "crypto swap agent";
-const USER_ROLE = "user";
-const UNDEFINED_AGENT = "Undefined Agent";
 
 type MessageItemProps = {
   message: ChatMessage;
@@ -38,22 +35,48 @@ export const MessageItem: FC<MessageItemProps> = ({
   isLastSwapMessage,
   isLastClaimMessage,
 }) => {
-  const agentName = availableAgents[selectedAgent]?.name || UNDEFINED_AGENT;
-  const isUser = message.role === USER_ROLE;
+  const agentName = availableAgents[selectedAgent]?.name || "Undefined Agent";
+  const isUser = message.role === "user";
   const { content } = message;
 
   const renderContent = () => {
     if (typeof content === "string") {
-      if ((message as UserOrAssistantMessage).agentName === TWEET_AGENT) {
+      if (message.agentName === "tweet sizzler") {
         return <Tweet initialContent={content} selectedAgent={selectedAgent} />;
       }
-
       return (
         <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
       );
     }
 
-    if ((message as UserOrAssistantMessage).agentName === SWAP_AGENT) {
+    if (message.agentName === "imagen") {
+      const imageContent = content as unknown as ImageMessageContent;
+      return (
+        <ReactMarkdown className={styles.messageText}>
+          {`Successfully generated image with ${imageContent.service}`}
+        </ReactMarkdown>
+      );
+    }
+
+    if (message.agentName === "crypto data") {
+      const cryptoDataContent = content as unknown as CryptoDataMessageContent;
+      return (
+        <ReactMarkdown className={styles.messageText}>
+          {cryptoDataContent.data}
+        </ReactMarkdown>
+      );
+    }
+
+    if (message.agentName === "base") {
+      const baseContent = content as unknown as BaseMessageContent;
+      return (
+        <ReactMarkdown className={styles.messageText}>
+          {baseContent.message}
+        </ReactMarkdown>
+      );
+    }
+
+    if (message.role === "swap") {
       return (
         <SwapMessage
           isActive={isLastSwapMessage}
@@ -66,14 +89,13 @@ export const MessageItem: FC<MessageItemProps> = ({
     }
 
     if (message.role === "claim") {
-      console.log("MessageItem rendering ClaimMessage with content:", message.content);
       return (
         <ClaimMessage
-      isActive={isLastClaimMessage}
-      selectedAgent={selectedAgent}
-      fromMessage={message.content as ClaimMessagePayload}
-      onSubmitClaim={onClaimSubmit}
-    />
+          isActive={isLastClaimMessage}
+          selectedAgent={selectedAgent}
+          fromMessage={content as ClaimMessagePayload}
+          onSubmitClaim={onClaimSubmit}
+        />
       );
     }
 

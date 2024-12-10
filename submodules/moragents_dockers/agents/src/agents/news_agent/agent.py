@@ -1,15 +1,11 @@
-import json
 import logging
 import re
-import urllib.parse
-from src.agents.news_agent.config import Config
-from src.agents.news_agent.tools import (
-    clean_html,
-    is_within_time_window,
-    fetch_rss_feed,
-)
-from src.models.messages import ChatRequest
+
 import pyshorteners
+
+from src.agents.news_agent.config import Config
+from src.agents.news_agent.tools import clean_html, fetch_rss_feed, is_within_time_window
+from src.models.messages import ChatRequest
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +17,6 @@ class NewsAgent:
         self.embeddings = embeddings
         self.tools_provided = self.get_tools()
         self.url_shortener = pyshorteners.Shortener()
-        logger.info("NewsAgent initialized")
 
     def get_tools(self):
         return [
@@ -42,7 +37,6 @@ class NewsAgent:
                         "required": ["coins"],
                     },
                 },
-
             }
         ]
 
@@ -68,15 +62,11 @@ class NewsAgent:
                 logger.info(f"Checking relevance for article: {title}")
                 result = self.check_relevance_and_summarize(title, content, coin)
                 if not result.upper().startswith("NOT RELEVANT"):
-                    results.append(
-                        {"Title": title, "Summary": result, "Link": entry.link}
-                    )
+                    results.append({"Title": title, "Summary": result, "Link": entry.link})
                 if len(results) >= Config.ARTICLES_PER_TOKEN:
                     break
             else:
-                logger.info(
-                    f"Skipping article: {entry.title} (published: {published_time})"
-                )
+                logger.info(f"Skipping article: {entry.title} (published: {published_time})")
         logger.info(f"Found {len(results)} relevant articles for {coin}")
         return results
 
@@ -89,10 +79,7 @@ class NewsAgent:
             google_news_url = Config.GOOGLE_NEWS_BASE_URL.format(coin_name)
             results = self.process_rss_feed(google_news_url, coin_name)
             all_news.extend(
-                [
-                    {"Coin": coin, **result}
-                    for result in results[: Config.ARTICLES_PER_TOKEN]
-                ]
+                [{"Coin": coin, **result} for result in results[: Config.ARTICLES_PER_TOKEN]]
             )
 
         logger.info(f"Total news items fetched: {len(all_news)}")
@@ -108,9 +95,7 @@ class NewsAgent:
 
                 # Updated coin detection logic
                 coins = re.findall(
-                    r"\b("
-                    + "|".join(re.escape(key) for key in Config.CRYPTO_DICT.keys())
-                    + r")\b",
+                    r"\b(" + "|".join(re.escape(key) for key in Config.CRYPTO_DICT.keys()) + r")\b",
                     prompt.upper(),
                 )
 
@@ -152,9 +137,5 @@ class NewsAgent:
                 }
 
         except Exception as e:
-            logger.error(f"Error in chat method: {str(e)}", exc_info=True)
-            return {
-                "role": "assistant",
-                "content": f"An error occurred: {str(e)}",
-                "next_turn_agent": None,
-            }
+            logger.error(f"Error in chat method: {str(e)}, request: {request}")
+            raise e

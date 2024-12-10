@@ -1,16 +1,15 @@
-import os
 import logging
+import os
 
 from fastapi import Request
-from werkzeug.utils import secure_filename
-
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters.character import RecursiveCharacterTextSplitter
+from werkzeug.utils import secure_filename
 
 from src.models.messages import ChatRequest
-from src.stores import chat_manager
+from src.stores import agent_manager_instance, chat_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +21,16 @@ class RagAgent:
         self.config = config
         self.llm = llm
         self.embedding = embeddings
-        self.messages = [
-            {"role": "assistant", "content": "Please upload a file to begin"}
-        ]
+        self.messages = [{"role": "assistant", "content": "Please upload a file to begin"}]
 
         self.prompt = ChatPromptTemplate.from_template(
             """
                 Answer the following question only based on the given context
-                                                        
+
                 <context>
                 {context}
                 </context>
-                                                        
+
                 Question: {input}
             """
         )
@@ -78,7 +75,7 @@ class RagAgent:
 
         try:
             await self.handle_file_upload(file)
-            chat_manager.set_uploaded_file(True)
+            chat_manager_instance.set_uploaded_file(True)
             return {
                 "role": "assistant",
                 "content": "You have successfully uploaded the text",
@@ -91,22 +88,24 @@ class RagAgent:
         retrieved_docs = self.retriever.invoke(prompt)
         formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
         formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
+        system_prompt = "You are a helpful assistant. Use the provided context to respond to the following question."
+
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant. Use the provided context to respond to the following question.",
+                "content": system_prompt,
             },
             {"role": "user", "content": formatted_prompt},
         ]
         result = self.llm.invoke(messages)
         return result.content.strip()
-   
+
     def chat(self, request: ChatRequest):
         try:
             data = request.dict()
             if "prompt" in data:
                 prompt = data["prompt"]["content"]
-                if chat_manager.get_uploaded_file_status():
+                if chat_manager_instance.get_uploaded_file_status():
                     response = self._get_rag_response(prompt)
                 else:
                     response = "Please upload a file first"
@@ -116,4 +115,4 @@ class RagAgent:
                 return {"error": "Missing required parameters"}, 400
         except Exception as e:
             logging.error(f"Error in chat endpoint: {str(e)}")
-            return {"Error": str(e)}, 500
+            raise e

@@ -237,3 +237,50 @@ The `Delegator` will automatically:
 
 1. **Ensure the `Delegator` can properly route requests** to the new agent.
 2. **Test the agent's functionality** through the chat interface.
+
+
+### 6. Code Quality & Linting
+
+We use several tools to maintain code quality:
+
+#### Python (Root & Agents)
+1. **black** - Code formatting
+2. **isort** - Import sorting
+3. **flake8** - Style guide enforcement
+
+#### Frontend
+1. **eslint** - JavaScript/TypeScript linting
+
+---
+
+#### Installing & Running Linters
+
+Linters will automatically run on staged files when you commit changes. You can also run them manually:
+
+```bash
+# In root directory
+pip install -r requirements.txt
+pre-commit install
+
+# Run all pre-commit hooks on staged files
+pre-commit run
+
+# Run specific hooks on staged files
+pre-commit run black
+pre-commit run isort
+pre-commit run flake8
+
+# Run on specific files
+pre-commit run --files path/to/file.py
+
+# Run all hooks on all files (useful for initial setup)
+pre-commit run --all-files
+```
+
+#### Skipping Hooks
+
+In rare cases where you need to skip pre-commit hooks (not recommended):
+
+```bash
+git commit -m "message" --no-verify
+```
