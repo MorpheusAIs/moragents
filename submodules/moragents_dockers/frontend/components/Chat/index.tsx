@@ -13,7 +13,6 @@ export const Chat: FC<ChatProps> = ({
   onSubmitMessage,
   onCancelSwap,
   messages,
-  selectedAgent,
   onBackendError,
 }) => {
   const [messagesData, setMessagesData] = useState<ChatMessage[]>(messages);
@@ -75,12 +74,11 @@ export const Chat: FC<ChatProps> = ({
       >
         <MessageList
           messages={messagesData}
-          selectedAgent={selectedAgent}
           onCancelSwap={onCancelSwap}
           onSwapSubmit={handleSwapSubmit}
           onClaimSubmit={handleClaimSubmit}
         />
-        {showSpinner && <LoadingIndicator selectedAgent={selectedAgent} />}
+        {showSpinner && <LoadingIndicator />}
         <ChatInput
           onSubmit={handleSubmit}
           hasMessages={messagesData.length > 1}

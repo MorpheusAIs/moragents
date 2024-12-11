@@ -25,12 +25,11 @@ import styles from "./index.module.css";
 
 type TweetProps = {
   initialContent: string;
-  selectedAgent: string;
 };
 
 const MAX_TWEET_LENGTH = 280;
 
-export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
+export const Tweet: FC<TweetProps> = ({ initialContent }) => {
   const [tweetContent, setTweetContent] = useState(initialContent);
   const [isTweeting, setIsTweeting] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);

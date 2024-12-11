@@ -10,6 +10,7 @@ import {
   Container,
   useToast,
 } from "@chakra-ui/react";
+import { WalletRequiredModal } from "@/components/WalletRequiredModal";
 
 interface Agent {
   name: string;
@@ -24,6 +25,7 @@ interface AgentSelectionProps {
 export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const toast = useToast();
 
   const borderColor = useColorModeValue("gray.200", "gray.700");
@@ -45,6 +47,11 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   }, []);
 
   const handleAgentToggle = (agentName: string) => {
+    if (agentName === "swap" && !selectedAgents.includes(agentName)) {
+      setShowWalletModal(true);
+      return;
+    }
+
     setSelectedAgents((prev) => {
       if (prev.includes(agentName)) {
         return prev.filter((name) => name !== agentName);
@@ -140,6 +147,8 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
           Save Configuration
         </Button>
       </VStack>
+
+      <WalletRequiredModal agentRequiresWallet={showWalletModal} />
     </Container>
   );
 };

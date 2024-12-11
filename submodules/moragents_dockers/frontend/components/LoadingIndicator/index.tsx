@@ -12,7 +12,7 @@ type LoadingIndicatorProps = {
 export const LoadingIndicator: FC<LoadingIndicatorProps> = ({
   selectedAgent,
 }) => {
-  const agentName = availableAgents[selectedAgent]?.name || "Undefined Agent";
+  const agentName = availableAgents[selectedAgent]?.name || "Finding an agent";
 
   return (
     <Grid

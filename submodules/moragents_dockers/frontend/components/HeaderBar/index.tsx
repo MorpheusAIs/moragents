@@ -1,6 +1,6 @@
-import React, { FC, ComponentPropsWithoutRef } from "react";
+import React, { FC, useState } from "react";
 import Image from "next/image";
-import { Box, HStack, Spacer, Button } from "@chakra-ui/react";
+import { Box, HStack, Spacer, Button, ButtonGroup } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SettingsButton } from "@/components/Settings";
 import { CDPWallets } from "./CDPWallets";
@@ -10,14 +10,10 @@ import { clearMessagesHistory } from "@/services/apiHooks";
 import { getHttpClient } from "@/services/constants";
 import { useRouter } from "next/router";
 
-export interface HeaderBarProps extends ComponentPropsWithoutRef<"div"> {
-  onAgentChanged(agent: string): void;
-  currentAgent: string;
-}
-
-export const HeaderBar: FC<HeaderBarProps> = (props) => {
+export const HeaderBar: FC = () => {
   const backendClient = getHttpClient();
   const router = useRouter();
+  const [walletType, setWalletType] = useState<"cdp" | "metamask">("cdp");
 
   const handleClearChatHistory = async () => {
     try {
@@ -27,7 +23,6 @@ export const HeaderBar: FC<HeaderBarProps> = (props) => {
       console.error("Failed to clear chat history:", error);
     }
   };
-
   return (
     <Box className={classes.headerBar}>
       <HStack spacing={4} width="100%" px={4}>
@@ -37,14 +32,42 @@ export const HeaderBar: FC<HeaderBarProps> = (props) => {
         <Spacer />
         <HStack spacing={4} flexShrink={0}>
           <Button onClick={handleClearChatHistory}>Clear Chat History</Button>
-          <CDPWallets />
           <Workflows />
-          <Box>
-            <SettingsButton />
-          </Box>
-          <Box>
-            <ConnectButton />
-          </Box>
+          <SettingsButton />
+          {walletType === "cdp" ? <CDPWallets /> : <ConnectButton />}
+
+          {/* Wallet Selection */}
+          <ButtonGroup isAttached>
+            <Button
+              onClick={() => setWalletType("cdp")}
+              variant={walletType === "cdp" ? "greenCustom" : "ghost"}
+              color={walletType === "cdp" ? "black" : "white"}
+              sx={{
+                "&:hover": {
+                  transform: "none",
+                  backgroundColor: "#90EE90",
+                },
+                backgroundColor: walletType === "cdp" ? undefined : "gray.700",
+              }}
+            >
+              CDP Managed Wallets
+            </Button>
+            <Button
+              onClick={() => setWalletType("metamask")}
+              variant={walletType === "metamask" ? "greenCustom" : "ghost"}
+              color={walletType === "metamask" ? "black" : "white"}
+              sx={{
+                "&:hover": {
+                  transform: "none",
+                  backgroundColor: "#90EE90",
+                },
+                backgroundColor:
+                  walletType === "metamask" ? undefined : "gray.700",
+              }}
+            >
+              Metamask
+            </Button>
+          </ButtonGroup>
         </HStack>
       </HStack>
     </Box>

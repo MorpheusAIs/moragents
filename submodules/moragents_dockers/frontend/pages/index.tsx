@@ -12,18 +12,15 @@ import {
 } from "@/services/apiHooks";
 import { getHttpClient, SWAP_STATUS } from "@/services/constants";
 import { ChatMessage } from "@/services/types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { HeaderBar } from "@/components/HeaderBar";
-import { availableAgents } from "@/config";
-import { WalletRequiredModal } from "@/components/WalletRequiredModal";
 import { ErrorBackendModal } from "@/components/ErrorBackendModal";
 
 const Home: NextPage = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const chainId = useChainId();
   const { address } = useAccount();
-  const [selectedAgent, setSelectedAgent] = useState<string>("swap-agent");
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
 
   useEffect(() => {
@@ -75,26 +72,10 @@ const Home: NextPage = () => {
       });
   }, []);
 
-  const isWalletRequired = useMemo(() => {
-    const agent = availableAgents[selectedAgent] || null;
-    if (null !== agent && agent.requirements.connectedWallet) {
-      return true;
-    }
-    return false;
-  }, [selectedAgent]);
-
   const handleSubmitMessage = async (
     message: string,
     file: File | null
   ): Promise<boolean> => {
-    const agent = availableAgents[selectedAgent] || null;
-
-    if (null !== agent && agent.requirements.connectedWallet) {
-      if (!address) {
-        return true;
-      }
-    }
-
     setChatHistory([
       ...chatHistory,
       {
@@ -162,17 +143,13 @@ const Home: NextPage = () => {
         flexDirection: "column",
       }}
     >
-      <HeaderBar
-        onAgentChanged={setSelectedAgent}
-        currentAgent={selectedAgent}
-      />
+      <HeaderBar />
       <Flex flex="1" overflow="hidden">
         <Box>
           <LeftSidebar />
         </Box>
         <Box flex="1" overflow="hidden">
           <Chat
-            selectedAgent={selectedAgent}
             messages={chatHistory}
             onCancelSwap={handleCancelSwap}
             onSubmitMessage={handleSubmitMessage}
@@ -181,7 +158,6 @@ const Home: NextPage = () => {
         </Box>
       </Flex>
 
-      <WalletRequiredModal agentRequiresWallet={isWalletRequired} />
       <ErrorBackendModal show={showBackendError} />
     </Box>
   );

@@ -5,7 +5,6 @@ import { MessageItem } from "../MessageItem";
 
 type MessageListProps = {
   messages: ChatMessage[];
-  selectedAgent: string;
   onCancelSwap: (fromAction: number) => void;
   onSwapSubmit: (swapTx: any) => void;
   onClaimSubmit: (claimTx: any) => void;
@@ -13,7 +12,6 @@ type MessageListProps = {
 
 export const MessageList: FC<MessageListProps> = ({
   messages,
-  selectedAgent,
   onCancelSwap,
   onSwapSubmit,
   onClaimSubmit,
@@ -41,7 +39,6 @@ export const MessageList: FC<MessageListProps> = ({
         <MessageItem
           key={index}
           message={message}
-          selectedAgent={selectedAgent}
           onCancelSwap={onCancelSwap}
           onSwapSubmit={onSwapSubmit}
           onClaimSubmit={onClaimSubmit}
