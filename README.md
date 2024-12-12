@@ -32,9 +32,11 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 #### Send Gasless USDC with Coinbase 🚚
    - "Send USDC on Base"
    _- WARNING: Highly experimental. Please backup your wallet file by downloading from wallet selector._
+   - [INSTRUCTIONS](submodules/moragents_dockers/agents/src/agents/base_agent/README.md)
 #### Dollar Cost Averaging (DCA) with Coinbase
    - "DCA Strategy on Base"
    _- WARNING: Highly experimental. Please backup your wallet file by downloading from wallet selector._
+   - [INSTRUCTIONS](submodules/moragents_dockers/agents/src/agents/dca_agent/README.md)
 #### Write Sizzling Tweets 🌶No Content Moderation 😅
   - "Write a based tweet about Crypto and AI"
 #### Real-time Info 🕸️
