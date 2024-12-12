@@ -17,7 +17,7 @@ from src.routes import (
     chat_manager_routes,
     key_manager_routes,
     wallet_manager_routes,
-    workflow_manager_routes
+    workflow_manager_routes,
 )
 
 # Constants
@@ -40,6 +40,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
 @app.on_event("startup")
 async def startup_event():
     await workflow_manager_instance.initialize()
@@ -119,18 +121,36 @@ def validate_agent_response(response: dict, current_agent: str) -> dict:
 
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
-    prompt = chat_request.prompt.dict()
-    chat_manager_instance.add_message(prompt)
+    """Send a chat message and get a response"""
+    logger.info(f"Received chat request for conversation {chat_request.conversation_id}")
+
+    # Parse command if present
+    agent_name, message = agent_manager_instance.parse_command(
+        chat_request.prompt.dict()["content"]
+    )
+
+    if agent_name:
+        # If command was used, set that agent as active
+        agent_manager_instance.set_active_agent(agent_name)
+        # Update message content without command
+        chat_request.prompt.dict()["content"] = message
+
+    chat_manager_instance.add_message(chat_request.prompt.dict(), chat_request.conversation_id)
 
     try:
-        delegator.reset_attempted_agents()
-        active_agent = await get_active_agent_for_chat(prompt)
+        if not agent_name:
+            delegator.reset_attempted_agents()
+            active_agent = await get_active_agent_for_chat(chat_request.prompt.dict())
+        else:
+            active_agent = agent_name
 
         logger.info(f"Delegating chat to active agent: {active_agent}")
         current_agent, response = delegator.delegate_chat(active_agent, chat_request)
 
         validated_response = validate_agent_response(response, current_agent)
-        chat_manager_instance.add_response(validated_response, current_agent)
+        chat_manager_instance.add_response(
+            validated_response, current_agent, chat_request.conversation_id
+        )
 
         logger.info(f"Sending response: {validated_response}")
         return validated_response

@@ -22,14 +22,20 @@ async def clear_messages(conversation_id: str = Query(default="default")):
     return {"response": "successfully cleared message history"}
 
 
+@router.get("/conversations")
+async def get_conversations():
+    """Get all conversation IDs"""
+    logger.info("Getting all conversation IDs")
+    return {"conversation_ids": chat_manager_instance.get_all_conversation_ids()}
+
+
 @router.post("/conversations")
 async def create_conversation():
     """Create a new conversation"""
-    # The conversation will be created automatically when first accessed
     new_id = f"conversation_{len(chat_manager_instance.get_all_conversation_ids())}"
-    chat_manager_instance.get_messages(new_id)  # This creates the conversation
+    conversation = chat_manager_instance.create_conversation(new_id)
     logger.info(f"Created new conversation with ID: {new_id}")
-    return {"conversation_id": new_id}
+    return {"conversation_id": new_id, "conversation": conversation}
 
 
 @router.delete("/conversations/{conversation_id}")

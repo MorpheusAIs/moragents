@@ -9,6 +9,8 @@ import {
   uploadFile,
   setCoinbaseApiKeys,
   setXApiKeys,
+  createNewConversation,
+  deleteConversation,
 } from "@/services/apiHooks";
 import { getHttpClient, SWAP_STATUS } from "@/services/constants";
 import { ChatMessage } from "@/services/types";
@@ -19,6 +21,8 @@ import { ErrorBackendModal } from "@/components/ErrorBackendModal";
 
 const Home: NextPage = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [currentConversationId, setCurrentConversationId] =
+    useState<string>("default");
   const chainId = useChainId();
   const { address } = useAccount();
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
@@ -62,7 +66,7 @@ const Home: NextPage = () => {
       });
     }
 
-    getMessagesHistory(getHttpClient())
+    getMessagesHistory(getHttpClient(), currentConversationId)
       .then((messages: ChatMessage[]) => {
         setChatHistory([...messages]);
       })
@@ -70,7 +74,7 @@ const Home: NextPage = () => {
         console.error(`Failed to get initial messages history. Error: ${e}`);
         setShowBackendError(true);
       });
-  }, []);
+  }, [currentConversationId]);
 
   const handleSubmitMessage = async (
     message: string,
@@ -92,11 +96,15 @@ const Home: NextPage = () => {
           message,
           getHttpClient(),
           chainId,
-          address || ""
+          address || "",
+          currentConversationId
         );
       } else {
         await uploadFile(getHttpClient(), file);
-        newHistory = await getMessagesHistory(getHttpClient());
+        newHistory = await getMessagesHistory(
+          getHttpClient(),
+          currentConversationId
+        );
       }
       setChatHistory([...newHistory]);
     } catch (e) {
@@ -107,6 +115,27 @@ const Home: NextPage = () => {
     return true;
   };
 
+  const handleNewConversation = async () => {
+    try {
+      const newConversationId = await createNewConversation(getHttpClient());
+      setCurrentConversationId(newConversationId);
+    } catch (e) {
+      console.error(`Failed to create new conversation. Error: ${e}`);
+      setShowBackendError(true);
+    }
+  };
+
+  const handleDeleteConversation = async (conversationId: string) => {
+    try {
+      await deleteConversation(getHttpClient(), conversationId);
+      if (conversationId === currentConversationId) {
+        setCurrentConversationId("default");
+      }
+    } catch (e) {
+      console.error(`Failed to delete conversation. Error: ${e}`);
+      setShowBackendError(true);
+    }
+  };
   const handleCancelSwap = async (fromAction: number) => {
     if (!address) {
       return;
@@ -143,10 +172,14 @@ const Home: NextPage = () => {
         flexDirection: "column",
       }}
     >
-      <HeaderBar />
+      <HeaderBar onNewConversation={handleNewConversation} />
       <Flex flex="1" overflow="hidden">
         <Box>
-          <LeftSidebar />
+          <LeftSidebar
+            currentConversationId={currentConversationId}
+            onConversationSelect={setCurrentConversationId}
+            onDeleteConversation={handleDeleteConversation}
+          />
         </Box>
         <Box flex="1" overflow="hidden">
           <Chat
@@ -154,6 +187,7 @@ const Home: NextPage = () => {
             onCancelSwap={handleCancelSwap}
             onSubmitMessage={handleSubmitMessage}
             onBackendError={handleBackendError}
+            conversationId={currentConversationId}
           />
         </Box>
       </Flex>
