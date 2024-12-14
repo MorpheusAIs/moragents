@@ -1,24 +1,22 @@
 import React, { FC, useEffect, useState } from "react";
-import { Box, VStack, Text, Button, useToast } from "@chakra-ui/react";
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconPlus,
-  IconTrash,
-} from "@tabler/icons-react";
+import { useToast } from "@chakra-ui/react";
+import { IconMenu2, IconPencilPlus, IconTrash } from "@tabler/icons-react";
 import { getHttpClient } from "@/services/constants";
 import { createNewConversation } from "@/services/apiHooks";
+import styles from "./index.module.css";
 
 export type LeftSidebarProps = {
   currentConversationId: string;
   onConversationSelect: (conversationId: string) => void;
   onDeleteConversation: (conversationId: string) => void;
+  setCurrentConversationId: (conversationId: string) => void;
 };
 
 export const LeftSidebar: FC<LeftSidebarProps> = ({
   currentConversationId,
   onConversationSelect,
   onDeleteConversation,
+  setCurrentConversationId,
 }) => {
   const [conversations, setConversations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +45,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
       const response = await createNewConversation(getHttpClient());
       await fetchConversations();
       onConversationSelect(response);
+      setCurrentConversationId(response);
       toast({
         title: "Success",
         description: "New conversation created",
@@ -74,6 +73,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
       await fetchConversations();
       if (conversationId === currentConversationId) {
         onConversationSelect("default");
+        setCurrentConversationId("default");
       }
       toast({
         title: "Success",
@@ -105,82 +105,61 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   };
 
   return (
-    <Box
-      bg="#020804"
-      height="100vh"
-      width={isCollapsed ? "60px" : "240px"}
-      transition="width 0.2s"
-      position="relative"
-    >
-      <Button
-        position="absolute"
-        right="-12px"
-        top="20px"
-        size="sm"
-        zIndex={2}
+    <>
+      <button
+        className={styles.toggleButton}
         onClick={() => setIsCollapsed(!isCollapsed)}
-        bg="#2D3748"
-        color="white"
-        _hover={{ bg: "#4A5568" }}
+        aria-label="Toggle sidebar"
       >
-        {isCollapsed ? (
-          <IconChevronRight size={16} />
-        ) : (
-          <IconChevronLeft size={16} />
-        )}
-      </Button>
+        <IconMenu2 size={20} />
+      </button>
 
-      <VStack align="stretch" p={4} height="100%" spacing={4}>
-        <Button
-          onClick={handleCreateNewConversation}
-          isLoading={isLoading}
-          bg="#2D3748"
-          color="white"
-          _hover={{ bg: "#4A5568" }}
-          w="100%"
-        >
-          {isCollapsed ? <IconPlus size={20} /> : "New Chat"}
-        </Button>
-
-        {conversations.map((conversationId) => (
-          <Box
-            key={conversationId}
-            p={3}
-            bg={
-              currentConversationId === conversationId ? "#2D3748" : "#1A1A1A"
-            }
-            borderRadius="md"
-            cursor="pointer"
-            transition="all 0.2s"
-            _hover={{ bg: "#2D3748" }}
-            onClick={() => onConversationSelect(conversationId)}
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            overflow="hidden"
+      <div
+        className={`${styles.sidebar} ${
+          isCollapsed ? styles.sidebarCollapsed : styles.sidebarExpanded
+        }`}
+      >
+        <div className={styles.container}>
+          <button
+            className={styles.newChatButton}
+            onClick={handleCreateNewConversation}
+            disabled={isLoading}
           >
-            {!isCollapsed && (
-              <Text color="white" fontSize="sm" isTruncated>
+            <IconPencilPlus size={16} />
+            <span>New chat</span>
+          </button>
+
+          {conversations.map((conversationId) => (
+            <div
+              key={conversationId}
+              className={`${styles.conversationItem} ${
+                currentConversationId === conversationId
+                  ? styles.conversationActive
+                  : ""
+              }`}
+              onClick={() => {
+                onConversationSelect(conversationId);
+                setCurrentConversationId(conversationId);
+              }}
+            >
+              <span className={styles.conversationName}>
                 {formatConversationName(conversationId)}
-              </Text>
-            )}
-            {conversationId !== "default" && (
-              <Button
-                size="sm"
-                colorScheme="red"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteConversation(conversationId);
-                }}
-                opacity={0.8}
-                _hover={{ opacity: 1 }}
-              >
-                {isCollapsed ? <IconTrash size={16} /> : "Delete"}
-              </Button>
-            )}
-          </Box>
-        ))}
-      </VStack>
-    </Box>
+              </span>
+              {conversationId !== "default" && (
+                <button
+                  className={styles.deleteButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteConversation(conversationId);
+                  }}
+                >
+                  <IconTrash size={16} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
   );
 };

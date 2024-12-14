@@ -5,6 +5,7 @@ export type ChatProps = {
   onCancelSwap: (fromAction: number) => void;
   messages: ChatMessage[];
   onBackendError: () => void;
+  isSidebarOpen?: boolean;
 };
 
 export type SwapTransaction = {

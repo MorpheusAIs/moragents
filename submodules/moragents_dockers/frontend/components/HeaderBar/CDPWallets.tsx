@@ -69,6 +69,11 @@ export const CDPWallets: React.FC = () => {
   const [confirmWalletId, setConfirmWalletId] = useState("");
   const cancelRef = React.useRef<HTMLButtonElement>(null);
   const toast = useToast();
+  const {
+    isOpen: isMenuOpen,
+    onClose: closeMenu,
+    onOpen: openMenu,
+  } = useDisclosure();
 
   const fetchWallets = useCallback(async () => {
     try {
@@ -327,13 +332,21 @@ export const CDPWallets: React.FC = () => {
 
   return (
     <>
-      <Menu>
+      <Menu isOpen={isMenuOpen} onClose={closeMenu} onOpen={openMenu}>
         <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
           CDP Wallets
         </MenuButton>
         <MenuList minWidth="300px">
           <Box p={4}>
-            <Button colorScheme="green" size="sm" width="full" onClick={onOpen}>
+            <Button
+              colorScheme="green"
+              size="sm"
+              width="full"
+              onClick={() => {
+                closeMenu();
+                onOpen();
+              }}
+            >
               Create New Wallet
             </Button>
           </Box>

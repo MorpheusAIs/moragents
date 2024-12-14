@@ -26,11 +26,6 @@ type PrefilledOption = {
   }>;
 };
 
-type PrefilledOptionsProps = {
-  onSelect: (message: string) => void;
-  isWidgetOpen?: boolean;
-};
-
 const prefilledOptionsMap: Record<string, PrefilledOption> = {
   [AGENT_TYPES.DEFAULT]: {
     title: "Default Agent 🔄",
@@ -143,13 +138,22 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
   },
 };
 
-const PrefilledOptions: React.FC<PrefilledOptionsProps> = ({
+const PrefilledOptions = ({
   onSelect,
   isWidgetOpen = false,
+  isSidebarOpen = true,
+}: {
+  onSelect: (message: string) => void;
+  isWidgetOpen?: boolean;
+  isSidebarOpen?: boolean;
 }) => {
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
   const containerStyle = {
-    paddingLeft: isWidgetOpen ? "5%" : "20%",
+    paddingLeft: isWidgetOpen
+      ? "5%"
+      : isSidebarOpen
+      ? "calc(260px + 20%)" // Sidebar width first, then percentage
+      : "20%",
     paddingRight: isWidgetOpen ? "35%" : "20%",
   };
 

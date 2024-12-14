@@ -24,12 +24,14 @@ type ChatInputProps = {
   onSubmit: (message: string, file: File | null) => Promise<void>;
   disabled: boolean;
   hasMessages?: boolean;
+  isSidebarOpen?: boolean;
 };
 
 export const ChatInput: FC<ChatInputProps> = ({
   onSubmit,
   disabled,
   hasMessages = false,
+  isSidebarOpen = false,
 }) => {
   const [message, setMessage] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -194,7 +196,12 @@ export const ChatInput: FC<ChatInputProps> = ({
       )}
 
       <div className={styles.container}>
-        {!hasMessages && <PrefilledOptions onSelect={handlePrefilledSelect} />}
+        {!hasMessages && (
+          <PrefilledOptions
+            onSelect={handlePrefilledSelect}
+            isSidebarOpen={isSidebarOpen}
+          />
+        )}
         <div className={styles.flexContainer}>
           <InputGroup ref={inputGroupRef} className={styles.inputGroup}>
             {agentSupportsFileUploads && (

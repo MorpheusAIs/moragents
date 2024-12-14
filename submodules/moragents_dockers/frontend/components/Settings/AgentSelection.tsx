@@ -91,8 +91,14 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   };
 
   return (
-    <Container maxW="container.md">
-      <VStack align="stretch" spacing={6}>
+    <Container
+      maxW="container.md"
+      h="100vh"
+      py={4}
+      display="flex"
+      flexDirection="column"
+    >
+      <VStack align="stretch" spacing={6} flex={1}>
         <Box>
           <Heading size="md" mb={3}>
             Agent Configuration
@@ -103,45 +109,41 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
           </Text>
         </Box>
 
-        <VStack
-          align="stretch"
-          spacing={2}
-          maxH="500px"
-          overflowY="auto"
-          px={2}
-        >
-          {availableAgents.map((agent) => (
-            <Box
-              key={agent.name}
-              p={4}
-              borderWidth="1px"
-              borderColor={borderColor}
-              borderRadius="md"
-              width="100%"
-            >
-              <Checkbox
-                isChecked={selectedAgents.includes(agent.name)}
-                onChange={() => handleAgentToggle(agent.name)}
+        <Box flex={1} minH={0}>
+          <VStack align="stretch" spacing={2} h="100%" overflowY="auto" px={2}>
+            {availableAgents.map((agent) => (
+              <Box
+                key={agent.name}
+                p={4}
+                borderWidth="1px"
+                borderColor={borderColor}
+                borderRadius="md"
                 width="100%"
-                isDisabled={
-                  !selectedAgents.includes(agent.name) &&
-                  selectedAgents.length >= 6
-                }
               >
-                <Box ml={4}>
-                  <VStack align="start" width="100%">
-                    <Text fontWeight="medium" textAlign="left">
-                      {agent.human_readable_name}
-                    </Text>
-                    <Text fontSize="sm" color={textColor} textAlign="left">
-                      {agent.description}
-                    </Text>
-                  </VStack>
-                </Box>
-              </Checkbox>
-            </Box>
-          ))}
-        </VStack>
+                <Checkbox
+                  isChecked={selectedAgents.includes(agent.name)}
+                  onChange={() => handleAgentToggle(agent.name)}
+                  width="100%"
+                  isDisabled={
+                    !selectedAgents.includes(agent.name) &&
+                    selectedAgents.length >= 6
+                  }
+                >
+                  <Box ml={4}>
+                    <VStack align="start" width="100%">
+                      <Text fontWeight="medium" textAlign="left">
+                        {agent.human_readable_name}
+                      </Text>
+                      <Text fontSize="sm" color={textColor} textAlign="left">
+                        {agent.description}
+                      </Text>
+                    </VStack>
+                  </Box>
+                </Checkbox>
+              </Box>
+            ))}
+          </VStack>
+        </Box>
 
         <Button colorScheme="green" onClick={handleSave} size="md" width="100%">
           Save Configuration

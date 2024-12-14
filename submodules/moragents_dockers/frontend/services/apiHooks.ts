@@ -149,22 +149,15 @@ export const writeMessage = async (
   history.push(newMessage);
   let resp;
   try {
-    resp = await backendClient.post(
-      "/chat",
-      {
-        prompt: {
-          role: "user",
-          content: message,
-        },
-        chain_id: String(chainId),
-        wallet_address: address,
+    resp = await backendClient.post("/chat", {
+      prompt: {
+        role: "user",
+        content: message,
       },
-      {
-        params: {
-          conversation_id: conversationId,
-        },
-      }
-    );
+      chain_id: String(chainId),
+      wallet_address: address,
+      conversation_id: conversationId,
+    });
   } catch (e) {
     console.error(e);
   }
