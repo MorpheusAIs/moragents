@@ -9,16 +9,16 @@ import {
   CryptoDataMessageContent,
   BaseMessageContent,
 } from "@/services/types";
+import { getHumanReadableAgentName } from "@/services/utils";
 import { Avatar } from "@/components/Avatar";
-import { availableAgents } from "@/config";
 import { SwapMessage } from "@/components/SwapMessage";
 import { ClaimMessage } from "@/components/ClaimMessage/ClaimMessage";
 import { Tweet } from "@/components/Tweet";
+
 import styles from "./index.module.css";
 
 type MessageItemProps = {
   message: ChatMessage;
-  selectedAgent: string;
   onCancelSwap: (fromAction: number) => void;
   onSwapSubmit: (swapTx: any) => void;
   onClaimSubmit: (claimTx: any) => void;
@@ -28,21 +28,19 @@ type MessageItemProps = {
 
 export const MessageItem: FC<MessageItemProps> = ({
   message,
-  selectedAgent,
   onCancelSwap,
   onSwapSubmit,
   onClaimSubmit,
   isLastSwapMessage,
   isLastClaimMessage,
 }) => {
-  const agentName = availableAgents[selectedAgent]?.name || "Undefined Agent";
   const isUser = message.role === "user";
   const { content } = message;
 
   const renderContent = () => {
     if (typeof content === "string") {
       if (message.agentName === "tweet sizzler") {
-        return <Tweet initialContent={content} selectedAgent={selectedAgent} />;
+        return <Tweet initialContent={content} />;
       }
       return (
         <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
@@ -81,7 +79,6 @@ export const MessageItem: FC<MessageItemProps> = ({
         <SwapMessage
           isActive={isLastSwapMessage}
           onCancelSwap={onCancelSwap}
-          selectedAgent={selectedAgent}
           fromMessage={content as SwapMessagePayload}
           onSubmitSwap={onSwapSubmit}
         />
@@ -92,7 +89,6 @@ export const MessageItem: FC<MessageItemProps> = ({
       return (
         <ClaimMessage
           isActive={isLastClaimMessage}
-          selectedAgent={selectedAgent}
           fromMessage={content as ClaimMessagePayload}
           onSubmitClaim={onClaimSubmit}
         />
@@ -111,10 +107,15 @@ export const MessageItem: FC<MessageItemProps> = ({
       className={styles.messageGrid}
     >
       <GridItem area="avatar">
-        <Avatar isAgent={!isUser} agentName={agentName} />
+        <Avatar
+          isAgent={!isUser}
+          agentName={getHumanReadableAgentName(message.agentName)}
+        />
       </GridItem>
       <GridItem area="name">
-        <Text className={styles.nameText}>{isUser ? "Me" : agentName}</Text>
+        <Text className={styles.nameText}>
+          {isUser ? "Me" : getHumanReadableAgentName(message.agentName)}
+        </Text>
       </GridItem>
       <GridItem area="message">{renderContent()}</GridItem>
     </Grid>

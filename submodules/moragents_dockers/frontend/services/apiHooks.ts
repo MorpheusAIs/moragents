@@ -98,9 +98,14 @@ export const sendSwapStatus = async (
 };
 
 export const getMessagesHistory = async (
-  backendClient: Axios
+  backendClient: Axios,
+  conversationId: string = "default"
 ): Promise<ChatMessage[]> => {
-  const responseBody = await backendClient.get("/chat/messages");
+  const responseBody = await backendClient.get("/chat/messages", {
+    params: {
+      conversation_id: conversationId,
+    },
+  });
 
   return responseBody.data.messages.map((message: any) => {
     return {
@@ -112,10 +117,15 @@ export const getMessagesHistory = async (
 };
 
 export const clearMessagesHistory = async (
-  backendClient: Axios
+  backendClient: Axios,
+  conversationId: string = "default"
 ): Promise<void> => {
   try {
-    await backendClient.get("/chat/clear");
+    await backendClient.get("/chat/clear", {
+      params: {
+        conversation_id: conversationId,
+      },
+    });
   } catch (error) {
     console.error("Failed to clear message history:", error);
     throw error;
@@ -127,7 +137,8 @@ export const writeMessage = async (
   message: string,
   backendClient: Axios,
   chainId: number,
-  address: string
+  address: string,
+  conversationId: string = "default"
 ) => {
   const newMessage: ChatMessage = {
     role: "user",
@@ -145,12 +156,27 @@ export const writeMessage = async (
       },
       chain_id: String(chainId),
       wallet_address: address,
+      conversation_id: conversationId,
     });
   } catch (e) {
     console.error(e);
   }
 
-  return await getMessagesHistory(backendClient);
+  return await getMessagesHistory(backendClient, conversationId);
+};
+
+export const createNewConversation = async (
+  backendClient: Axios
+): Promise<string> => {
+  const response = await backendClient.post("/chat/conversations");
+  return response.data.conversation_id;
+};
+
+export const deleteConversation = async (
+  backendClient: Axios,
+  conversationId: string
+): Promise<void> => {
+  await backendClient.delete(`/chat/conversations/${conversationId}`);
 };
 
 export const postTweet = async (

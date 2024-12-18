@@ -6,14 +6,12 @@ import { parseEther } from "viem";
 
 type ClaimFormProps = {
   isActive: boolean;
-  selectedAgent: string;
   fromMessage: ClaimMessagePayload;
   onSubmitClaim: (claimTx: any) => void;
 };
 
 export const ClaimForm: FC<ClaimFormProps> = ({
   isActive,
-  selectedAgent,
   fromMessage,
   onSubmitClaim,
 }) => {
