@@ -6,7 +6,7 @@ To get started, you'll need to create your Coinbase developer platform API key a
 1. Spin up the MORagents application
 2. Click **Settings** at the top
 3. Click **Coinbase API**
-4. Paste your API key and API secret
+4. Paste your API key and API secret. Use the full API key name and Private key values you saved when creating your Coinbase API Key. This is also in the "name" value inside your downloaded cdp_api_key.json file starting with "organizations" and the full privateKey value. Don't just copy the Key ID.
 5. Click **Save Coinbase Credentials** to lock these values in
 
 ## Creating a Coinbase Wallet
