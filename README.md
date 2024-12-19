@@ -5,6 +5,8 @@
 Python for AI Agents, JS for UI. Runs in your favorite browser. Made possible by Docker.
 Fully Extensible! Add your own agents and have them automatically invoked based on user intent.
 
+**Note:** This repository is meant to act as a sandbox for Smart Agent developers to explore existing agents and to build their own. It is not designed to be a production-ready application or consumer-based product. Please set your expectations accordingly. For additional information about a specific agent, browse to the submodules/moragents_dockers/agents/src/agents/ directory in the repo and view the README file for the agent you are interested in.
+
 ![UI 1](images/MORagents-UI.png)
 
 ![UI 2](images/gasless-usdc-base-agent.png)
