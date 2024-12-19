@@ -39,6 +39,7 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
    - [INSTRUCTIONS](submodules/moragents_dockers/agents/src/agents/dca_agent/README.md)
 #### Write Sizzling Tweets 🌶No Content Moderation 😅
   - "Write a based tweet about Crypto and AI"
+  - [INSTRUCTIONS](submodules/moragents_dockers/agents/src/agents/tweet_sizzler/README.md)
 #### Real-time Info 🕸️
   - "Real-time info about Company XYZ"
 #### Trending Crypto News
