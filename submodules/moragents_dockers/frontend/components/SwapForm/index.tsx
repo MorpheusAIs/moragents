@@ -41,7 +41,6 @@ export type SwapFormProps = {
   onSubmitApprove(approveTx: ApproveTxPayloadType): void;
   onCancelSwap: (fromAction: number) => void;
   fromMessage: SwapMessageLike;
-  selectedAgent: string;
   isActive: boolean;
 };
 
@@ -60,7 +59,6 @@ export const SwapForm: FC<SwapFormProps> = ({
   onSubmitApprove,
   onCancelSwap,
   fromMessage,
-  selectedAgent,
 }) => {
   const { address } = useAccount();
   const chainId = useChainId();

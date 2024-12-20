@@ -1,0 +1,118 @@
+.sidebar {
+  background: #0d0d0d;
+  height: calc(100vh);
+  position: relative;
+  transition: all 0.2s ease;
+  border-right: 1px solid #262626;
+}
+
+.sidebarExpanded {
+  width: 260px;
+}
+
+.sidebarCollapsed {
+  width: 0;
+}
+
+.toggleButton {
+  position: fixed;
+  left: 10px;
+  top: 65px; /* Position below header */
+  z-index: 100;
+  background-color: transparent;
+  color: #808080;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.toggleButton:hover {
+  background-color: #262626;
+  color: white;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 48px 8px 8px 8px;
+  overflow: hidden;
+}
+
+.newChatButton {
+  width: 100%;
+  background-color: transparent;
+  color: #808080;
+  border: 1px solid #262626;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.newChatButton:hover {
+  background-color: #262626;
+  color: white;
+}
+
+.conversationItem {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #808080;
+  min-height: 40px;
+}
+
+.conversationItem:hover {
+  background-color: #262626;
+  color: white;
+}
+
+.conversationActive {
+  background-color: #262626;
+  color: white;
+}
+
+.conversationName {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deleteButton {
+  opacity: 0;
+  background-color: transparent;
+  color: #808080;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.conversationItem:hover .deleteButton {
+  opacity: 1;
+}
+
+.deleteButton:hover {
+  background-color: #404040;
+  color: white;
+}

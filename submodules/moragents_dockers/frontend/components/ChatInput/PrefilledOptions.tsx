@@ -11,10 +11,10 @@ import {
   LineChart,
   Flame,
   Globe2,
-  Zap,
   ArrowLeftRight,
   Gift,
 } from "lucide-react";
+import { AGENT_TYPES } from "@/services/constants";
 import styles from "./PrefilledOptions.module.css";
 
 type PrefilledOption = {
@@ -26,13 +26,8 @@ type PrefilledOption = {
   }>;
 };
 
-type PrefilledOptionsProps = {
-  onSelect: (message: string) => void;
-  isWidgetOpen?: boolean;
-};
-
 const prefilledOptionsMap: Record<string, PrefilledOption> = {
-  default: {
+  [AGENT_TYPES.DEFAULT]: {
     title: "Default Agent 🔄",
     icon: <Globe2 size={20} />,
     examples: [
@@ -40,7 +35,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "What Morpheus agents are currently active?", agent: "default" },
     ],
   },
-  imagen: {
+  [AGENT_TYPES.IMAGEN]: {
     title: "Generate Images 🎨",
     icon: <Sparkles size={20} />,
     examples: [
@@ -51,7 +46,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       },
     ],
   },
-  rag: {
+  [AGENT_TYPES.RAG]: {
     title: "Document Analysis 📄",
     icon: <FileText size={20} />,
     examples: [
@@ -62,7 +57,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       },
     ],
   },
-  "crypto data": {
+  [AGENT_TYPES.CRYPTO_DATA]: {
     title: "Crypto Market Data 📊",
     icon: <LineChart size={20} />,
     examples: [
@@ -71,7 +66,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "What's the FDV of USDC?", agent: "crypto" },
     ],
   },
-  "token swap": {
+  [AGENT_TYPES.TOKEN_SWAP]: {
     title: "Token Swaps 💱",
     icon: <ArrowLeftRight size={20} />,
     examples: [
@@ -79,7 +74,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "Exchange my BTC for ETH", agent: "swap" },
     ],
   },
-  "tweet sizzler": {
+  [AGENT_TYPES.TWEET_SIZZLER]: {
     title: "Tweet Generator 🔥",
     icon: <Flame size={20} />,
     examples: [
@@ -90,7 +85,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       },
     ],
   },
-  dca: {
+  [AGENT_TYPES.DCA]: {
     title: "DCA Strategy Planning 💰",
     icon: <DollarSign size={20} />,
     examples: [
@@ -98,7 +93,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "Help me create a monthly BTC buying strategy", agent: "dca" },
     ],
   },
-  base: {
+  [AGENT_TYPES.BASE]: {
     title: "Base Transactions 🔄",
     icon: <Send size={20} />,
     examples: [
@@ -106,7 +101,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "Swap USDC for ETH on Base", agent: "base" },
     ],
   },
-  "mor claims": {
+  [AGENT_TYPES.MOR_CLAIMS]: {
     title: "MOR Claims 🎁",
     icon: <Gift size={20} />,
     examples: [
@@ -114,7 +109,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "Help me claim my pending MOR tokens", agent: "claims" },
     ],
   },
-  "mor rewards": {
+  [AGENT_TYPES.MOR_REWARDS]: {
     title: "MOR Rewards Tracking 🏆",
     icon: <Trophy size={20} />,
     examples: [
@@ -122,7 +117,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "Calculate my pending MOR rewards", agent: "rewards" },
     ],
   },
-  "realtime search": {
+  [AGENT_TYPES.REALTIME_SEARCH]: {
     title: "Real-Time Search 🔍",
     icon: <Search size={20} />,
     examples: [
@@ -133,7 +128,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
       { text: "What did Donald Trump say about Bitcoin?", agent: "realtime" },
     ],
   },
-  "crypto news": {
+  [AGENT_TYPES.CRYPTO_NEWS]: {
     title: "Crypto News Analysis 📰",
     icon: <Newspaper size={20} />,
     examples: [
@@ -143,13 +138,22 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
   },
 };
 
-const PrefilledOptions: React.FC<PrefilledOptionsProps> = ({
+const PrefilledOptions = ({
   onSelect,
   isWidgetOpen = false,
+  isSidebarOpen = true,
+}: {
+  onSelect: (message: string) => void;
+  isWidgetOpen?: boolean;
+  isSidebarOpen?: boolean;
 }) => {
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
   const containerStyle = {
-    paddingLeft: isWidgetOpen ? "5%" : "20%",
+    paddingLeft: isWidgetOpen
+      ? "5%"
+      : isSidebarOpen
+      ? "calc(260px + 20%)" // Sidebar width first, then percentage
+      : "20%",
     paddingRight: isWidgetOpen ? "35%" : "20%",
   };
 

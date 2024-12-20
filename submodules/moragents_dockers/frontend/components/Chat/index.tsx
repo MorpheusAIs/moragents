@@ -2,19 +2,19 @@ import React, { FC, useEffect, useState } from "react";
 import { Flex, Box } from "@chakra-ui/react";
 import { ChatMessage } from "@/services/types";
 import { useTransactionConfirmations } from "wagmi";
-import { MessageList } from "../MessageList";
-import { ChatInput } from "../ChatInput";
-import { LoadingIndicator } from "../LoadingIndicator";
-import { Widgets, shouldOpenWidget } from "../Widgets";
-import { ChatProps } from "./types";
-import { useChat } from "./hooks";
+import { MessageList } from "@/components/MessageList";
+import { ChatInput } from "@/components/ChatInput";
+import { LoadingIndicator } from "@/components/LoadingIndicator";
+import { Widgets, shouldOpenWidget } from "@/components/Widgets";
+import { ChatProps } from "@/components/Chat/types";
+import { useChat } from "@/components/Chat/hooks";
 
 export const Chat: FC<ChatProps> = ({
   onSubmitMessage,
   onCancelSwap,
   messages,
-  selectedAgent,
   onBackendError,
+  isSidebarOpen = false,
 }) => {
   const [messagesData, setMessagesData] = useState<ChatMessage[]>(messages);
   const [activeWidget, setActiveWidget] = useState<ChatMessage | null>(null);
@@ -75,12 +75,11 @@ export const Chat: FC<ChatProps> = ({
       >
         <MessageList
           messages={messagesData}
-          selectedAgent={selectedAgent}
           onCancelSwap={onCancelSwap}
           onSwapSubmit={handleSwapSubmit}
           onClaimSubmit={handleClaimSubmit}
         />
-        {showSpinner && <LoadingIndicator selectedAgent={selectedAgent} />}
+        {showSpinner && <LoadingIndicator />}
         <ChatInput
           onSubmit={handleSubmit}
           hasMessages={messagesData.length > 1}
@@ -88,6 +87,7 @@ export const Chat: FC<ChatProps> = ({
             showSpinner ||
             messagesData[messagesData.length - 1]?.role === "swap"
           }
+          isSidebarOpen={isSidebarOpen}
         />
       </Flex>
       <Box

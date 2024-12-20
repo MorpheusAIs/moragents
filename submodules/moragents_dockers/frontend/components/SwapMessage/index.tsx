@@ -6,7 +6,6 @@ import { Box, Text } from "@chakra-ui/react";
 type SwapMessageProps = {
   isActive: boolean;
   onCancelSwap: (fromAction: number) => void;
-  selectedAgent: string;
   fromMessage: SwapMessagePayload | null;
   onSubmitSwap: (swapTx: any) => void;
 };
@@ -14,7 +13,6 @@ type SwapMessageProps = {
 export const SwapMessage: FC<SwapMessageProps> = ({
   isActive,
   onCancelSwap,
-  selectedAgent,
   fromMessage,
   onSubmitSwap,
 }) => {
@@ -30,7 +28,6 @@ export const SwapMessage: FC<SwapMessageProps> = ({
     <SwapForm
       isActive={isActive}
       onCancelSwap={onCancelSwap}
-      selectedAgent={selectedAgent}
       fromMessage={fromMessage}
       onSubmitApprove={() => {}} // Implement approve logic if needed
       onSubmitSwap={onSubmitSwap}
