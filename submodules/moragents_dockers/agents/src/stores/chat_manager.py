@@ -19,9 +19,7 @@ class ChatManager:
 
     def _get_or_create_conversation(self, conversation_id: str) -> Conversation:
         if conversation_id not in self.conversations:
-            self.conversations[conversation_id] = Conversation(
-                messages=[self.default_message], has_uploaded_file=False
-            )
+            self.conversations[conversation_id] = Conversation(messages=[self.default_message], has_uploaded_file=False)
         return self.conversations[conversation_id]
 
     def add_message(self, message: Dict[str, str], conversation_id: str):
@@ -56,10 +54,8 @@ class ChatManager:
         response_with_agent = response.copy()
         response_with_agent["agentName"] = agent_name
         chat_message = ChatMessage(**response_with_agent)
-        self.add_message(chat_message.dict(), conversation_id)
-        logger.info(
-            f"Added response from agent {agent_name} to conversation {conversation_id}: {response_with_agent}"
-        )
+        self.add_message(chat_message.message, conversation_id)
+        logger.info(f"Added response from agent {agent_name} to conversation {conversation_id}: {response_with_agent}")
 
     def get_chat_history(self, conversation_id: str) -> str:
         conversation = self._get_or_create_conversation(conversation_id)

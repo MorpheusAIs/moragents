@@ -1,13 +1,14 @@
 .sidebar {
-  background: #0d0d0d;
+  background: #141414;
   height: calc(100vh);
   position: relative;
-  transition: all 0.2s ease;
-  border-right: 1px solid #262626;
+  transition: all 0.3s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
 }
 
 .sidebarExpanded {
-  width: 260px;
+  width: 300px;
 }
 
 .sidebarCollapsed {
@@ -16,79 +17,84 @@
 
 .toggleButton {
   position: fixed;
-  left: 10px;
-  top: 65px; /* Position below header */
+  left: 16px;
+  top: 72px;
   z-index: 100;
-  background-color: transparent;
-  color: #808080;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
   border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggleButton:hover {
-  background-color: #262626;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
 }
 
 .container {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 48px 8px 8px 8px;
+  gap: 12px;
+  padding: 64px 16px 16px 16px;
   overflow: hidden;
 }
 
 .newChatButton {
   width: 100%;
-  background-color: transparent;
-  color: #808080;
-  border: 1px solid #262626;
-  padding: 8px 12px;
-  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  font-weight: 500;
 }
 
 .newChatButton:hover {
-  background-color: #262626;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
 }
 
 .conversationItem {
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 12px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #808080;
-  min-height: 40px;
+  color: rgba(255, 255, 255, 0.9);
+  min-height: 48px;
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
 .conversationItem:hover {
-  background-color: #262626;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.05);
+  transform: translateX(2px);
 }
 
 .conversationActive {
-  background-color: #262626;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
 }
 
 .conversationName {
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -97,12 +103,12 @@
 .deleteButton {
   opacity: 0;
   background-color: transparent;
-  color: #808080;
+  color: rgba(255, 255, 255, 0.6);
   border: none;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 6px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -113,6 +119,7 @@
 }
 
 .deleteButton:hover {
-  background-color: #404040;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
 }

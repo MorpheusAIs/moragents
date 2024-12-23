@@ -8,9 +8,7 @@ from src.agents.base_agent.config import Config
 from src.stores import wallet_manager_instance
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -78,9 +76,7 @@ class BaseAgent:
         logger.info(f"Wallet Address: {wallet_address}")
 
         # System prompt that includes descriptions of available tools
-        tool_descriptions = "\n".join(
-            f"{tool['name']}: {tool['description']}" for tool in self.config.tools
-        )
+        tool_descriptions = "\n".join(f"{tool['name']}: {tool['description']}" for tool in self.config.tools)
 
         messages = [
             SystemMessage(
@@ -131,9 +127,7 @@ class BaseAgent:
                         return {"message": "Error: No active wallet found", "actionType": None}
 
                     try:
-                        tool_result = tools.get_balance(
-                            wallet, asset_id=args.get("asset_id").lower()
-                        )
+                        tool_result = tools.get_balance(wallet, asset_id=args.get("asset_id").lower())
                         balance = tool_result["balance"]
                         asset = tool_result["asset"]
                         address = tool_result["address"]
