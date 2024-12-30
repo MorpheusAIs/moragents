@@ -47,4 +47,6 @@ export enum AGENT_TYPES {
   MOR_REWARDS = "mor rewards",
   REALTIME_SEARCH = "realtime search",
   CRYPTO_NEWS = "crypto news",
+  DEXSCREENER = "dexscreener",
+  RUGCHECK = "rugcheck",
 }

@@ -14,6 +14,7 @@ export const Chat: FC<ChatProps> = ({
   onCancelSwap,
   messages,
   onBackendError,
+  // New prop from Home that indicates whether the sidebar is open
   isSidebarOpen = false,
 }) => {
   const [messagesData, setMessagesData] = useState<ChatMessage[]>(messages);
@@ -39,6 +40,7 @@ export const Chat: FC<ChatProps> = ({
 
   useEffect(() => {
     if (messages.length > 0) {
+      console.log("messages", messages);
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === "assistant" && shouldOpenWidget(lastMessage)) {
         setActiveWidget(lastMessage);
@@ -62,6 +64,11 @@ export const Chat: FC<ChatProps> = ({
     setActiveWidget(null);
   };
 
+  // Decide how far from the left we want to be when the sidebar is open vs closed.
+  // Example: if the sidebar is fully open, let's shift it 280px to the right.
+  // If it's closed, maybe shift only 80px from the edge. Tweak as needed.
+  const chatMarginLeft = isSidebarOpen ? "280px" : "80px";
+
   return (
     <Box position="relative" height="100%" width="100%">
       <Flex
@@ -70,8 +77,11 @@ export const Chat: FC<ChatProps> = ({
         width="100%"
         transition="all 0.3s ease-in-out"
         mt={4}
-        paddingLeft={isWidgetOpen ? "5%" : "20%"}
-        paddingRight={isWidgetOpen ? "35%" : "20%"}
+        // Existing widget-based padding logic
+        paddingLeft={isWidgetOpen ? "5%" : "10%"}
+        paddingRight={isWidgetOpen ? "35%" : "30%"}
+        // NEW MARGIN to keep space from the sidebar
+        ml={chatMarginLeft}
       >
         <MessageList
           messages={messagesData}
@@ -90,6 +100,8 @@ export const Chat: FC<ChatProps> = ({
           isSidebarOpen={isSidebarOpen}
         />
       </Flex>
+
+      {/* The widgets panel on the right side */}
       <Box
         position="fixed"
         right={0}

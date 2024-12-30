@@ -94,6 +94,12 @@ export const sendSwapStatus = async (
   return {
     role: responseBody.data.role,
     content: responseBody.data.content,
+    agentName: responseBody.data.agentName,
+    error_message: responseBody.data.error_message,
+    metadata: responseBody.data.metadata,
+    requires_action: responseBody.data.requires_action,
+    action_type: responseBody.data.action_type,
+    timestamp: responseBody.data.timestamp,
   } as ChatMessage;
 };
 
@@ -112,6 +118,11 @@ export const getMessagesHistory = async (
       role: message.role,
       content: message.content,
       agentName: message.agentName,
+      error_message: message.error_message,
+      metadata: message.metadata,
+      requires_action: message.requires_action,
+      action_type: message.action_type,
+      timestamp: message.timestamp,
     } as ChatMessage;
   });
 };
@@ -254,6 +265,12 @@ export const sendClaimStatus = async (
   return {
     role: responseBody.data.role,
     content: responseBody.data.content,
+    agentName: responseBody.data.agentName,
+    error_message: responseBody.data.error_message,
+    metadata: responseBody.data.metadata,
+    requires_action: responseBody.data.requires_action,
+    action_type: responseBody.data.action_type,
+    timestamp: responseBody.data.timestamp,
   } as ChatMessage;
 };
 

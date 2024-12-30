@@ -9,7 +9,36 @@ logger = logging.getLogger(__name__)
 
 
 class WalletManager:
-    def __init__(self):
+    """
+    Manages Coinbase CDP wallets and their associated data.
+
+    This class provides functionality to create, restore, save, and manage CDP wallets.
+    It maintains an in-memory store of wallets and their exported data, handles wallet
+    activation states, and provides methods for wallet operations.
+
+    Key Features:
+    - Create and restore CDP wallets
+    - Save/load wallet data to/from files
+    - Manage active wallet selection
+    - Export wallet data
+    - List available wallets
+    - Configure CDP client with stored credentials
+
+    Attributes:
+        wallets (Dict[str, Wallet]): Dictionary storing wallet objects by wallet ID
+        wallet_data (Dict[str, dict]): Dictionary storing exported wallet data by wallet ID
+        cdp_client (Optional[Cdp]): Configured CDP client instance
+        active_wallet_id (Optional[str]): ID of currently active wallet
+
+    Example Usage:
+        manager = WalletManager()
+        wallet = manager.create_wallet("my_wallet", network_id="BASE-SEPOLIA")
+        manager.save_wallet("my_wallet", "wallets/my_wallet.json")
+        manager.set_active_wallet("my_wallet")
+        address = manager.get_wallet_address("my_wallet")
+    """
+
+    def __init__(self) -> None:
         """Initialize the WalletManager"""
         self.wallets: Dict[str, Wallet] = {}
         self.wallet_data: Dict[str, dict] = {}
@@ -36,9 +65,7 @@ class WalletManager:
             logger.error(f"Failed to configure CDP client: {str(e)}")
             return False
 
-    def create_wallet(
-        self, wallet_id: str, network_id: Optional[str] = None, set_active: bool = True
-    ) -> Wallet:
+    def create_wallet(self, wallet_id: str, network_id: Optional[str] = None, set_active: bool = True) -> Wallet:
         """Create a new CDP wallet and store it"""
         try:
             if not wallet_id:
@@ -49,7 +76,11 @@ class WalletManager:
 
             logger.info(f"Creating new wallet with network ID: {network_id}")
             logger.info(f"Current wallets: {self.wallets}")
-            wallet = Wallet.create(network_id=network_id)
+
+            # Use testnet network ID if none is provided
+            network_id_to_use = network_id if network_id is not None else "BASE-SEPOLIA"
+            wallet = Wallet.create(network_id=network_id_to_use)
+
             if not wallet:
                 raise ValueError("Failed to create wallet - wallet is None")
 
@@ -72,9 +103,7 @@ class WalletManager:
             logger.error(f"Failed to create wallet: {str(e)}")
             raise
 
-    def restore_wallet(
-        self, wallet_id: str, wallet_data: dict, set_active: bool = True
-    ) -> Optional[Wallet]:
+    def restore_wallet(self, wallet_id: str, wallet_data: dict, set_active: bool = True) -> Optional[Wallet]:
         """Restore a wallet from exported data"""
         try:
             if not wallet_id:
@@ -114,7 +143,7 @@ class WalletManager:
     def get_wallet_address(self, wallet_id: str) -> Optional[str]:
         """Get the default address for a wallet"""
         wallet = self.get_wallet(wallet_id)
-        if not wallet:
+        if not wallet or not wallet.default_address:
             return None
         return wallet.default_address.address_id
 
@@ -163,9 +192,7 @@ class WalletManager:
             logger.error(f"Failed to save wallet: {str(e)}")
             return False
 
-    def load_wallet(
-        self, wallet_id: str, filepath: str, set_active: bool = True
-    ) -> Optional[Wallet]:
+    def load_wallet(self, wallet_id: str, filepath: str, set_active: bool = True) -> Optional[Wallet]:
         """Load wallet from saved data"""
         try:
             with open(filepath, "r") as f:
@@ -209,7 +236,7 @@ class WalletManager:
                 "wallet_id": wallet_id,
                 "network_id": wallet.network_id,
                 "is_active": wallet_id == self.active_wallet_id,
-                "address": wallet.default_address.address_id,
+                "address": wallet.default_address.address_id if wallet.default_address else None,
             }
             for wallet_id, wallet in self.wallets.items()
         ]

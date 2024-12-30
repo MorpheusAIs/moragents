@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from typing import Tuple, Dict, Any
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -10,8 +11,14 @@ from langchain_ollama import ChatOllama
 
 from src.config import Config
 from src.delegator import Delegator
-from src.models.messages import ChatRequest
-from src.stores import agent_manager_instance, chat_manager_instance, workflow_manager_instance
+from src.models.core import AgentResponse, ChatRequest
+from src.stores import (
+    agent_manager_instance,
+    chat_manager_instance,
+    workflow_manager_instance,
+)
+
+# Configure routes
 from src.routes import (
     agent_manager_routes,
     chat_manager_routes,
@@ -20,8 +27,14 @@ from src.routes import (
     workflow_manager_routes,
 )
 
-# Constants
-UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
+# Configure agent routes
+from src.agents.crypto_data.routes import router as crypto_router
+from src.agents.rag.routes import router as rag_router
+from src.agents.mor_claims.routes import router as claim_router
+from src.agents.tweet_sizzler.routes import router as tweet_router
+from src.agents.token_swap.routes import router as swap_router
+from src.agents.dca_agent.routes import router as dca_router
+from src.agents.base_agent.routes import router as base_router
 
 # Configure logging
 logging.basicConfig(
@@ -32,6 +45,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize FastAPI app
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -41,54 +55,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.on_event("startup")
-async def startup_event():
-    await workflow_manager_instance.initialize()
-
-
-@app.on_event("startup")
-async def startup_event():
-    await workflow_manager_instance.initialize()
-
-
+# Setup constants and directories
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# Initialize LLM and embeddings
 llm = ChatOllama(
     model=Config.OLLAMA_MODEL,
     base_url=Config.OLLAMA_URL,
 )
 embeddings = OllamaEmbeddings(model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL)
 
+# Initialize delegator
 delegator = Delegator(llm, embeddings)
 
-# Include base store routes
-app.include_router(agent_manager_routes.router)
-app.include_router(key_manager_routes.router)
-app.include_router(chat_manager_routes.router)
-app.include_router(wallet_manager_routes.router)
-app.include_router(workflow_manager_routes.router)
+# Include all routers
+ROUTERS = [
+    agent_manager_routes.router,
+    key_manager_routes.router,
+    chat_manager_routes.router,
+    wallet_manager_routes.router,
+    workflow_manager_routes.router,
+    crypto_router,
+    rag_router,
+    claim_router,
+    tweet_router,
+    swap_router,
+    dca_router,
+    base_router,
+]
 
-# Agent route imports
-from src.agents.crypto_data.routes import router as crypto_router
-from src.agents.rag.routes import router as rag_router
-from src.agents.mor_claims.routes import router as claim_router
-from src.agents.tweet_sizzler.routes import router as tweet_router
-from src.agents.token_swap.routes import router as swap_router
-from src.agents.dca_agent.routes import router as dca_router
-from src.agents.base_agent.routes import router as base_router
-
-# Include agent routes
-app.include_router(crypto_router)
-app.include_router(rag_router)
-app.include_router(claim_router)
-app.include_router(tweet_router)
-app.include_router(swap_router)
-app.include_router(dca_router)
-app.include_router(base_router)
+for router in ROUTERS:
+    app.include_router(router)
 
 
-async def get_active_agent_for_chat(prompt: dict) -> str:
+async def get_active_agent_for_chat(prompt: Dict[str, Any]) -> str:
     """Get the active agent for handling the chat request."""
     active_agent = agent_manager_instance.get_active_agent()
     if active_agent:
@@ -107,37 +108,29 @@ async def get_active_agent_for_chat(prompt: dict) -> str:
     return result["agent"]
 
 
-def validate_agent_response(response: dict, current_agent: str) -> dict:
-    """Validate and process the agent's response."""
-    if not current_agent:
-        logger.error("All agents failed to provide a valid response")
-        raise HTTPException(
-            status_code=500,
-            detail="All available agents failed to process the request",
-        )
-
-    return response
+@app.on_event("startup")
+async def startup_event():
+    """Initialize workflow manager on startup"""
+    await workflow_manager_instance.initialize()
 
 
 @app.post("/chat")
 async def chat(chat_request: ChatRequest):
-    """Send a chat message and get a response"""
+    """Handle chat requests and delegate to appropriate agent"""
     logger.info(f"Received chat request for conversation {chat_request.conversation_id}")
 
-    # Parse command if present
-    agent_name, message = agent_manager_instance.parse_command(
-        chat_request.prompt.dict()["content"]
-    )
-
-    if agent_name:
-        # If command was used, set that agent as active
-        agent_manager_instance.set_active_agent(agent_name)
-        # Update message content without command
-        chat_request.prompt.dict()["content"] = message
-
-    chat_manager_instance.add_message(chat_request.prompt.dict(), chat_request.conversation_id)
-
     try:
+        # Parse command if present
+        agent_name, message = agent_manager_instance.parse_command(chat_request.prompt.content)
+
+        if agent_name:
+            agent_manager_instance.set_active_agent(agent_name)
+            chat_request.prompt.content = message
+
+        # Add user message to chat history
+        chat_manager_instance.add_message(chat_request.prompt.dict(), chat_request.conversation_id)
+
+        # Get active agent
         if not agent_name:
             delegator.reset_attempted_agents()
             active_agent = await get_active_agent_for_chat(chat_request.prompt.dict())
@@ -145,16 +138,25 @@ async def chat(chat_request: ChatRequest):
             active_agent = agent_name
 
         logger.info(f"Delegating chat to active agent: {active_agent}")
-        current_agent, response = delegator.delegate_chat(active_agent, chat_request)
+        current_agent, agent_response = await delegator.delegate_chat(active_agent, chat_request)
 
-        validated_response = validate_agent_response(response, current_agent)
-        chat_manager_instance.add_response(
-            validated_response, current_agent, chat_request.conversation_id
-        )
+        if not isinstance(agent_response, AgentResponse):
+            logger.error(f"Agent {current_agent} returned invalid response type {type(agent_response)}")
+            raise HTTPException(status_code=500, detail="Agent returned invalid response type")
 
-        logger.info(f"Sending response: {validated_response}")
-        return validated_response
+        # Handle error responses
+        if agent_response.error_message:
+            status_code = 400 if "required parameters" in agent_response.error_message else 500
+            raise HTTPException(status_code=status_code, detail=agent_response.error_message)
 
+        # Convert to API response and add to chat history
+        chat_manager_instance.add_response(agent_response.dict(), current_agent, chat_request.conversation_id)
+
+        logger.info(f"Sending response: {agent_response.dict()}")
+        return agent_response.dict()
+
+    except HTTPException:
+        raise
     except TimeoutError:
         logger.error("Chat request timed out")
         raise HTTPException(status_code=504, detail="Request timed out")

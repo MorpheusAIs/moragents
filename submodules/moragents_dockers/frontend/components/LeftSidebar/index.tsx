@@ -1,11 +1,24 @@
 import React, { FC, useEffect, useState } from "react";
-import { useToast } from "@chakra-ui/react";
-import { IconMenu2, IconPencilPlus, IconTrash } from "@tabler/icons-react";
+import { useToast, Select, VStack, Box, Text } from "@chakra-ui/react";
+import {
+  IconTrash,
+  IconPencilPlus,
+  IconChevronLeft,
+  IconChevronRight,
+} from "@tabler/icons-react";
 import { getHttpClient } from "@/services/constants";
 import { createNewConversation } from "@/services/apiHooks";
+import { SettingsButton } from "@/components/Settings";
+import { Workflows } from "@/components/HeaderBar/Workflows";
 import styles from "./index.module.css";
 
 export type LeftSidebarProps = {
+  /** Whether the sidebar is currently open (expanded) or collapsed */
+  isSidebarOpen: boolean;
+  /** Callback to toggle the sidebar state */
+  onToggleSidebar: (open: boolean) => void;
+
+  /** Your existing props for conversation management */
   currentConversationId: string;
   onConversationSelect: (conversationId: string) => void;
   onDeleteConversation: (conversationId: string) => void;
@@ -13,6 +26,8 @@ export type LeftSidebarProps = {
 };
 
 export const LeftSidebar: FC<LeftSidebarProps> = ({
+  isSidebarOpen,
+  onToggleSidebar,
   currentConversationId,
   onConversationSelect,
   onDeleteConversation,
@@ -20,13 +35,26 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
 }) => {
   const [conversations, setConversations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("llama3.2:3b");
   const toast = useToast();
 
+  const modelOptions = [{ value: "llama3.2:3b", label: "Llama 3.2 (3B)" }];
+
+  // Decide which icon to show depending on whether the sidebar is open
+  const ToggleIcon = isSidebarOpen ? IconChevronLeft : IconChevronRight;
+
+  // Fetch existing conversations from your backend
   const fetchConversations = async () => {
     try {
       const response = await getHttpClient().get("/chat/conversations");
-      setConversations(response.data.conversation_ids);
+      const conversationIds: string[] = response.data.conversation_ids;
+      // Ensure "default" is always at the top if it exists
+      conversationIds.sort((a, b) => {
+        if (a === "default") return -1;
+        if (b === "default") return 1;
+        return a.localeCompare(b);
+      });
+      setConversations(conversationIds);
     } catch (error) {
       console.error("Failed to fetch conversations:", error);
       toast({
@@ -39,6 +67,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
     }
   };
 
+  // Create a new conversation
   const handleCreateNewConversation = async () => {
     setIsLoading(true);
     try {
@@ -67,6 +96,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
     }
   };
 
+  // Delete a conversation
   const handleDeleteConversation = async (conversationId: string) => {
     try {
       await onDeleteConversation(conversationId);
@@ -94,72 +124,134 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
     }
   };
 
+  // On mount, fetch conversations
   useEffect(() => {
     fetchConversations();
   }, []);
 
+  // Simple function to give each conversation a friendly name
   const formatConversationName = (id: string) => {
     if (id === "default") return "Default Chat";
-    const number = id.split("_")[1];
+    const parts = id.split("_");
+    const number = parts.length > 1 ? parts[1] : id;
     return `Chat ${number}`;
   };
 
   return (
-    <>
-      <button
-        className={styles.toggleButton}
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        aria-label="Toggle sidebar"
-      >
-        <IconMenu2 size={20} />
-      </button>
-
-      <div
-        className={`${styles.sidebar} ${
-          isCollapsed ? styles.sidebarCollapsed : styles.sidebarExpanded
-        }`}
-      >
+    <div
+      className={`${styles.sidebarContainer} ${
+        isSidebarOpen ? "" : styles.collapsed
+      }`}
+    >
+      {/* Sidebar Content */}
+      <div className={styles.sidebar}>
         <div className={styles.container}>
-          <button
-            className={styles.newChatButton}
-            onClick={handleCreateNewConversation}
-            disabled={isLoading}
-          >
-            <IconPencilPlus size={16} />
-            <span>New chat</span>
-          </button>
-
-          {conversations.map((conversationId) => (
-            <div
-              key={conversationId}
-              className={`${styles.conversationItem} ${
-                currentConversationId === conversationId
-                  ? styles.conversationActive
-                  : ""
-              }`}
-              onClick={() => {
-                onConversationSelect(conversationId);
-                setCurrentConversationId(conversationId);
-              }}
+          <div className={styles.mainContent}>
+            <button
+              className={styles.newChatButton}
+              onClick={handleCreateNewConversation}
+              disabled={isLoading}
             >
-              <span className={styles.conversationName}>
-                {formatConversationName(conversationId)}
-              </span>
-              {conversationId !== "default" && (
-                <button
-                  className={styles.deleteButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteConversation(conversationId);
-                  }}
+              <IconPencilPlus size={16} />
+              <span>New chat</span>
+            </button>
+
+            {conversations.map((conversationId) => (
+              <div
+                key={conversationId}
+                className={`${styles.conversationItem} ${
+                  currentConversationId === conversationId
+                    ? styles.conversationActive
+                    : ""
+                }`}
+                onClick={() => {
+                  onConversationSelect(conversationId);
+                  setCurrentConversationId(conversationId);
+                }}
+              >
+                <span className={styles.conversationName}>
+                  {formatConversationName(conversationId)}
+                </span>
+                {conversationId !== "default" && (
+                  <button
+                    className={styles.deleteButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteConversation(conversationId);
+                    }}
+                  >
+                    <IconTrash size={16} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <VStack spacing={4} className={styles.sidebarFooter} align="stretch">
+            <Box display="flex" flexDirection="column" gap={2}>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Text fontSize="md" fontWeight="bold" color="white" mr={2}>
+                  Model:
+                </Text>
+                <Select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  size="md"
+                  bg="#1f1f1f"
+                  color="white"
+                  borderColor="rgba(255, 255, 255, 0.2)"
+                  _hover={{ borderColor: "rgba(255, 255, 255, 0.4)" }}
+                  _focus={{ borderColor: "teal.400" }}
+                  width="65%"
                 >
-                  <IconTrash size={16} />
-                </button>
-              )}
-            </div>
-          ))}
+                  {modelOptions.map((option) => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                      style={{ backgroundColor: "#1f1f1f", color: "white" }}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </Box>
+
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Text fontSize="md" fontWeight="bold" color="white" mr={2}>
+                  Cost:
+                </Text>
+                <Text fontSize="sm" color="green.400" fontWeight="500">
+                  Free. Running locally.
+                </Text>
+              </Box>
+
+              <Text fontSize="sm" color="gray.400" fontStyle="italic">
+                More powerful models are coming soon via the Lumerin Node Router
+              </Text>
+            </Box>
+
+            <Workflows />
+            <SettingsButton />
+          </VStack>
         </div>
       </div>
-    </>
+
+      {/* Toggle Button on the right edge of the sidebar */}
+      <button
+        className={styles.toggleButton}
+        onClick={() => onToggleSidebar(!isSidebarOpen)}
+        aria-label="Toggle sidebar"
+      >
+        <ToggleIcon size={20} />
+      </button>
+    </div>
   );
 };

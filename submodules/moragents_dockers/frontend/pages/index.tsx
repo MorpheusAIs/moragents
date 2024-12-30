@@ -7,7 +7,6 @@ import {
   getMessagesHistory,
   sendSwapStatus,
   uploadFile,
-  createNewConversation,
   deleteConversation,
 } from "@/services/apiHooks";
 import { getHttpClient, SWAP_STATUS } from "@/services/constants";
@@ -25,6 +24,9 @@ const Home: NextPage = () => {
   const { address } = useAccount();
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
 
+  // NEW: track sidebar open/closed
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   useEffect(() => {
     getMessagesHistory(getHttpClient(), currentConversationId)
       .then((messages: ChatMessage[]) => {
@@ -36,10 +38,7 @@ const Home: NextPage = () => {
       });
   }, [currentConversationId]);
 
-  const handleSubmitMessage = async (
-    message: string,
-    file: File | null
-  ): Promise<boolean> => {
+  const handleSubmitMessage = async (message: string, file: File | null) => {
     setChatHistory([
       ...chatHistory,
       {
@@ -49,9 +48,8 @@ const Home: NextPage = () => {
     ]);
 
     try {
-      let newHistory;
       if (!file) {
-        newHistory = await writeMessage(
+        const newHistory = await writeMessage(
           chatHistory,
           message,
           getHttpClient(),
@@ -59,14 +57,16 @@ const Home: NextPage = () => {
           address || "",
           currentConversationId
         );
+        setChatHistory([...newHistory]);
       } else {
+        // File upload
         await uploadFile(getHttpClient(), file);
-        newHistory = await getMessagesHistory(
+        const updatedHistory = await getMessagesHistory(
           getHttpClient(),
           currentConversationId
         );
+        setChatHistory([...updatedHistory]);
       }
-      setChatHistory([...newHistory]);
     } catch (e) {
       console.error(`Failed to send message. Error: ${e}`);
       setShowBackendError(true);
@@ -88,9 +88,7 @@ const Home: NextPage = () => {
   };
 
   const handleCancelSwap = async (fromAction: number) => {
-    if (!address) {
-      return;
-    }
+    if (!address) return;
 
     try {
       await sendSwapStatus(
@@ -101,7 +99,6 @@ const Home: NextPage = () => {
         "",
         fromAction
       );
-
       const updatedMessages = await getMessagesHistory(getHttpClient());
       setChatHistory([...updatedMessages]);
     } catch (e) {
@@ -125,20 +122,27 @@ const Home: NextPage = () => {
     >
       <HeaderBar />
       <Flex flex="1" overflow="hidden">
-        <Box>
-          <LeftSidebar
-            currentConversationId={currentConversationId}
-            setCurrentConversationId={setCurrentConversationId}
-            onConversationSelect={setCurrentConversationId}
-            onDeleteConversation={handleDeleteConversation}
-          />
-        </Box>
+        {/* 
+          Pass isSidebarOpen and a toggle method 
+          so the sidebar can update state in the parent
+        */}
+        <LeftSidebar
+          isSidebarOpen={isSidebarOpen}
+          onToggleSidebar={setIsSidebarOpen}
+          currentConversationId={currentConversationId}
+          setCurrentConversationId={setCurrentConversationId}
+          onConversationSelect={setCurrentConversationId}
+          onDeleteConversation={handleDeleteConversation}
+        />
+
         <Box flex="1" overflow="hidden">
           <Chat
             messages={chatHistory}
             onCancelSwap={handleCancelSwap}
             onSubmitMessage={handleSubmitMessage}
             onBackendError={handleBackendError}
+            // Pass it down so Chat can adjust styling
+            isSidebarOpen={isSidebarOpen}
           />
         </Box>
       </Flex>

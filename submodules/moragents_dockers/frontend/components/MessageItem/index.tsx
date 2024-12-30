@@ -8,6 +8,7 @@ import {
   ImageMessageContent,
   CryptoDataMessageContent,
   BaseMessageContent,
+  AssistantMessage,
 } from "@/services/types";
 import { getHumanReadableAgentName } from "@/services/utils";
 import { Avatar } from "@/components/Avatar";
@@ -35,9 +36,18 @@ export const MessageItem: FC<MessageItemProps> = ({
   isLastClaimMessage,
 }) => {
   const isUser = message.role === "user";
-  const { content } = message;
+  const { content, error_message } = message;
 
   const renderContent = () => {
+    // First check for error message
+    if (error_message) {
+      return (
+        <Text color="red.500" className={styles.messageText}>
+          {error_message}
+        </Text>
+      );
+    }
+
     if (typeof content === "string") {
       if (message.agentName === "tweet sizzler") {
         return <Tweet initialContent={content} />;
@@ -47,52 +57,68 @@ export const MessageItem: FC<MessageItemProps> = ({
       );
     }
 
-    if (message.agentName === "imagen") {
-      const imageContent = content as unknown as ImageMessageContent;
-      return (
-        <ReactMarkdown className={styles.messageText}>
-          {`Successfully generated image with ${imageContent.service}`}
-        </ReactMarkdown>
-      );
-    }
+    // Type guard to ensure we're working with AssistantMessage
+    if (message.role === "assistant") {
+      const assistantMessage = message as AssistantMessage;
 
-    if (message.agentName === "crypto data") {
-      const cryptoDataContent = content as unknown as CryptoDataMessageContent;
-      return (
-        <ReactMarkdown className={styles.messageText}>
-          {cryptoDataContent.data}
-        </ReactMarkdown>
-      );
-    }
+      if (message.agentName === "imagen") {
+        const imageContent = assistantMessage.content as ImageMessageContent;
+        if (!imageContent.success) {
+          return (
+            <Text color="red.500" className={styles.messageText}>
+              {imageContent.error || "Failed to generate image"}
+            </Text>
+          );
+        }
+        return (
+          <ReactMarkdown className={styles.messageText}>
+            {`Successfully generated image with ${imageContent.service}`}
+          </ReactMarkdown>
+        );
+      }
 
-    if (message.agentName === "base") {
-      const baseContent = content as unknown as BaseMessageContent;
-      return (
-        <ReactMarkdown className={styles.messageText}>
-          {baseContent.message}
-        </ReactMarkdown>
-      );
-    }
+      if (message.agentName === "crypto data") {
+        const cryptoDataContent =
+          assistantMessage.content as CryptoDataMessageContent;
+        return (
+          <ReactMarkdown className={styles.messageText}>
+            {cryptoDataContent.data}
+          </ReactMarkdown>
+        );
+      }
 
-    if (message.role === "swap") {
-      return (
-        <SwapMessage
-          isActive={isLastSwapMessage}
-          onCancelSwap={onCancelSwap}
-          fromMessage={content as SwapMessagePayload}
-          onSubmitSwap={onSwapSubmit}
-        />
-      );
-    }
+      if (message.agentName === "base") {
+        const baseContent = assistantMessage.content as BaseMessageContent;
+        return (
+          <ReactMarkdown className={styles.messageText}>
+            {baseContent.message}
+          </ReactMarkdown>
+        );
+      }
 
-    if (message.role === "claim") {
-      return (
-        <ClaimMessage
-          isActive={isLastClaimMessage}
-          fromMessage={content as ClaimMessagePayload}
-          onSubmitClaim={onClaimSubmit}
-        />
-      );
+      // Handle swap and claim content
+      if (assistantMessage.requires_action) {
+        if (assistantMessage.action_type === "swap") {
+          return (
+            <SwapMessage
+              isActive={isLastSwapMessage}
+              onCancelSwap={onCancelSwap}
+              fromMessage={assistantMessage.content as SwapMessagePayload}
+              onSubmitSwap={onSwapSubmit}
+            />
+          );
+        }
+
+        if (assistantMessage.action_type === "claim") {
+          return (
+            <ClaimMessage
+              isActive={isLastClaimMessage}
+              fromMessage={assistantMessage.content as ClaimMessagePayload}
+              onSubmitClaim={onClaimSubmit}
+            />
+          );
+        }
+      }
     }
 
     return (
@@ -109,12 +135,12 @@ export const MessageItem: FC<MessageItemProps> = ({
       <GridItem area="avatar">
         <Avatar
           isAgent={!isUser}
-          agentName={getHumanReadableAgentName(message.agentName)}
+          agentName={getHumanReadableAgentName(message.agentName || "")}
         />
       </GridItem>
       <GridItem area="name">
         <Text className={styles.nameText}>
-          {isUser ? "Me" : getHumanReadableAgentName(message.agentName)}
+          {isUser ? "Me" : getHumanReadableAgentName(message.agentName || "")}
         </Text>
       </GridItem>
       <GridItem area="message">{renderContent()}</GridItem>

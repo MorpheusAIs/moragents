@@ -32,8 +32,6 @@ export const HeaderBar: FC = () => {
         <Spacer />
         <HStack spacing={4} flexShrink={0}>
           <Button onClick={handleClearChatHistory}>Clear Chat History</Button>
-          <Workflows />
-          <SettingsButton />
           {walletType === "cdp" ? <CDPWallets /> : <ConnectButton />}
 
           {/* Wallet Selection */}

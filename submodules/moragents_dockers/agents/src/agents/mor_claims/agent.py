@@ -1,163 +1,119 @@
 import logging
+from typing import Dict, Any
 
 from src.agents.mor_claims import tools
-from src.models.messages import ChatRequest
+from src.models.core import ChatRequest, AgentResponse
+from src.agents.agent_core.agent import AgentCore
+from langchain.schema import HumanMessage, SystemMessage
 from src.stores import agent_manager_instance
 
 logger = logging.getLogger(__name__)
 
 
-class MorClaimsAgent:
-    def __init__(self, agent_info, llm, embeddings):
-        self.agent_info = agent_info
-        self.llm = llm
-        self.embeddings = embeddings
+class MorClaimsAgent(AgentCore):
+    """Agent for handling MOR token claims and rewards."""
+
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any):
+        super().__init__(config, llm, embeddings)
         self.tools_provided = tools.get_tools()
+        self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
         self.conversation_state = {}
 
-    def _get_response(self, message, wallet_address):
-        if wallet_address not in self.conversation_state:
-            self.conversation_state[wallet_address] = {"state": "initial"}
+    async def _process_request(self, request: ChatRequest) -> AgentResponse:
+        """Process the validated chat request for MOR claims."""
+        try:
+            wallet_address = request.wallet_address
 
-        state = self.conversation_state[wallet_address]["state"]
+            if wallet_address not in self.conversation_state:
+                self.conversation_state[wallet_address] = {"state": "initial"}
 
-        if state == "initial":
-            agent_manager_instance.set_active_agent(self.agent_info["name"])
+            state = self.conversation_state[wallet_address]["state"]
 
-            rewards = {
-                0: tools.get_current_user_reward(wallet_address, 0),
-                1: tools.get_current_user_reward(wallet_address, 1),
-            }
-            available_rewards = {pool: amount for pool, amount in rewards.items() if amount > 0}
+            if state == "initial":
+                agent_manager_instance.set_active_agent("mor claims")
 
-            if available_rewards:
-                selected_pool = max(available_rewards, key=available_rewards.get)
-                self.conversation_state[wallet_address]["available_rewards"] = {
-                    selected_pool: available_rewards[selected_pool]
+                rewards = {
+                    0: tools.get_current_user_reward(wallet_address, 0),
+                    1: tools.get_current_user_reward(wallet_address, 1),
                 }
-                self.conversation_state[wallet_address]["receiver_address"] = wallet_address
-                self.conversation_state[wallet_address]["state"] = "awaiting_confirmation"
-                return (
-                    f"You have {available_rewards[selected_pool]} MOR rewards available in pool {selected_pool}. Would you like to proceed with claiming these rewards?",
-                    "assistant",
-                    self.agent_info["name"],
-                )
-            else:
-                return (
-                    f"No rewards found for your wallet address {wallet_address} in either pool. Claim cannot be processed.",
-                    "assistant",
-                    None,
-                )
+                available_rewards = {pool: amount for pool, amount in rewards.items() if amount > 0}
 
-        elif state == "awaiting_confirmation":
-            user_input = message[-1]["content"].lower()
-            if any(word in user_input for word in ["yes", "proceed", "confirm", "claim"]):
-                return self.prepare_transactions(wallet_address)
-            else:
-                return (
-                    "Please confirm if you want to proceed with the claim by saying 'yes', 'proceed', 'confirm', or 'claim'.",
-                    "assistant",
-                    self.agent_info["name"],
-                )
+                if available_rewards:
+                    selected_pool = max(available_rewards, key=available_rewards.get)
+                    self.conversation_state[wallet_address]["available_rewards"] = {
+                        selected_pool: available_rewards[selected_pool]
+                    }
+                    self.conversation_state[wallet_address]["receiver_address"] = wallet_address
+                    self.conversation_state[wallet_address]["state"] = "awaiting_confirmation"
+                    return AgentResponse.success(
+                        content=f"You have {available_rewards[selected_pool]} MOR rewards available in pool {selected_pool}. Would you like to proceed with claiming these rewards?"
+                    )
+                else:
+                    return AgentResponse.error(
+                        error_message=f"No rewards found for your wallet address {wallet_address} in either pool. Claim cannot be processed."
+                    )
 
-        return (
-            "I'm sorry, I didn't understand that. Can you please rephrase your request?",
-            "assistant",
-            self.agent_info["name"],
-        )
+            elif state == "awaiting_confirmation":
+                user_input = request.prompt.content.lower()
+                if any(word in user_input for word in ["yes", "proceed", "confirm", "claim"]):
+                    return await self._prepare_transactions(wallet_address)
+                else:
+                    return AgentResponse.success(
+                        content="Please confirm if you want to proceed with the claim by saying 'yes', 'proceed', 'confirm', or 'claim'."
+                    )
 
-    def prepare_transactions(self, wallet_address):
-        available_rewards = self.conversation_state[wallet_address]["available_rewards"]
-        receiver_address = self.conversation_state[wallet_address]["receiver_address"]
-        transactions = []
+            messages = [
+                SystemMessage(
+                    content=(
+                        "You are a MOR claims agent that helps users claim their MOR rewards. "
+                        "Ask for clarification if a request is ambiguous."
+                    )
+                ),
+                HumanMessage(content=request.prompt.content),
+            ]
 
-        for pool_id in available_rewards.keys():
-            try:
-                tx_data = tools.prepare_claim_transaction(pool_id, receiver_address)
-                transactions.append({"pool": pool_id, "transaction": tx_data})
-            except Exception as e:
-                return (
-                    f"Error preparing transaction for pool {pool_id}: {str(e)}",
-                    "assistant",
-                    None,
-                )
+            result = self.tool_bound_llm.invoke(messages)
+            return await self._handle_llm_response(result)
 
-        self.conversation_state[wallet_address]["transactions"] = transactions
-
-        # Return a structured response
-        return (
-            {
-                "role": "claim",
-                "content": {"transactions": transactions, "claim_tx_cb": "/claim"},
-            },
-            "claim",
-            None,
-        )
-
-    def chat(self, request: ChatRequest):
-        try:
-            data = request.dict()
-            if "prompt" in data and "wallet_address" in data:
-                prompt = data["prompt"]
-                wallet_address = data["wallet_address"]
-                response, role, next_turn_agent = self._get_response([prompt], wallet_address)
-                return {
-                    "role": role,
-                    "content": response,
-                    "next_turn_agent": next_turn_agent,
-                }
-            else:
-                return {"error": "Missing required parameters"}, 400
         except Exception as e:
-            logger.error(f"Unexpected error in chat method: {str(e)}, request: {request}")
-            raise e
+            logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
 
-    def claim(self, request: ChatRequest):
+    async def _prepare_transactions(self, wallet_address: str) -> AgentResponse:
+        """Prepare claim transactions for the given wallet."""
         try:
-            data = request.dict()
-            wallet_address = data["wallet_address"]
-            transactions = self.conversation_state[wallet_address]["transactions"]
-            agent_manager_instance.clear_active_agent()
-            return {"transactions": transactions}
-        except Exception as e:
-            return {"error": str(e)}, 500
+            available_rewards = self.conversation_state[wallet_address]["available_rewards"]
+            receiver_address = self.conversation_state[wallet_address]["receiver_address"]
+            transactions = []
 
-    def claim_status(self, request: ChatRequest):
-        try:
-            data = request.dict()
-            wallet_address = data.get("wallet_address")
-            transaction_hash = data.get("transaction_hash")
-            status = data.get("status")
+            for pool_id in available_rewards.keys():
+                try:
+                    tx_data = tools.prepare_claim_transaction(pool_id, receiver_address)
+                    transactions.append({"pool": pool_id, "transaction": tx_data})
+                except Exception as e:
+                    return AgentResponse.error(
+                        error_message=f"Error preparing transaction for pool {pool_id}: {str(e)}"
+                    )
 
-            if not all([wallet_address, transaction_hash, status]):
-                return {"error": "Missing required parameters"}, 400
+            self.conversation_state[wallet_address]["transactions"] = transactions
 
-            # Generate and return the status message
-            response = self.get_status(status, transaction_hash, "claim")
-            return response, 200
-        except Exception as e:
-            return {"error": str(e)}, 500
-
-    def get_status(self, flag, tx_hash, tx_type):
-        response = ""
-
-        if flag == "cancelled":
-            response = f"The claim transaction has been cancelled."
-        elif flag == "success":
-            response = f"The claim transaction was successful."
-        elif flag == "failed":
-            response = f"The claim transaction has failed."
-        elif flag == "initiated":
-            response = f"Claim transaction has been sent, please wait for it to be confirmed."
-
-        if tx_hash:
-            response = (
-                response + f" The transaction hash is {tx_hash}. "
-                f"Here's the link to the Etherscan transaction: "
-                f"https://etherscan.io/tx/{tx_hash}"
+            return AgentResponse.action_required(
+                content={"transactions": transactions, "claim_tx_cb": "/claim"}, action_type="claim"
             )
 
-        if flag != "initiated":
-            response = response + " Is there anything else I can help you with?"
+        except Exception as e:
+            logger.error(f"Error preparing transactions: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
 
-        return {"role": "assistant", "content": response}
+    async def _execute_tool(self, func_name: str, args: Dict[str, Any]) -> AgentResponse:
+        """Execute the appropriate MOR claims tool based on function name."""
+        try:
+            if func_name == "get_claim_status":
+                status = tools.get_claim_status(args["transaction_hash"])
+                return AgentResponse.success(content=status)
+            else:
+                return AgentResponse.error(error_message=f"Unknown tool: {func_name}")
+
+        except Exception as e:
+            logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))

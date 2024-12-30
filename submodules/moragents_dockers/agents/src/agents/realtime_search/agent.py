@@ -1,5 +1,5 @@
 import logging
-import time
+from typing import Dict, Any
 
 import requests
 from bs4 import BeautifulSoup
@@ -7,46 +7,80 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from src.models.messages import ChatRequest
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+from src.models.core import ChatRequest, AgentResponse
+from src.agents.agent_core.agent import AgentCore
+from langchain.schema import HumanMessage, SystemMessage
+from src.agents.realtime_search.config import Config
+
 logger = logging.getLogger(__name__)
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
+class RealtimeSearchAgent(AgentCore):
+    """Agent for performing real-time web searches."""
 
-class RealtimeSearchAgent:
-    def __init__(self, config, llm, embeddings):
-        self.config = config
-        self.llm = llm
-        self.embeddings = embeddings
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any):
+        super().__init__(config, llm, embeddings)
         self.last_search_term = None
+        self.tools_provided = Config.tools
+        self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
 
-    def perform_search_with_web_scraping(self, search_term=None):
-        if search_term is not None:
-            self.last_search_term = search_term
-        elif self.last_search_term is None:
-            logger.warning("No search term available for web search")
-            return "Web search failed. Please provide a search term."
-        else:
-            search_term = self.last_search_term
+    async def _process_request(self, request: ChatRequest) -> AgentResponse:
+        """Process the validated chat request for web search queries."""
+        try:
+            messages = [
+                SystemMessage(
+                    content=(
+                        "You are a real-time web search agent that helps find current information. "
+                        "Ask for clarification if a request is ambiguous."
+                    )
+                ),
+                HumanMessage(content=request.prompt.content),
+            ]
 
+            result = self.tool_bound_llm.invoke(messages)
+            return await self._handle_llm_response(result)
+
+        except Exception as e:
+            logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
+
+    async def _execute_tool(self, func_name: str, args: Dict[str, Any]) -> AgentResponse:
+        """Execute the appropriate search tool based on function name."""
+        try:
+            if func_name == "perform_web_search":
+                search_term = args.get("search_term")
+                if not search_term:
+                    return AgentResponse.error(error_message="No search term provided")
+
+                search_results = self._perform_search_with_web_scraping(search_term)
+                if "Error performing web search" in search_results:
+                    return AgentResponse.error(error_message=search_results)
+
+                synthesized_answer = self._synthesize_answer(search_term, search_results)
+                return AgentResponse.success(content=synthesized_answer)
+            else:
+                return AgentResponse.error(error_message=f"Unknown tool: {func_name}")
+
+        except Exception as e:
+            logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
+
+    def _perform_search_with_web_scraping(self, search_term: str) -> str:
+        """Perform web search using requests and BeautifulSoup."""
         logger.info(f"Performing web search for: {search_term}")
 
         try:
-            url = f"https://www.google.com/search?q={search_term}"
-            headers = {"User-Agent": USER_AGENT}
+            url = Config.SEARCH_URL.format(search_term)
+            headers = {"User-Agent": Config.USER_AGENT}
             response = requests.get(url, headers=headers)
             response.raise_for_status()
 
             soup = BeautifulSoup(response.text, "html.parser")
-
             search_results = soup.find_all("div", class_="g")
 
             formatted_results = []
-            for result in search_results[:5]:
+            for result in search_results[: Config.MAX_SEARCH_RESULTS]:
                 result_text = result.get_text(strip=True)
                 formatted_results.append(f"Result:\n{result_text}")
 
@@ -55,82 +89,55 @@ class RealtimeSearchAgent:
         except requests.RequestException as e:
             logger.error(f"Error performing web search: {str(e)}")
             logger.info("Attempting fallback to headless browsing")
-            return self.perform_search_with_headless_browsing(search_term)
+            return self._perform_search_with_headless_browsing(search_term)
 
-    def perform_search_with_headless_browsing(self, search_term):
+    def _perform_search_with_headless_browsing(self, search_term: str) -> str:
+        """Fallback search method using headless Chrome."""
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
-
+        for option in Config.CHROME_OPTIONS:
+            chrome_options.add_argument(option)
         driver = webdriver.Chrome(options=chrome_options)
 
         try:
             driver.get("https://www.google.com")
-
             search_box = driver.find_element(By.NAME, "q")
             search_box.send_keys(search_term)
             search_box.send_keys(Keys.RETURN)
 
-            time.sleep(2)
-
             soup = BeautifulSoup(driver.page_source, "html.parser")
-
             search_results = soup.find_all("div", class_="g")
 
             formatted_results = []
-            for result in search_results[:5]:
+            for result in search_results[: Config.MAX_SEARCH_RESULTS]:
                 result_text = result.get_text(strip=True)
                 formatted_results.append(f"Result:\n{result_text}")
 
             return "\n\n".join(formatted_results)
 
         except Exception as e:
-            logger.error(f"Error performing headless web search: {str(e)}")
-            return f"Error performing web search: {str(e)}"
+            error_msg = f"Error performing headless web search: {str(e)}"
+            logger.error(error_msg)
+            return error_msg
         finally:
             driver.quit()
 
-    def synthesize_answer(self, search_term, search_results):
+    def _synthesize_answer(self, search_term: str, search_results: str) -> str:
+        """Synthesize search results into a coherent answer."""
         logger.info("Synthesizing answer from search results")
         messages = [
             {
                 "role": "system",
-                "content": """You are a helpful assistant that synthesizes information from web search results to answer user queries.
-                    Do not preface your answer with 'Based on the search results, I can tell you that:' or anything similar.
-                    Just provide the answer.""",
+                "content": Config.SYNTHESIS_SYSTEM_PROMPT,
             },
             {
                 "role": "user",
-                "content": f"""Based on the following search results for the query '{search_term}', provide a concise and informative answer: {search_results}""",
+                "content": f"Query: {search_term}\nResults: {search_results}",
             },
         ]
 
         try:
-            result = self.llm.invoke(messages)
-            logger.info(f"Received response from LLM: {result}")
+            result = self.llm.invoke(messages, max_tokens=Config.MAX_TOKENS, temperature=Config.TEMPERATURE)
             return result.content.strip()
         except Exception as e:
             logger.error(f"Error synthesizing answer: {str(e)}")
             raise
-
-    def chat(self, request: ChatRequest):
-        try:
-            data = request.dict()
-            logger.info(f"Received chat request: {data}")
-            if "prompt" in data:
-                prompt = data["prompt"]
-                search_term = prompt["content"]
-                logger.info(f"Performing web search for prompt: {search_term}")
-
-                search_results = self.perform_search_with_web_scraping(search_term)
-                logger.info(f"Search results obtained")
-
-                synthesized_answer = self.synthesize_answer(search_term, search_results)
-                logger.info(f"Synthesized answer: {synthesized_answer}")
-
-                return {"role": "assistant", "content": synthesized_answer}
-            else:
-                logger.error("Missing 'prompt' in chat request data")
-                return {"error": "Missing parameters"}, 400
-        except Exception as e:
-            logger.error(f"Unexpected error in chat method: {str(e)}, request: {request}")
-            raise e

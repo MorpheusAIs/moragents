@@ -12,6 +12,8 @@ import {
   Flame,
   Globe2,
   ArrowLeftRight,
+  BarChart2,
+  Shield,
   Gift,
 } from "lucide-react";
 import { AGENT_TYPES } from "@/services/constants";
@@ -134,6 +136,31 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
     examples: [
       { text: "Analyze recent crypto market news", agent: "news" },
       { text: "What's the latest news impact on BTC?", agent: "news" },
+    ],
+  },
+  [AGENT_TYPES.DEXSCREENER]: {
+    title: "DexScreener 📊",
+    icon: <BarChart2 size={20} />,
+    examples: [
+      {
+        text: "What are the most active tokens on solana?",
+        agent: "dexscreener",
+      },
+      {
+        text: "Which ethereum tokens have the most trading liquidity?",
+        agent: "dexscreener",
+      },
+    ],
+  },
+  [AGENT_TYPES.RUGCHECK]: {
+    title: "Token Safety Analysis 🛡️",
+    icon: <Shield size={20} />,
+    examples: [
+      {
+        text: "Check token safety for this mint",
+        agent: "rugcheck",
+      },
+      { text: "Show me the most voted tokens on rugcheck", agent: "rugcheck" },
     ],
   },
 };

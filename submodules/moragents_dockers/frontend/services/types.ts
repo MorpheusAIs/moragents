@@ -1,11 +1,28 @@
 export type ChatMessageBase = {
-  role: "user" | "assistant" | "swap" | "claim";
-  agentName: string;
+  role: string;
+  content: string | any;
+  agentName?: string;
+  error_message?: string;
+  metadata?: Record<string, any>;
+  requires_action?: boolean;
+  action_type?: string;
+  timestamp?: number;
 };
 
-export type UserOrAssistantMessage = ChatMessageBase & {
-  role: "user" | "assistant";
+export type UserMessage = ChatMessageBase & {
+  role: "user";
   content: string;
+};
+
+export type AssistantMessage = ChatMessageBase & {
+  role: "assistant";
+  content:
+    | string
+    | ImageMessageContent
+    | CryptoDataMessageContent
+    | BaseMessageContent
+    | SwapMessagePayload
+    | ClaimMessagePayload;
 };
 
 export type SwapTxPayloadType = {
@@ -38,11 +55,6 @@ export type SwapMessagePayload = {
   src_amount: string | number;
 };
 
-export type SwapMessage = ChatMessageBase & {
-  role: "swap";
-  content: SwapMessagePayload;
-};
-
 export type ImageMessageContent = {
   success: boolean;
   service: string;
@@ -50,29 +62,14 @@ export type ImageMessageContent = {
   error?: string;
 };
 
-export type ImageMessage = ChatMessageBase & {
-  role: "image";
-  content: ImageMessageContent;
-};
-
 export type CryptoDataMessageContent = {
   data: string;
   coinId: string;
 };
 
-export type CryptoDataMessage = ChatMessageBase & {
-  role: "crypto_data";
-  content: CryptoDataMessageContent;
-};
-
 export type BaseMessageContent = {
   message: string;
   actionType?: string;
-};
-
-export type SystemMessage = ChatMessageBase & {
-  role: "system";
-  content: string;
 };
 
 export type ClaimTransactionPayload = {
@@ -94,17 +91,7 @@ export type ClaimMessagePayload = {
   role: "claim";
 };
 
-export type ClaimMessage = ChatMessageBase & {
-  role: "claim";
-  content: ClaimMessagePayload;
-};
-
-export type ChatMessage =
-  | UserOrAssistantMessage
-  | SwapMessage
-  | SystemMessage
-  | ClaimMessage
-  | ImageMessage;
+export type ChatMessage = UserMessage | AssistantMessage;
 
 export type ChatsListItem = {
   index: number;

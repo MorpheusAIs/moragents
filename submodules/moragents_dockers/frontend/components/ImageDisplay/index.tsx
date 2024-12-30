@@ -1,31 +1,20 @@
 import React, { FC } from "react";
-import { Box, Flex, Image, Spinner, Text } from "@chakra-ui/react";
+import { Box, Flex, Image, Text } from "@chakra-ui/react";
 import styles from "./index.module.css";
 
 type ImageDisplayProps = {
-  content: {
-    success: boolean;
+  imageMetadata: {
     service?: string;
     image?: string;
-    error?: string;
+    success?: boolean;
   };
 };
 
-export const ImageDisplay: FC<ImageDisplayProps> = ({ content }) => {
-  if (!content.success) {
-    return (
-      <Box className={styles.errorContainer}>
-        <Text color="red.500">
-          {content.error || "Failed to generate image"}
-        </Text>
-      </Box>
-    );
-  }
-
-  if (!content.image) {
+export const ImageDisplay: FC<ImageDisplayProps> = ({ imageMetadata }) => {
+  if (!imageMetadata.success || !imageMetadata.image) {
     return (
       <Flex className={styles.loadingContainer}>
-        <Spinner size="xl" color="blue.500" />
+        <Text>Failed to generate image</Text>
       </Flex>
     );
   }
@@ -33,12 +22,12 @@ export const ImageDisplay: FC<ImageDisplayProps> = ({ content }) => {
   return (
     <Box className={styles.imageContainer}>
       <Image
-        src={`data:image/png;base64,${content.image}`}
+        src={`data:image/png;base64,${imageMetadata.image}`}
         alt="Generated image"
         className={styles.generatedImage}
       />
       <Text className={styles.serviceTag}>
-        Generated with {content.service}
+        Generated with {imageMetadata.service}
       </Text>
     </Box>
   );

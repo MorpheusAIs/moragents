@@ -1,153 +1,87 @@
 import logging
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from src.agents.base_agent import tools
-from src.models.messages import ChatRequest
+from src.models.core import ChatRequest, AgentResponse
+from src.agents.agent_core.agent import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
 from src.agents.base_agent.config import Config
 from src.stores import wallet_manager_instance
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
-class BaseAgent:
-    def __init__(self, agent_info: Dict[str, Any], llm: Any, embeddings: Any):
-        """
-        Initialize the BaseAgent for sending transactions on Base.
-        """
-        self.agent_info = agent_info
-        self.llm = llm
-        self.embeddings = embeddings
-        self.config = Config()
+class BaseAgent(AgentCore):
+    """Agent for handling Base blockchain transactions."""
 
-        # Bind tools to LLM
-        self.tool_bound_llm = self.llm.bind_tools(self.config.tools)
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any):
+        super().__init__(config, llm, embeddings)
+        self.tools_provided = Config.tools
+        self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
 
-    def chat(self, request: ChatRequest) -> Dict[str, Any]:
+    async def _process_request(self, request: ChatRequest) -> AgentResponse:
+        """Process the validated chat request for Base transactions."""
+        # Check CDP client initialization
+        if not wallet_manager_instance.configure_cdp_client():
+            # Return user-friendly error for missing credentials
+            return AgentResponse.success(
+                content="I'm not able to help with transactions right now because the CDP client is not initialized. Please set up your API credentials first."
+            )
+
+        # Check for active wallet
+        active_wallet = wallet_manager_instance.get_active_wallet()
+        if not active_wallet:
+            # Return user-friendly error for missing wallet
+            return AgentResponse.success(
+                content="You'll need to select or create a wallet before I can help with transactions. Please set up a wallet first."
+            )
+
         try:
-            data = request.dict()
-            logger.info(f"Received chat request: {data}")
+            messages = [
+                SystemMessage(
+                    content=(
+                        "You are an agent that can perform various financial transactions on Base. "
+                        "When you need to perform an action, use the appropriate function with the correct arguments."
+                    )
+                ),
+                HumanMessage(content=request.prompt.content),
+            ]
 
-            if not data:
-                return {"role": "assistant", "content": "Invalid request data. Please try again."}
-
-            # Check CDP client initialization
-            if not wallet_manager_instance.configure_cdp_client():
-                return {
-                    "role": "assistant",
-                    "content": "CDP client not initialized. Please set API credentials.",
-                }
-
-            # Check for active wallet
-            active_wallet = wallet_manager_instance.get_active_wallet()
-            if not active_wallet:
-                return {
-                    "role": "assistant",
-                    "content": "No active wallet selected. Please select or create a wallet first.",
-                }
-
-            if "prompt" in data:
-                prompt = data["prompt"]
-                wallet_address = data.get("wallet_address")
-                chain_id = data.get("chain_id")
-                response_content = self.handle_request(prompt, chain_id, wallet_address)
-                return {
-                    "role": "assistant",
-                    "content": response_content,
-                }
-            else:
-                logger.error("Missing 'prompt' in chat request data")
-                return {
-                    "role": "assistant",
-                    "content": "Missing required parameters. Please provide a prompt.",
-                }
+            result = self.tool_bound_llm.invoke(messages)
+            return await self._handle_llm_response(result)
 
         except Exception as e:
-            logger.error(f"Error in chat method: {str(e)}, agent: {self.agent_info['name']}")
-            raise e
+            logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
 
-    def handle_request(
-        self, message: dict[str, any], chain_id: Optional[str], wallet_address: Optional[str]
-    ) -> Dict[str, Any]:
-        logger.info(f"Message: {message}")
-        logger.info(f"Chain ID: {chain_id}")
-        logger.info(f"Wallet Address: {wallet_address}")
+    async def _execute_tool(self, func_name: str, args: Dict[str, Any]) -> AgentResponse:
+        """Execute the appropriate Base transaction tool based on function name."""
+        try:
+            if func_name == "swap_assets":
+                return AgentResponse.action_required(content="Ready to perform swap", action_type="swap")
+            elif func_name == "transfer_asset":
+                return AgentResponse.action_required(content="Ready to perform transfer", action_type="transfer")
+            elif func_name == "get_balance":
+                wallet = wallet_manager_instance.get_active_wallet()
+                if not wallet:
+                    return AgentResponse.success(
+                        content="I can't check the balance because no wallet is selected. Please select a wallet first."
+                    )
 
-        # System prompt that includes descriptions of available tools
-        tool_descriptions = "\n".join(f"{tool['name']}: {tool['description']}" for tool in self.config.tools)
+                asset_id = args.get("asset_id")
+                if not asset_id:
+                    return AgentResponse.success(
+                        content="Please specify which asset you'd like to check the balance for."
+                    )
 
-        messages = [
-            SystemMessage(
-                content=(
-                    "You are an agent that can perform various financial transactions on Base. "
-                    f"You have access to the following functions:\n{tool_descriptions}\n"
-                    "When you need to perform an action, use the appropriate function with the correct arguments."
+                tool_result = tools.get_balance(wallet, asset_id=asset_id.lower())
+                content = f"Your wallet {tool_result['address']} has a balance of {tool_result['balance']} {tool_result['asset']}"
+                return AgentResponse.success(content=content)
+            else:
+                return AgentResponse.success(
+                    content=f"I don't know how to {func_name} yet. Please try a different action."
                 )
-            ),
-        ]
-
-        messages.append(HumanMessage(content=message.get("content")))
-
-        logger.info(f"Messages: {messages}")
-
-        result = self.tool_bound_llm.invoke(messages)
-
-        logger.info(f"Result: {result}")
-
-        # Process the LLM's response
-        try:
-            if result.tool_calls:
-                # Get first tool call
-                tool_call = result.tool_calls[0]
-
-                # Extract function name and args from the tool call dict
-                func_name = tool_call.get("name")
-                args = tool_call.get("args", {})
-
-                logger.info(f"Function name: {func_name}")
-                logger.info(f"Arguments: {args}")
-
-                if not func_name:
-                    return {
-                        "message": "Error: No function name provided in tool call",
-                        "actionType": None,
-                    }
-
-                # Handle swap and transfer tools differently
-                if func_name == "swap_assets":
-                    return {"message": "Ready to perform swap", "actionType": "swap"}
-                elif func_name == "transfer_asset":
-                    return {"message": "Ready to perform transfer", "actionType": "transfer"}
-                elif func_name == "get_balance":
-                    # Get active wallet from wallet manager
-                    wallet = wallet_manager_instance.get_active_wallet()
-                    if not wallet:
-                        return {"message": "Error: No active wallet found", "actionType": None}
-
-                    try:
-                        tool_result = tools.get_balance(wallet, asset_id=args.get("asset_id").lower())
-                        balance = tool_result["balance"]
-                        asset = tool_result["asset"]
-                        address = tool_result["address"]
-                        return {
-                            "message": f"Your wallet {address} has a balance of {balance} {asset}",
-                            "actionType": None,
-                        }
-                    except ValueError as e:
-                        return {"message": f"Error: {str(e)}", "actionType": None}
-                else:
-                    return {
-                        "message": f"Error: Function '{func_name}' not supported.",
-                        "actionType": None,
-                    }
-
-            else:
-                # No function call; return the assistant's message
-                content = result.content if hasattr(result, "content") else ""
-                return {"message": content, "actionType": None}
 
         except Exception as e:
-            logger.error(f"Error processing LLM response: {str(e)}")
-            return {"message": "Error: Unable to process the request.", "actionType": None}
+            logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))

@@ -4,7 +4,7 @@ import { Box, IconButton, Text } from "@chakra-ui/react";
 import { X } from "lucide-react";
 import {
   ChatMessage,
-  ImageMessage,
+  ImageMessageContent,
   CryptoDataMessageContent,
   BaseMessageContent,
 } from "@/services/types";
@@ -22,18 +22,25 @@ export const WIDGET_COMPATIBLE_AGENTS = [
 ];
 
 export const shouldOpenWidget = (message: ChatMessage) => {
+  if (!message.agentName) return false;
+
   if (message.agentName === "base") {
-    const content = message.content as unknown as BaseMessageContent;
-    return (
-      content.actionType && ["transfer", "swap"].includes(content.actionType)
-    );
+    if (
+      message.requires_action &&
+      ["transfer", "swap"].includes(message.action_type || "")
+    ) {
+      return true;
+    }
+    return false;
   }
+
   if (message.agentName === "crypto data") {
-    const content = message.content as unknown as CryptoDataMessageContent;
     return (
-      WIDGET_COMPATIBLE_AGENTS.includes(message.agentName) && content.coinId
+      WIDGET_COMPATIBLE_AGENTS.includes(message.agentName) &&
+      message.metadata?.coinId
     );
   }
+
   return WIDGET_COMPATIBLE_AGENTS.includes(message.agentName);
 };
 
@@ -46,11 +53,13 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
   const renderWidget = () => {
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "imagen"
+      activeWidget.agentName === "imagen" &&
+      activeWidget.metadata?.image
     ) {
+      console.log("Imagen widget metadata:", activeWidget.metadata);
       return (
         <Box p={4}>
-          <ImageDisplay content={activeWidget.content as ImageMessage} />
+          <ImageDisplay imageMetadata={activeWidget.metadata} />
         </Box>
       );
     }
@@ -59,9 +68,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
       activeWidget?.role === "assistant" &&
       activeWidget.agentName === "crypto data"
     ) {
-      const content =
-        activeWidget.content as unknown as CryptoDataMessageContent;
-      if (!content.coinId) return null;
+      if (!activeWidget.metadata?.coinId) return null;
       return (
         <Box
           h="full"
@@ -70,7 +77,9 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
           flexDirection="column"
           flexGrow={1}
         >
-          <TradingViewWidget symbol={`${content.coinId.toUpperCase()}`} />
+          <TradingViewWidget
+            symbol={`${activeWidget.metadata.coinId.toUpperCase()}`}
+          />
         </Box>
       );
     }
@@ -94,12 +103,12 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
 
     if (
       activeWidget?.role === "assistant" &&
-      activeWidget.agentName === "base"
+      activeWidget.agentName === "base" &&
+      activeWidget.requires_action
     ) {
-      const content = activeWidget.content as unknown as BaseMessageContent;
       if (
-        !content.actionType ||
-        !["transfer", "swap"].includes(content.actionType)
+        !activeWidget.action_type ||
+        !["transfer", "swap"].includes(activeWidget.action_type)
       ) {
         return null;
       }
@@ -112,7 +121,7 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
           flexDirection="column"
           flexGrow={1}
         >
-          {content.actionType === "transfer" ? (
+          {activeWidget.action_type === "transfer" ? (
             <BaseTransferWidget />
           ) : (
             <BaseSwapWidget />
