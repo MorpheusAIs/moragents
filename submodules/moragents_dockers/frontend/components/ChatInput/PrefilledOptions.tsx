@@ -72,7 +72,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
     title: "Token Swaps 💱",
     icon: <ArrowLeftRight size={20} />,
     examples: [
-      { text: "Swap ETH for USDC", agent: "swap" },
+      { text: "Swap 0.2 ETH for USDC", agent: "swap" },
       { text: "Exchange my BTC for ETH", agent: "swap" },
     ],
   },

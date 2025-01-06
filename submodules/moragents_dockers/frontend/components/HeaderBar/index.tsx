@@ -2,27 +2,14 @@ import React, { FC, useState } from "react";
 import Image from "next/image";
 import { Box, HStack, Spacer, Button, ButtonGroup } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { SettingsButton } from "@/components/Settings";
 import { CDPWallets } from "./CDPWallets";
-import { Workflows } from "./Workflows";
 import classes from "./index.module.css";
-import { clearMessagesHistory } from "@/services/apiHooks";
 import { getHttpClient } from "@/services/constants";
 import { useRouter } from "next/router";
 
 export const HeaderBar: FC = () => {
-  const backendClient = getHttpClient();
-  const router = useRouter();
   const [walletType, setWalletType] = useState<"cdp" | "metamask">("cdp");
 
-  const handleClearChatHistory = async () => {
-    try {
-      await clearMessagesHistory(backendClient);
-      router.reload();
-    } catch (error) {
-      console.error("Failed to clear chat history:", error);
-    }
-  };
   return (
     <Box className={classes.headerBar}>
       <HStack spacing={4} width="100%" px={4}>
@@ -31,7 +18,6 @@ export const HeaderBar: FC = () => {
         </Box>
         <Spacer />
         <HStack spacing={4} flexShrink={0}>
-          <Button onClick={handleClearChatHistory}>Clear Chat History</Button>
           {walletType === "cdp" ? <CDPWallets /> : <ConnectButton />}
 
           {/* Wallet Selection */}

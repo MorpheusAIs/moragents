@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple
 from langchain.schema import HumanMessage, SystemMessage
 from src.stores import chat_manager_instance, agent_manager_instance
 from src.models.core import ChatRequest, AgentResponse
-from src.agents.agent_core.agent import ResponseType
 
 logger = logging.getLogger(__name__)
 
@@ -125,27 +124,19 @@ class Delegator:
             result = self.get_delegator_response(chat_request.prompt.dict())
 
             if "agent" not in result:
-                return None, AgentResponse(
-                    type=ResponseType.ERROR, message="No suitable agent found", error="No suitable agent found"
-                )
+                return None, AgentResponse.error(error_message="No suitable agent found")
 
             next_agent = result["agent"]
             logger.info(f"Cascading to next agent: {next_agent}")
 
             # Check if we've already tried this agent to prevent infinite loop
             if next_agent in self.attempted_agents:
-                return None, AgentResponse(
-                    type=ResponseType.ERROR,
-                    message="All available agents have been attempted without success",
-                    error="No remaining untried agents",
+                return None, AgentResponse.error(
+                    error_message="All available agents have been attempted without success"
                 )
 
             return await self.delegate_chat(next_agent, chat_request)
         except ValueError as ve:
             # No more agents available
             logger.error(f"No more agents available: {str(ve)}")
-            return None, AgentResponse(
-                type=ResponseType.ERROR,
-                message="All available agents have been attempted without success",
-                error=str(ve),
-            )
+            return None, AgentResponse.error(error_message="All available agents have been attempted without success")

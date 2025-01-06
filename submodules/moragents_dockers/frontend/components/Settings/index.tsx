@@ -18,6 +18,7 @@ import {
 import { TwitterConfig } from "./TwitterConfig";
 import { CoinbaseConfig } from "./CoinbaseConfig";
 import { AgentSelection } from "./AgentSelection";
+import { OneInchConfig } from "./OneInchConfig";
 
 export const SettingsButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,8 +51,9 @@ export const SettingsButton: React.FC = () => {
           <ModalBody pb={6}>
             <Tabs variant="enclosed" isFitted>
               <TabList mb={4}>
-                <Tab>Twitter API</Tab>
+                <Tab>X/Twitter API</Tab>
                 <Tab>Coinbase API</Tab>
+                <Tab>1inch API</Tab>
                 <Tab>Agents</Tab>
               </TabList>
               <TabPanels>
@@ -60,6 +62,9 @@ export const SettingsButton: React.FC = () => {
                 </TabPanel>
                 <TabPanel>
                   <CoinbaseConfig onSave={() => setIsOpen(false)} />
+                </TabPanel>
+                <TabPanel>
+                  <OneInchConfig onSave={() => setIsOpen(false)} />
                 </TabPanel>
                 <TabPanel>
                   <AgentSelection onSave={() => setIsOpen(false)} />

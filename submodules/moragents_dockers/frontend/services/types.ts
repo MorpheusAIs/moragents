@@ -1,6 +1,7 @@
 export type ChatMessageBase = {
   role: string;
   content: string | any;
+  responseType: string;
   agentName?: string;
   error_message?: string;
   metadata?: Record<string, any>;
@@ -21,7 +22,7 @@ export type AssistantMessage = ChatMessageBase & {
     | ImageMessageContent
     | CryptoDataMessageContent
     | BaseMessageContent
-    | SwapMessagePayload
+    | SwapMessageContent
     | ClaimMessagePayload;
 };
 
@@ -44,15 +45,22 @@ export type ApproveTxPayloadType = {
   value: string;
 };
 
+export type SwapMessageContent = {
+  content: string;
+  metadata: SwapMessagePayload;
+  requires_action: boolean;
+  action_type: "swap";
+};
+
 export type SwapMessagePayload = {
-  amount: string;
   dst: string;
   dst_address: string;
-  dst_amount: string | number;
-  quote: string;
+  dst_amount: number;
   src: string;
   src_address: string;
-  src_amount: string | number;
+  src_amount: number;
+  approve_tx_cb: string;
+  swap_tx_cb: string;
 };
 
 export type ImageMessageContent = {
@@ -98,7 +106,7 @@ export type ChatsListItem = {
   title: string;
 };
 
-export interface XApiKeys {
+export interface XCredentials {
   api_key: string;
   api_secret: string;
   access_token: string;
@@ -106,7 +114,11 @@ export interface XApiKeys {
   bearer_token: string;
 }
 
-export interface CoinbaseApiKeys {
+export interface CoinbaseCredentials {
   cdp_api_key: string;
   cdp_api_secret: string;
+}
+
+export interface OneInchCredentials {
+  api_key: string;
 }

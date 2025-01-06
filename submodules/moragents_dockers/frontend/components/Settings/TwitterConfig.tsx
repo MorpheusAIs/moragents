@@ -10,7 +10,7 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
-import { setXApiKeys } from "@/services/apiHooks";
+import { setXCredentials } from "@/services/apiHooks";
 import axios from "axios";
 
 interface TwitterCredentials {
@@ -55,11 +55,11 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
 
   useEffect(() => {
     const storedCredentials: TwitterCredentials = {
-      apiKey: localStorage.getItem("apiKey") || "",
-      apiSecret: localStorage.getItem("apiSecret") || "",
-      accessToken: localStorage.getItem("accessToken") || "",
-      accessTokenSecret: localStorage.getItem("accessTokenSecret") || "",
-      bearerToken: localStorage.getItem("bearerToken") || "",
+      apiKey: localStorage.getItem("x_api_key") || "",
+      apiSecret: localStorage.getItem("x_api_secret") || "",
+      accessToken: localStorage.getItem("x_access_token") || "",
+      accessTokenSecret: localStorage.getItem("x_access_token_secret") || "",
+      bearerToken: localStorage.getItem("x_bearer_token") || "",
     };
     setCredentials(storedCredentials);
     setDisplayCredentials({
@@ -78,9 +78,14 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
 
   const handleSave = async () => {
     // Store in localStorage as backup
-    Object.entries(credentials).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
-    });
+    localStorage.setItem("x_api_key", credentials.apiKey);
+    localStorage.setItem("x_api_secret", credentials.apiSecret);
+    localStorage.setItem("x_access_token", credentials.accessToken);
+    localStorage.setItem(
+      "x_access_token_secret",
+      credentials.accessTokenSecret
+    );
+    localStorage.setItem("x_bearer_token", credentials.bearerToken);
 
     // Send to backend
     const backendClient = axios.create({
@@ -88,7 +93,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
     });
 
     try {
-      await setXApiKeys(backendClient, {
+      await setXCredentials(backendClient, {
         api_key: credentials.apiKey,
         api_secret: credentials.apiSecret,
         access_token: credentials.accessToken,
@@ -105,7 +110,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
     <VStack spacing={6} align="stretch">
       <Box>
         <Heading size="md" mb={2}>
-          Twitter API Configuration
+          X API Configuration
         </Heading>
         <Text fontSize="sm" color={textColor}>
           Enter your X API credentials. These can be found in your X Developer
@@ -143,7 +148,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
       </VStack>
 
       <Button colorScheme="green" onClick={handleSave} mt={4}>
-        Save Twitter Credentials
+        Save X API Credentials
       </Button>
     </VStack>
   );

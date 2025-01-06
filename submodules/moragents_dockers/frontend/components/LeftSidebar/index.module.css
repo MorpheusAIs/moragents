@@ -116,9 +116,16 @@
 }
 
 /*********************************
- * Delete Button
+ * Action Buttons (Delete & Reset)
  *********************************/
-.deleteButton {
+.buttonGroup {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.deleteButton,
+.resetButton {
   opacity: 0;
   background-color: transparent;
   color: rgba(255, 255, 255, 0.6);
@@ -132,11 +139,13 @@
   justify-content: center;
 }
 
-.conversationItem:hover .deleteButton {
+.conversationItem:hover .deleteButton,
+.conversationItem:hover .resetButton {
   opacity: 1;
 }
 
-.deleteButton:hover {
+.deleteButton:hover,
+.resetButton:hover {
   background-color: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   transform: scale(1.1);

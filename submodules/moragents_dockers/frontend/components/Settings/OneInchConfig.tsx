@@ -10,46 +10,40 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
-import { setCoinbaseCredentials } from "@/services/apiHooks";
+import { setOneInchCredentials } from "@/services/apiHooks";
 import axios from "axios";
 
-interface CoinbaseCredentials {
-  cdpApiKey: string;
-  cdpApiSecret: string;
+interface OneInchCredentials {
+  apiKey: string;
 }
 
-interface CoinbaseConfigProps {
+interface OneInchConfigProps {
   onSave: () => void;
 }
 
-export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
-  const [credentials, setCredentials] = useState<CoinbaseCredentials>({
-    cdpApiKey: "",
-    cdpApiSecret: "",
+export const OneInchConfig: React.FC<OneInchConfigProps> = ({ onSave }) => {
+  const [credentials, setCredentials] = useState<OneInchCredentials>({
+    apiKey: "",
   });
   const [displayCredentials, setDisplayCredentials] =
-    useState<CoinbaseCredentials>({
-      cdpApiKey: "",
-      cdpApiSecret: "",
+    useState<OneInchCredentials>({
+      apiKey: "",
     });
 
   const textColor = useColorModeValue("gray.600", "gray.300");
   const labelColor = useColorModeValue("gray.700", "gray.200");
 
-  const credentialLabels: Record<keyof CoinbaseCredentials, string> = {
-    cdpApiKey: "Coinbase Developer Platform API Key",
-    cdpApiSecret: "Coinbase Developer Platform API Secret",
+  const credentialLabels: Record<keyof OneInchCredentials, string> = {
+    apiKey: "API Key",
   };
 
   useEffect(() => {
-    const storedCredentials: CoinbaseCredentials = {
-      cdpApiKey: localStorage.getItem("coinbase_api_key") || "",
-      cdpApiSecret: localStorage.getItem("coinbase_api_secret") || "",
+    const storedCredentials: OneInchCredentials = {
+      apiKey: localStorage.getItem("oneinch_api_key") || "",
     };
     setCredentials(storedCredentials);
     setDisplayCredentials({
-      cdpApiKey: obscureCredential(storedCredentials.cdpApiKey),
-      cdpApiSecret: obscureCredential(storedCredentials.cdpApiSecret),
+      apiKey: obscureCredential(storedCredentials.apiKey),
     });
   }, []);
 
@@ -60,8 +54,9 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
 
   const handleSave = async () => {
     // Store in localStorage as backup
-    localStorage.setItem("coinbase_api_key", credentials.cdpApiKey);
-    localStorage.setItem("coinbase_api_secret", credentials.cdpApiSecret);
+    Object.entries(credentials).forEach(([key, value]) => {
+      localStorage.setItem("oneinch_api_key", value);
+    });
 
     // Send to backend
     const backendClient = axios.create({
@@ -69,13 +64,12 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
     });
 
     try {
-      await setCoinbaseCredentials(backendClient, {
-        cdp_api_key: credentials.cdpApiKey,
-        cdp_api_secret: credentials.cdpApiSecret,
+      await setOneInchCredentials(backendClient, {
+        api_key: credentials.apiKey,
       });
       onSave();
     } catch (error) {
-      console.error("Failed to save Coinbase credentials to backend:", error);
+      console.error("Failed to save 1inch API key to backend:", error);
     }
   };
 
@@ -83,10 +77,12 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
     <VStack spacing={6} align="stretch">
       <Box>
         <Heading size="md" mb={2}>
-          Coinbase API Configuration
+          1inch API Configuration
         </Heading>
         <Text fontSize="sm" color={textColor}>
-          Enter your Coinbase Developer Platform API credentials.
+          Enter your 1inch API key. This can be obtained from the 1inch
+          developer portal. The API key is required for accessing 1inch&apos;s
+          swap functionality.
         </Text>
       </Box>
 
@@ -94,10 +90,10 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
         {Object.entries(credentials).map(([key, value]) => (
           <FormControl key={key}>
             <FormLabel color={labelColor} display="flex" alignItems="center">
-              {credentialLabels[key as keyof CoinbaseCredentials]}
+              {credentialLabels[key as keyof OneInchCredentials]}
               <Text fontSize="xs" color={textColor} ml={2}>
                 (
-                {displayCredentials[key as keyof CoinbaseCredentials] ||
+                {displayCredentials[key as keyof OneInchCredentials] ||
                   "Not set"}
                 )
               </Text>
@@ -105,7 +101,7 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
             <Input
               type="password"
               placeholder={`Enter new ${
-                credentialLabels[key as keyof CoinbaseCredentials]
+                credentialLabels[key as keyof OneInchCredentials]
               }`}
               value={value}
               onChange={(e) =>
@@ -120,7 +116,7 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
       </VStack>
 
       <Button colorScheme="green" onClick={handleSave} mt={4}>
-        Save Coinbase Credentials
+        Save 1inch API Key
       </Button>
     </VStack>
   );

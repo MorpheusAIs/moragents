@@ -3,8 +3,9 @@ import {
   ChatMessage,
   ClaimTransactionPayload,
   SwapTxPayloadType,
-  XApiKeys,
-  CoinbaseApiKeys,
+  XCredentials,
+  CoinbaseCredentials,
+  OneInchCredentials,
 } from "./types";
 
 export const getChats = async () => {
@@ -299,9 +300,9 @@ export const setSelectedAgents = async (
   }
 };
 
-export const setXApiKeys = async (
+export const setXCredentials = async (
   backendClient: Axios,
-  keys: XApiKeys
+  keys: XCredentials
 ): Promise<{ status: string; message: string }> => {
   try {
     const response = await backendClient.post("/keys/x", keys);
@@ -312,15 +313,30 @@ export const setXApiKeys = async (
   }
 };
 
-export const setCoinbaseApiKeys = async (
+export const setCoinbaseCredentials = async (
   backendClient: Axios,
-  keys: CoinbaseApiKeys
+  keys: CoinbaseCredentials
 ): Promise<{ status: string; message: string }> => {
   try {
     const response = await backendClient.post("/keys/coinbase", keys);
     return response.data;
   } catch (error) {
     console.error("Failed to set Coinbase API keys:", error);
+    throw error;
+  }
+};
+
+export const setOneInchCredentials = async (
+  backendClient: Axios,
+  keys: OneInchCredentials
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/keys/1inch", {
+      api_key: keys.api_key,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set 1inch API keys:", error);
     throw error;
   }
 };

@@ -38,6 +38,8 @@ export const MessageItem: FC<MessageItemProps> = ({
   const isUser = message.role === "user";
   const { content, error_message } = message;
 
+  console.log("Message:", message);
+
   const renderContent = () => {
     // First check for error message
     if (error_message) {
@@ -46,6 +48,30 @@ export const MessageItem: FC<MessageItemProps> = ({
           {error_message}
         </Text>
       );
+    }
+
+    // Handle token swap agent messages first
+    if (
+      message.agentName === "token swap" &&
+      message.requires_action &&
+      message.action_type === "swap"
+    ) {
+      const assistantMessage = message as AssistantMessage;
+      if (
+        typeof assistantMessage.content === "object" &&
+        assistantMessage.content.metadata
+      ) {
+        return (
+          <SwapMessage
+            isActive={isLastSwapMessage}
+            onCancelSwap={onCancelSwap}
+            fromMessage={
+              assistantMessage.content.metadata as SwapMessagePayload
+            }
+            onSubmitSwap={onSwapSubmit}
+          />
+        );
+      }
     }
 
     if (typeof content === "string") {
@@ -96,29 +122,15 @@ export const MessageItem: FC<MessageItemProps> = ({
         );
       }
 
-      // Handle swap and claim content
-      if (assistantMessage.requires_action) {
-        if (assistantMessage.action_type === "swap") {
-          return (
-            <SwapMessage
-              isActive={isLastSwapMessage}
-              onCancelSwap={onCancelSwap}
-              fromMessage={assistantMessage.content as SwapMessagePayload}
-              onSubmitSwap={onSwapSubmit}
-            />
-          );
-        }
-
-        if (assistantMessage.action_type === "claim") {
-          return (
-            <ClaimMessage
-              isActive={isLastClaimMessage}
-              fromMessage={assistantMessage.content as ClaimMessagePayload}
-              onSubmitClaim={onClaimSubmit}
-            />
-          );
-        }
-      }
+      // if (assistantMessage.action_type === "claim") {
+      //   return (
+      //     <ClaimMessage
+      //       isActive={isLastClaimMessage}
+      //       fromMessage={assistantMessage.content as ClaimMessagePayload}
+      //       onSubmitClaim={onClaimSubmit}
+      //     />
+      //   );
+      // }
     }
 
     return (

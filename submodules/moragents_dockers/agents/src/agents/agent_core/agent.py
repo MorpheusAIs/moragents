@@ -8,15 +8,6 @@ from functools import wraps
 from src.models.core import ChatRequest, AgentResponse
 
 
-class ResponseType(Enum):
-    """Enum to distinguish between different types of responses"""
-
-    SUCCESS = "success"
-    NEEDS_INFO = "needs_info"  # When we need more information from the user
-    ERROR = "error"  # For breaking errors
-    WARNING = "warning"  # For non-breaking issues that should be logged
-
-
 def handle_exceptions(func):
     """Decorator to handle exceptions uniformly across agent methods"""
 

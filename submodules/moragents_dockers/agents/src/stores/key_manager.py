@@ -10,6 +10,7 @@ class Service(Enum):
 
     X = "x"
     COINBASE = "coinbase"
+    ONEINCH = "oneinch"
 
 
 class BaseKeys:
@@ -84,7 +85,28 @@ class CoinbaseKeys(BaseKeys):
         return all([self.cdp_api_key, self.cdp_api_secret])
 
 
-KeysType = Union[XKeys, CoinbaseKeys]
+class OneInchKeys(BaseKeys):
+    """
+    Container for 1inch API authentication credentials.
+
+    Stores and manages the API key required for 1inch API access.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.api_key: Optional[str] = None
+
+    def is_complete(self) -> bool:
+        """
+        Check if the required 1inch API key is set.
+
+        Returns:
+            bool: True if the API key is present, False otherwise
+        """
+        return bool(self.api_key)
+
+
+KeysType = Union[XKeys, CoinbaseKeys, OneInchKeys]
 
 
 class KeyManager:
@@ -115,6 +137,7 @@ class KeyManager:
         self.keys: Dict[Service, KeysType] = {
             Service.X: XKeys(),
             Service.COINBASE: CoinbaseKeys(),
+            Service.ONEINCH: OneInchKeys(),
         }
 
     def set_x_keys(
@@ -159,6 +182,18 @@ class KeyManager:
         self.keys[Service.COINBASE] = coinbase_keys
         logger.info("Updated Coinbase API keys")
 
+    def set_oneinch_keys(self, api_key: str) -> None:
+        """
+        Set 1inch API key.
+
+        Args:
+            api_key (str): 1inch API key
+        """
+        oneinch_keys = OneInchKeys()
+        oneinch_keys.api_key = api_key
+        self.keys[Service.ONEINCH] = oneinch_keys
+        logger.info("Updated 1inch API key")
+
     def get_x_keys(self) -> XKeys:
         """
         Get X API keys.
@@ -181,6 +216,17 @@ class KeyManager:
         assert isinstance(keys, CoinbaseKeys)
         return keys
 
+    def get_oneinch_keys(self) -> OneInchKeys:
+        """
+        Get 1inch API key.
+
+        Returns:
+            OneInchKeys: Container with 1inch API credentials
+        """
+        keys = self.keys[Service.ONEINCH]
+        assert isinstance(keys, OneInchKeys)
+        return keys
+
     def has_x_keys(self) -> bool:
         """
         Check if all required X keys are set.
@@ -199,6 +245,15 @@ class KeyManager:
         """
         return isinstance(self.keys[Service.COINBASE], CoinbaseKeys) and self.keys[Service.COINBASE].is_complete()
 
+    def has_oneinch_keys(self) -> bool:
+        """
+        Check if 1inch API key is set.
+
+        Returns:
+            bool: True if 1inch API key is present and valid
+        """
+        return isinstance(self.keys[Service.ONEINCH], OneInchKeys) and self.keys[Service.ONEINCH].is_complete()
+
     def clear_keys(self, service: Optional[Service] = None) -> None:
         """
         Clear keys for specified service or all if none specified.
@@ -215,6 +270,10 @@ class KeyManager:
             self.keys[Service.COINBASE] = CoinbaseKeys()
             logger.info("Cleared Coinbase API keys")
 
+        if service == Service.ONEINCH or service is None:
+            self.keys[Service.ONEINCH] = OneInchKeys()
+            logger.info("Cleared 1inch API key")
+
     def has_any_keys(self) -> bool:
         """
         Check if any API keys are stored.
@@ -222,7 +281,7 @@ class KeyManager:
         Returns:
             bool: True if any service has valid API credentials set
         """
-        return any([self.has_x_keys(), self.has_coinbase_keys()])
+        return any([self.has_x_keys(), self.has_coinbase_keys(), self.has_oneinch_keys()])
 
 
 # Create an instance to act as a singleton store

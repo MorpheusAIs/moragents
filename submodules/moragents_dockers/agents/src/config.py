@@ -54,13 +54,15 @@ class Config:
             # },
             # DISABLED: Pending 1inch protocol fix
             #
-            # {
-            #     "path": "src.agents.token_swap.agent",
-            #     "class": "TokenSwapAgent",
-            #     "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
-            #     "name": "token swap",
-            #     "upload_required": False,
-            # },
+            {
+                "path": "src.agents.token_swap.agent",
+                "class": "TokenSwapAgent",
+                "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
+                "name": "token swap",
+                "human_readable_name": "Token Swap Manager",
+                "command": "swap",
+                "upload_required": False,
+            },
             # {
             #     "path": "src.agents.tweet_sizzler.agent",
             #     "class": "TweetSizzlerAgent",
@@ -124,23 +126,23 @@ class Config:
             #     "command": "news",
             #     "upload_required": False,
             # },
-            {
-                "path": "src.agents.dexscreener.agent",
-                "class": "DexScreenerAgent",
-                "description": "Fetches and analyzes cryptocurrency trading data from DexScreener.",
-                "name": "dexscreener",
-                "human_readable_name": "DexScreener Analyst",
-                "command": "dexscreener",
-                "upload_required": False,
-            },
-            {
-                "path": "src.agents.rugcheck.agent",
-                "class": "RugcheckAgent",
-                "description": "Analyzes token safety and trends using the Rugcheck API. Use when the query is about checking token safety, risks, or viewing trending tokens.",
-                "name": "rugcheck",
-                "human_readable_name": "Token Safety Analyzer",
-                "command": "rugcheck",
-                "upload_required": False,
-            },
+            # {
+            #     "path": "src.agents.dexscreener.agent",
+            #     "class": "DexScreenerAgent",
+            #     "description": "Fetches and analyzes cryptocurrency trading data from DexScreener.",
+            #     "name": "dexscreener",
+            #     "human_readable_name": "DexScreener Analyst",
+            #     "command": "dexscreener",
+            #     "upload_required": False,
+            # },
+            # {
+            #     "path": "src.agents.rugcheck.agent",
+            #     "class": "RugcheckAgent",
+            #     "description": "Analyzes token safety and trends using the Rugcheck API. Use when the query is about checking token safety, risks, or viewing trending tokens.",
+            #     "name": "rugcheck",
+            #     "human_readable_name": "Token Safety Analyzer",
+            #     "command": "rugcheck",
+            #     "upload_required": False,
+            # },
         ]
     }

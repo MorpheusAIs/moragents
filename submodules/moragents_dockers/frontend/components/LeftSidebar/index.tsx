@@ -5,12 +5,17 @@ import {
   IconPencilPlus,
   IconChevronLeft,
   IconChevronRight,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { getHttpClient } from "@/services/constants";
-import { createNewConversation } from "@/services/apiHooks";
+import {
+  createNewConversation,
+  clearMessagesHistory,
+} from "@/services/apiHooks";
 import { SettingsButton } from "@/components/Settings";
-import { Workflows } from "@/components/HeaderBar/Workflows";
+import { Workflows } from "@/components/Workflows";
 import styles from "./index.module.css";
+import { useRouter } from "next/router";
 
 export type LeftSidebarProps = {
   /** Whether the sidebar is currently open (expanded) or collapsed */
@@ -36,6 +41,8 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   const [conversations, setConversations] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama3.2:3b");
+  const backendClient = getHttpClient();
+  const router = useRouter();
   const toast = useToast();
 
   const modelOptions = [{ value: "llama3.2:3b", label: "Llama 3.2 (3B)" }];
@@ -124,6 +131,15 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
     }
   };
 
+  const handleClearChatHistory = async () => {
+    try {
+      await clearMessagesHistory(backendClient);
+      router.reload();
+    } catch (error) {
+      console.error("Failed to clear chat history:", error);
+    }
+  };
+
   // On mount, fetch conversations
   useEffect(() => {
     fetchConversations();
@@ -172,17 +188,28 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                 <span className={styles.conversationName}>
                   {formatConversationName(conversationId)}
                 </span>
-                {conversationId !== "default" && (
+                <div className={styles.buttonGroup}>
                   <button
-                    className={styles.deleteButton}
+                    className={styles.resetButton}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteConversation(conversationId);
+                      handleClearChatHistory();
                     }}
                   >
-                    <IconTrash size={16} />
+                    <IconRefresh size={16} />
                   </button>
-                )}
+                  {conversationId !== "default" && (
+                    <button
+                      className={styles.deleteButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteConversation(conversationId);
+                      }}
+                    >
+                      <IconTrash size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
