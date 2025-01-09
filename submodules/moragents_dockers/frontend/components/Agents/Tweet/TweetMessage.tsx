@@ -21,7 +21,7 @@ import {
 } from "react-icons/fa";
 import { postTweet, regenerateTweet } from "@/services/apiHooks";
 import { getHttpClient } from "@/services/constants";
-import styles from "./index.module.css";
+import styles from "./TweetMessage.module.css";
 
 type TweetProps = {
   initialContent: string;

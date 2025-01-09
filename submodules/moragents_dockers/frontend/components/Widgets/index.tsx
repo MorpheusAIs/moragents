@@ -2,23 +2,19 @@
 import React, { FC } from "react";
 import { Box, IconButton, Text } from "@chakra-ui/react";
 import { X } from "lucide-react";
-import {
-  ChatMessage,
-  ImageMessageContent,
-  CryptoDataMessageContent,
-  BaseMessageContent,
-} from "@/services/types";
-import { ImageDisplay } from "@/components/ImageDisplay";
+import { ChatMessage } from "@/services/types";
+import { ImageDisplay } from "@/components/Agents/Imagen/ImageDisplayMessage";
 import TradingViewWidget from "./TradingViewWidget";
 import DCAWidget from "./DCAWidget";
 import BaseSwapWidget from "./BaseSwapWidget";
 import BaseTransferWidget from "./BaseTransferWidget";
-
+import OneInchSwapWidget from "./OneInchSwapWidget";
 export const WIDGET_COMPATIBLE_AGENTS = [
   "imagen",
   "crypto data",
   "dca",
   "base",
+  "token swap",
 ];
 
 export const shouldOpenWidget = (message: ChatMessage) => {
@@ -32,6 +28,12 @@ export const shouldOpenWidget = (message: ChatMessage) => {
       return true;
     }
     return false;
+  }
+
+  if (message.agentName === "token swap") {
+    return (
+      message.requires_action && message.metadata?.src && message.metadata?.dst
+    );
   }
 
   if (message.agentName === "crypto data") {
@@ -126,6 +128,26 @@ export const Widgets: FC<WidgetsProps> = ({ activeWidget, onClose }) => {
           ) : (
             <BaseSwapWidget />
           )}
+        </Box>
+      );
+    }
+
+    if (
+      activeWidget?.role === "assistant" &&
+      activeWidget.agentName === "token swap" &&
+      activeWidget.requires_action &&
+      activeWidget.action_type === "swap" &&
+      activeWidget.metadata
+    ) {
+      return (
+        <Box
+          h="full"
+          w="full"
+          display="flex"
+          flexDirection="column"
+          flexGrow={1}
+        >
+          <OneInchSwapWidget metadata={activeWidget.metadata} />
         </Box>
       );
     }

@@ -3,7 +3,10 @@ import time
 
 import requests
 from src.agents.token_swap.config import Config
+from src.stores import key_manager_instance
 from web3 import Web3
+
+logger = logging.getLogger(__name__)
 
 
 class InsufficientFundsError(Exception):
@@ -18,22 +21,40 @@ class SwapNotPossibleError(Exception):
     pass
 
 
-def search_tokens(query, chain_id, limit=1, ignore_listed="false"):
+def get_headers() -> dict[str, str]:
+    """Get headers for 1inch API requests with optional API key override"""
+    oneinch_keys = key_manager_instance.get_oneinch_keys()
+    headers = {
+        "Authorization": f"Bearer {oneinch_keys.api_key}",
+        "accept": "application/json",
+    }
+    return headers
+
+
+def search_tokens(
+    query: str,
+    chain_id: int,
+    limit: int = 1,
+    ignore_listed: str = "false",
+) -> dict | None:
+    logger.info(f"Searching tokens - Query: {query}, Chain ID: {chain_id}")
     endpoint = f"/v1.2/{chain_id}/search"
-    params = {"query": query, "limit": limit, "ignore_listed": ignore_listed}
-    response = requests.get(Config.INCH_URL + endpoint, params=params, headers=Config.HEADERS)
+    params = {"query": str(query), "limit": str(limit), "ignore_listed": str(ignore_listed)}
+
+    response = requests.get(Config.INCH_URL + endpoint, params=params, headers=get_headers())
+    logger.info(f"Search tokens response status: {response.status_code}")
     if response.status_code == 200:
-        return response.json()
+        result = response.json()
+        logger.info(f"Found tokens: {result}")
+        return result
     else:
-        logging.error(f"Failed to search tokens. Status code: {response.status_code}")
+        logger.error(f"Failed to search tokens. Status code: {response.status_code}, Response: {response.text}")
         return None
 
 
 def get_token_balance(web3: Web3, wallet_address: str, token_address: str, abi: list) -> int:
     """Get the balance of an ERC-20 token for a given wallet address."""
-    if (
-        not token_address
-    ):  # If no token address is provided, assume checking ETH or native token balance
+    if not token_address:  # If no token address is provided, assume checking ETH or native token balance
         return web3.eth.get_balance(web3.to_checksum_address(wallet_address))
     else:
         contract = web3.eth.contract(address=web3.to_checksum_address(token_address), abi=abi)
@@ -83,20 +104,26 @@ def validate_swap(web3: Web3, token1, token2, chain_id, amount, wallet_address):
             raise TokenNotFoundError(f"Token {token2} not found.")
 
     # Check if the user has sufficient balance for the swap
-    if t1_bal < smallest_amount:
-        raise InsufficientFundsError(f"Insufficient funds to perform the swap.")
+    # if t1_bal < smallest_amount:
+    #     raise InsufficientFundsError(f"Insufficient funds to perform the swap.")
 
     return t1[0]["address"], t1[0]["symbol"], t2[0]["address"], t2[0]["symbol"]
 
 
 def get_quote(token1, token2, amount_in_wei, chain_id):
+    logger.info(f"Getting quote - Token1: {token1}, Token2: {token2}, Amount: {amount_in_wei}, Chain ID: {chain_id}")
     endpoint = f"/v6.0/{chain_id}/quote"
     params = {"src": token1, "dst": token2, "amount": int(amount_in_wei)}
-    response = requests.get(Config.QUOTE_URL + endpoint, params=params, headers=Config.HEADERS)
+    logger.debug(f"Quote request - URL: {Config.QUOTE_URL + endpoint}, Params: {params}")
+
+    response = requests.get(Config.QUOTE_URL + endpoint, params=params, headers=get_headers())
+    logger.info(f"Quote response status: {response.status_code}")
     if response.status_code == 200:
-        return response.json()
+        result = response.json()
+        logger.info(f"Quote received: {result}")
+        return result
     else:
-        logging.error(f"Failed to get quote. Status code: {response.status_code}")
+        logger.error(f"Failed to get quote. Status code: {response.status_code}, Response: {response.text}")
         return None
 
 
@@ -104,9 +131,7 @@ def get_token_decimals(web3: Web3, token_address: str) -> int:
     if not token_address:
         return 18  # Assuming 18 decimals for the native gas token
     else:
-        contract = web3.eth.contract(
-            address=Web3.to_checksum_address(token_address), abi=Config.ERC20_ABI
-        )
+        contract = web3.eth.contract(address=Web3.to_checksum_address(token_address), abi=Config.ERC20_ABI)
         return contract.functions.decimals().call()
 
 
@@ -135,9 +160,7 @@ def swap_coins(token1, token2, amount, chain_id, wallet_address):
         t2_address = "" if t2_a == Config.INCH_NATIVE_TOKEN_ADDRESS else t2_a
         t2_quote = convert_to_readable_unit(web3, int(price), t2_address)
     else:
-        raise SwapNotPossibleError(
-            "Failed to generate a quote. Please ensure you're on the correct network."
-        )
+        raise SwapNotPossibleError("Failed to generate a quote. Please ensure you're on the correct network.")
 
     return {
         "dst": t2_id,

@@ -1,12 +1,20 @@
 import logging
 import requests
+from dataclasses import dataclass
 from src.agents.token_swap import tools
 from src.models.core import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
 from src.stores.key_manager import key_manager_instance
+from src.agents.token_swap.config import Config
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class TokenSwapContext:
+    chain_id: str = None
+    wallet_address: str = None
 
 
 class TokenSwapAgent(AgentCore):
@@ -16,7 +24,7 @@ class TokenSwapAgent(AgentCore):
         super().__init__(config, llm, embeddings)
         self.tools_provided = tools.get_tools()
         self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
-        self.context = []
+        self.context = TokenSwapContext()
 
     def _api_request_url(self, method_name, query_params, chain_id):
         base_url = self.config.APIBASEURL + str(chain_id)
@@ -52,6 +60,10 @@ class TokenSwapAgent(AgentCore):
                 return AgentResponse.needs_info(
                     content="To help you with token swaps, I need your 1inch API key. Please set it up in Settings first."
                 )
+
+            # Store request context
+            self.context.chain_id = request.chain_id
+            self.context.wallet_address = request.wallet_address
 
             messages = [
                 SystemMessage(
@@ -93,8 +105,8 @@ class TokenSwapAgent(AgentCore):
                         args["token1"],
                         args["token2"],
                         float(args["value"]),
-                        self.config.chain_id,
-                        self.config.wallet_address,
+                        self.context.chain_id,
+                        self.context.wallet_address,
                     )
 
                     # Return an action_required response with swap details

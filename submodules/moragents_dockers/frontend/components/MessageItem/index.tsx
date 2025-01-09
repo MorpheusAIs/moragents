@@ -12,29 +12,17 @@ import {
 } from "@/services/types";
 import { getHumanReadableAgentName } from "@/services/utils";
 import { Avatar } from "@/components/Avatar";
-import { SwapMessage } from "@/components/SwapMessage";
-import { ClaimMessage } from "@/components/ClaimMessage/ClaimMessage";
-import { Tweet } from "@/components/Tweet";
+import { SwapMessage } from "@/components/Agents/Swaps/SwapMessage";
+import { ClaimMessage } from "@/components/Agents/MorClaims/ClaimMessage";
+import { Tweet } from "@/components/Agents/Tweet/TweetMessage";
 
 import styles from "./index.module.css";
 
 type MessageItemProps = {
   message: ChatMessage;
-  onCancelSwap: (fromAction: number) => void;
-  onSwapSubmit: (swapTx: any) => void;
-  onClaimSubmit: (claimTx: any) => void;
-  isLastSwapMessage: boolean;
-  isLastClaimMessage: boolean;
 };
 
-export const MessageItem: FC<MessageItemProps> = ({
-  message,
-  onCancelSwap,
-  onSwapSubmit,
-  onClaimSubmit,
-  isLastSwapMessage,
-  isLastClaimMessage,
-}) => {
+export const MessageItem: FC<MessageItemProps> = ({ message }) => {
   const isUser = message.role === "user";
   const { content, error_message } = message;
 

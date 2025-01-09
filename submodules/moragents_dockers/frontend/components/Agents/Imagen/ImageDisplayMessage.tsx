@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { Box, Flex, Image, Text } from "@chakra-ui/react";
-import styles from "./index.module.css";
+import styles from "./ImageDisplayMessage.module.css";
 
 type ImageDisplayProps = {
   imageMetadata: {

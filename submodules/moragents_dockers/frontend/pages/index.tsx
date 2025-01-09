@@ -23,8 +23,6 @@ const Home: NextPage = () => {
   const chainId = useChainId();
   const { address } = useAccount();
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
-
-  // NEW: track sidebar open/closed
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -108,6 +106,7 @@ const Home: NextPage = () => {
   };
 
   const handleBackendError = () => {
+    return;
     setShowBackendError(true);
   };
 
@@ -141,13 +140,12 @@ const Home: NextPage = () => {
             onCancelSwap={handleCancelSwap}
             onSubmitMessage={handleSubmitMessage}
             onBackendError={handleBackendError}
-            // Pass it down so Chat can adjust styling
             isSidebarOpen={isSidebarOpen}
           />
         </Box>
       </Flex>
 
-      <ErrorBackendModal show={showBackendError} />
+      {/* <ErrorBackendModal show={showBackendError} /> */}
     </Box>
   );
 };

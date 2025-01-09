@@ -20,7 +20,7 @@ import {
 } from "@chakra-ui/react";
 import { useAccount, useChainId, useReadContract } from "wagmi";
 import { erc20Abi, zeroAddress } from "viem";
-import { oneInchNativeToken, routerAddress } from "../../config";
+import { oneInchNativeToken, routerAddress } from "../../../config";
 import { InfoIcon } from "@chakra-ui/icons";
 
 export type SwapMessageLike =

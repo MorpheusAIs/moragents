@@ -2,10 +2,8 @@ import React, { FC, useState } from "react";
 import Image from "next/image";
 import { Box, HStack, Spacer, Button, ButtonGroup } from "@chakra-ui/react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { CDPWallets } from "./CDPWallets";
+import { CDPWallets } from "@/components/CDPWallets";
 import classes from "./index.module.css";
-import { getHttpClient } from "@/services/constants";
-import { useRouter } from "next/router";
 
 export const HeaderBar: FC = () => {
   const [walletType, setWalletType] = useState<"cdp" | "metamask">("cdp");
