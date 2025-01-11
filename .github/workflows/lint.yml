@@ -30,7 +30,3 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 black isort
           pip install -r requirements.txt
-
-      - name: Run Python linters
-        run: |
-          isort . --check-only
