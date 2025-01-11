@@ -1,9 +1,12 @@
 import logging
+from typing import Optional
+
 import tweepy
+from langchain.schema import HumanMessage, SystemMessage
+
 from src.agents.tweet_sizzler.config import Config
 from src.models.core import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
-from langchain.schema import HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,7 @@ class TweetSizzlerAgent(AgentCore):
                 content = request.prompt.content
 
             if action == "generate":
-                tweet = self._generate_tweet(content)
+                tweet = self.generate_tweet(content)
                 return AgentResponse.success(content=tweet)
             elif action == "post":
                 if not hasattr(request.prompt, "metadata") or not request.prompt.metadata:
@@ -56,10 +59,12 @@ class TweetSizzlerAgent(AgentCore):
             self.logger.error(f"Error processing request: {str(e)}", exc_info=True)
             return AgentResponse.error(error_message=str(e))
 
-    def _generate_tweet(self, prompt_content: str) -> str:
+    def generate_tweet(self, prompt_content: Optional[str] = None) -> str:
         """Generate tweet content based on prompt."""
         if not prompt_content:
-            raise ValueError("Tweet generation failed. Please provide a prompt.")
+            if not self.last_prompt_content:
+                raise ValueError("Tweet generation failed. Please provide a prompt.")
+            prompt_content = self.last_prompt_content
 
         self.last_prompt_content = prompt_content
         self.logger.info(f"Generating tweet for prompt_content: {prompt_content}")

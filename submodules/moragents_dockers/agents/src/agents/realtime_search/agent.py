@@ -51,7 +51,7 @@ class RealtimeSearchAgent(AgentCore):
             if func_name == "perform_web_search":
                 search_term = args.get("search_term")
                 if not search_term:
-                    return AgentResponse.error(error_message="No search term provided")
+                    return AgentResponse.needs_info(content="Could you please provide a search term?")
 
                 search_results = self._perform_search_with_web_scraping(search_term)
                 if "Error performing web search" in search_results:
@@ -78,6 +78,11 @@ class RealtimeSearchAgent(AgentCore):
 
             soup = BeautifulSoup(response.text, "html.parser")
             search_results = soup.find_all("div", class_="g")
+
+            if not search_results:
+                return AgentResponse.needs_info(
+                    content="I couldn't find any results for that search. Could you try rephrasing it?"
+                )
 
             formatted_results = []
             for result in search_results[: Config.MAX_SEARCH_RESULTS]:
@@ -106,6 +111,11 @@ class RealtimeSearchAgent(AgentCore):
 
             soup = BeautifulSoup(driver.page_source, "html.parser")
             search_results = soup.find_all("div", class_="g")
+
+            if not search_results:
+                return AgentResponse.needs_info(
+                    content="I couldn't find any results. Could you try being more specific?"
+                )
 
             formatted_results = []
             for result in search_results[: Config.MAX_SEARCH_RESULTS]:
@@ -137,6 +147,10 @@ class RealtimeSearchAgent(AgentCore):
 
         try:
             result = self.llm.invoke(messages, max_tokens=Config.MAX_TOKENS, temperature=Config.TEMPERATURE)
+            if not result.content.strip():
+                return AgentResponse.needs_info(
+                    content="I found some results but couldn't understand them well. Could you rephrase your question?"
+                )
             return result.content.strip()
         except Exception as e:
             logger.error(f"Error synthesizing answer: {str(e)}")

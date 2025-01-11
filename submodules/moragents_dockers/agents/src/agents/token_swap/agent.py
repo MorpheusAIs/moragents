@@ -1,20 +1,23 @@
 import logging
 import requests
+from typing import Optional
+
+from fastapi import Request
+from langchain.schema import HumanMessage, SystemMessage
 from dataclasses import dataclass
+
 from src.agents.token_swap import tools
 from src.models.core import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
-from langchain.schema import HumanMessage, SystemMessage
 from src.stores.key_manager import key_manager_instance
-from src.agents.token_swap.config import Config
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class TokenSwapContext:
-    chain_id: str = None
-    wallet_address: str = None
+    chain_id: Optional[str] = None
+    wallet_address: Optional[str] = None
 
 
 class TokenSwapAgent(AgentCore):
@@ -118,7 +121,9 @@ class TokenSwapAgent(AgentCore):
                 except (tools.InsufficientFundsError, tools.TokenNotFoundError, tools.SwapNotPossibleError) as e:
                     return AgentResponse.needs_info(content=str(e))
                 except ValueError:
-                    return AgentResponse.needs_info(content="Please provide a valid number for the amount to swap.")
+                    return AgentResponse.needs_info(
+                        content="Something went wrong. Please try again and make sure your Metamask is connected."
+                    )
             else:
                 return AgentResponse.needs_info(
                     content=f"I don't know how to {func_name}. Please try a different action."
@@ -165,4 +170,40 @@ class TokenSwapAgent(AgentCore):
             result = self._build_tx_for_swap(swap_params, request_data["chain_id"])
             return AgentResponse.success(content="Swap transaction created", metadata=result)
         except Exception as e:
+            return AgentResponse.error(error_message=str(e))
+
+    async def tx_status(self, request: Request) -> AgentResponse:
+        """Handle transaction status updates."""
+        try:
+            request_data = await request.json()
+            status = request_data.get("status")
+            tx_hash = request_data.get("tx_hash", "")
+            tx_type = request_data.get("tx_type", "")
+
+            response = ""
+            if status == "cancelled":
+                response = f"The {tx_type} transaction has been cancelled."
+            elif status == "success":
+                response = f"The {tx_type} transaction was successful."
+            elif status == "failed":
+                response = f"The {tx_type} transaction has failed."
+            elif status == "initiated":
+                response = "Transaction has been sent, please wait for it to be confirmed."
+
+            if tx_hash:
+                response = response + f" The transaction hash is {tx_hash}."
+
+            if status == "success" and tx_type == "approve":
+                response = response + " Please proceed with the swap transaction."
+            elif status != "initiated":
+                response = response + " Is there anything else I can help you with?"
+
+            if status != "initiated":
+                # Reset context for new conversation
+                self.context = TokenSwapContext()
+
+            return AgentResponse.success(content=response)
+
+        except Exception as e:
+            logger.error(f"Error processing transaction status: {str(e)}")
             return AgentResponse.error(error_message=str(e))

@@ -12,6 +12,7 @@ export const Chat: FC<ChatProps> = ({
   onSubmitMessage,
   messages,
   isSidebarOpen = false,
+  setIsSidebarOpen,
 }) => {
   const [messagesData, setMessagesData] = useState<ChatMessage[]>(messages);
   const [activeWidget, setActiveWidget] = useState<ChatMessage | null>(null);
@@ -24,13 +25,14 @@ export const Chat: FC<ChatProps> = ({
       if (lastMessage.role === "assistant" && shouldOpenWidget(lastMessage)) {
         setActiveWidget(lastMessage);
         setIsWidgetOpen(true);
+        setIsSidebarOpen(false);
       } else {
         setActiveWidget(null);
         setIsWidgetOpen(false);
       }
     }
     setMessagesData([...messages]);
-  }, [messages]);
+  }, [messages, setIsSidebarOpen]);
 
   const handleSubmit = async (message: string, file: File | null) => {
     setIsLoading(true);
@@ -46,9 +48,10 @@ export const Chat: FC<ChatProps> = ({
         width="100%"
         transition="all 0.3s ease-in-out"
         mt={4}
-        paddingLeft={isWidgetOpen ? "5%" : "10%"}
-        paddingRight={isWidgetOpen ? "35%" : "30%"}
-        ml={isSidebarOpen ? "280px" : "80px"}
+        paddingLeft={isWidgetOpen ? "5%" : "20%"}
+        paddingRight={isWidgetOpen ? "35%" : "20%"}
+        ml="auto"
+        mr="auto"
       >
         <MessageList messages={messagesData} />
         {isLoading && <LoadingIndicator />}

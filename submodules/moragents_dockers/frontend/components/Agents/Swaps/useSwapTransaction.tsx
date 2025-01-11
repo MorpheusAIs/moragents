@@ -2,7 +2,18 @@ import { useState, useCallback } from "react";
 import { useAccount, useChainId, useSendTransaction } from "wagmi";
 import { sendSwapStatus } from "@/services/apiHooks";
 import { getHttpClient, SWAP_STATUS } from "@/services/constants";
-import { SwapTxPayloadType } from "@/services/types";
+
+type SwapTx = {
+  dstAmount: string;
+  tx: {
+    data: string;
+    from: string;
+    gas: number;
+    gasPrice: string;
+    to: string;
+    value: string;
+  };
+};
 
 export const useSwapTransaction = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,19 +23,24 @@ export const useSwapTransaction = () => {
   const { sendTransaction } = useSendTransaction();
 
   const handleSwap = useCallback(
-    async (swapTx: SwapTxPayloadType) => {
+    async (swapTx: SwapTx) => {
       if (!address) return;
 
       setIsLoading(true);
       setTxHash("");
 
       try {
+        // Convert value to Wei (multiply by 10^18) before converting to BigInt
+        const valueInWei = Math.floor(
+          Number(swapTx.tx.value) * 1e18
+        ).toString();
+
         sendTransaction(
           {
             account: address,
-            data: (swapTx?.tx.data || "0x") as `0x${string}`,
-            to: (swapTx?.tx.to || "0x") as `0x${string}`,
-            value: BigInt(swapTx?.tx.value || "0"),
+            data: (swapTx.tx.data || "0x") as `0x${string}`,
+            to: (swapTx.tx.to || "0x") as `0x${string}`,
+            value: BigInt(valueInWei),
           },
           {
             onSuccess: async (hash) => {
@@ -48,6 +64,7 @@ export const useSwapTransaction = () => {
                 "",
                 0
               );
+              setIsLoading(false);
             },
             onSettled: () => setIsLoading(false),
           }
@@ -64,20 +81,17 @@ export const useSwapTransaction = () => {
     async (fromAction: number) => {
       if (!address) return;
 
-      setIsLoading(true);
       try {
         await sendSwapStatus(
           getHttpClient(),
           chainId,
-          address,
+          address.toLowerCase(),
           SWAP_STATUS.CANCELLED,
           "",
           fromAction
         );
       } catch (error) {
         console.error(`Failed to cancel swap: ${error}`);
-      } finally {
-        setIsLoading(false);
       }
     },
     [address, chainId]

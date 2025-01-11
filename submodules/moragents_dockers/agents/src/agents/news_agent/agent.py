@@ -60,7 +60,9 @@ class NewsAgent(AgentCore):
 
         except Exception as e:
             logger.error(f"Error processing request: {str(e)}", exc_info=True)
-            return AgentResponse.error(error_message=str(e))
+            return AgentResponse.needs_info(
+                content="I ran into an issue processing your request. Could you try rephrasing it?"
+            )
 
     async def _execute_tool(self, func_name: str, args: dict) -> AgentResponse:
         """Execute the appropriate news tool based on function name."""
@@ -68,7 +70,9 @@ class NewsAgent(AgentCore):
             if func_name == "fetch_crypto_news":
                 coins = args.get("coins", [])
                 if not coins:
-                    return AgentResponse.error(error_message="No coins specified for news fetch")
+                    return AgentResponse.needs_info(
+                        content="Could you specify which cryptocurrencies you'd like news about?"
+                    )
 
                 news = self._fetch_crypto_news(coins)
                 if not news:
@@ -87,11 +91,13 @@ class NewsAgent(AgentCore):
 
                 return AgentResponse.success(content=response)
             else:
-                return AgentResponse.error(error_message=f"Unknown tool: {func_name}")
+                return AgentResponse.needs_info(
+                    content=f"I don't know how to handle that type of request. Could you try asking about cryptocurrency news instead?"
+                )
 
         except Exception as e:
             logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
-            return AgentResponse.error(error_message=str(e))
+            return AgentResponse.needs_info(content="I encountered an issue fetching the news. Could you try again?")
 
     def _check_relevance_and_summarize(self, title, content, coin):
         """Check if news is relevant and generate summary."""

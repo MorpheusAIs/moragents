@@ -80,7 +80,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
     title: "Tweet Generator 🔥",
     icon: <Flame size={20} />,
     examples: [
-      { text: "Write a viral tweet about Web3", agent: "tweet" },
+      { text: "Create a viral tweet about Web3", agent: "tweet" },
       {
         text: "Create a spicy crypto market tweet about Gary Gensler",
         agent: "tweet",
@@ -176,11 +176,7 @@ const PrefilledOptions = ({
 }) => {
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
   const containerStyle = {
-    paddingLeft: isWidgetOpen
-      ? "5%"
-      : isSidebarOpen
-      ? "calc(260px + 20%)" // Sidebar width first, then percentage
-      : "20%",
+    paddingLeft: isWidgetOpen ? "5%" : "20%",
     paddingRight: isWidgetOpen ? "35%" : "20%",
   };
 

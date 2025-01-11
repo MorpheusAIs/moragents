@@ -8,7 +8,6 @@ import {
   HStack,
   Heading,
   FormControl,
-  FormLabel,
   Input,
   InputGroup,
   InputRightAddon,
@@ -122,7 +121,19 @@ const OneInchSwapWidget: FC<OneInchSwapWidgetProps> = ({ metadata }) => {
             </Button>
             <Button
               variant="greenCustom"
-              onClick={() => handleSwap(metadata)}
+              onClick={() =>
+                handleSwap({
+                  dstAmount: metadata.dst_amount.toString(),
+                  tx: {
+                    data: "0x",
+                    from: address || "",
+                    gas: 0,
+                    gasPrice: "0",
+                    to: metadata.dst_address,
+                    value: metadata.src_amount.toString(),
+                  },
+                })
+              }
               isLoading={isLoading}
               disabled={!address}
             >

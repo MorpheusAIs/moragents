@@ -104,8 +104,8 @@ def validate_swap(web3: Web3, token1, token2, chain_id, amount, wallet_address):
             raise TokenNotFoundError(f"Token {token2} not found.")
 
     # Check if the user has sufficient balance for the swap
-    # if t1_bal < smallest_amount:
-    #     raise InsufficientFundsError(f"Insufficient funds to perform the swap.")
+    if t1_bal < smallest_amount:
+        raise InsufficientFundsError(f"Insufficient funds to perform the swap.")
 
     return t1[0]["address"], t1[0]["symbol"], t2[0]["address"], t2[0]["symbol"]
 

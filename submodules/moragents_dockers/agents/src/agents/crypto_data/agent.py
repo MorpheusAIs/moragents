@@ -55,10 +55,12 @@ class CryptoDataAgent(AgentCore):
             elif func_name == "get_market_cap":
                 content = tools.get_coin_market_cap_tool(args["coin_name"])
             else:
-                return AgentResponse.error(error_message=f"Unknown tool: {func_name}")
+                return AgentResponse.needs_info(
+                    content=f"I don't know how to handle that type of request. Could you try asking about cryptocurrency news instead?"
+                )
 
             if "error" in content.lower() or "not found" in content.lower():
-                return AgentResponse.error(error_message=content)
+                return AgentResponse.needs_info(content=content)
 
             return AgentResponse.success(content=content, metadata=metadata)
 

@@ -30,6 +30,10 @@ export const shouldOpenWidget = (message: ChatMessage) => {
     return false;
   }
 
+  if (message.agentName === "dca") {
+    return message.requires_action;
+  }
+
   if (message.agentName === "token swap") {
     return (
       message.requires_action && message.metadata?.src && message.metadata?.dst

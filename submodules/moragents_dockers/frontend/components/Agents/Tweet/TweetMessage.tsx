@@ -105,7 +105,8 @@ export const Tweet: FC<TweetProps> = ({ initialContent }) => {
             </Text>
           </Box>
           <Flex alignItems="center">
-            <Button
+            {/* TODO: Fix Tweet regeneration */}
+            {/* <Button
               leftIcon={<FaSync />}
               onClick={handleRegenerate}
               isLoading={isRegenerating}
@@ -116,7 +117,7 @@ export const Tweet: FC<TweetProps> = ({ initialContent }) => {
               <Text fontSize="sm" ml={2}>
                 Try again
               </Text>
-            </Button>
+            </Button> */}
             <Button
               leftIcon={<FaPaperPlane />}
               onClick={handleTweet}

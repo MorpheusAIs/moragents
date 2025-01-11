@@ -70,7 +70,7 @@ class BaseAgent(AgentCore):
 
                 asset_id = args.get("asset_id")
                 if not asset_id:
-                    return AgentResponse.success(
+                    return AgentResponse.needs_info(
                         content="Please specify which asset you'd like to check the balance for."
                     )
 
@@ -78,7 +78,7 @@ class BaseAgent(AgentCore):
                 content = f"Your wallet {tool_result['address']} has a balance of {tool_result['balance']} {tool_result['asset']}"
                 return AgentResponse.success(content=content)
             else:
-                return AgentResponse.success(
+                return AgentResponse.needs_info(
                     content=f"I don't know how to {func_name} yet. Please try a different action."
                 )
 

@@ -14,7 +14,6 @@ import { ChatMessage } from "@/services/types";
 import { useEffect, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { HeaderBar } from "@/components/HeaderBar";
-import { ErrorBackendModal } from "@/components/ErrorBackendModal";
 
 const Home: NextPage = () => {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -141,6 +140,7 @@ const Home: NextPage = () => {
             onSubmitMessage={handleSubmitMessage}
             onBackendError={handleBackendError}
             isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
           />
         </Box>
       </Flex>

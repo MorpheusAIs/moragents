@@ -24,7 +24,7 @@ class DCAAgent(AgentCore):
         # Check CDP client initialization
         if not wallet_manager_instance.configure_cdp_client():
             # Return user-friendly error for missing credentials
-            return AgentResponse.success(
+            return AgentResponse.needs_info(
                 content="I'm not able to help with DCA strategies right now because the CDP client is not initialized. Please set up your API credentials first."
             )
 
@@ -32,7 +32,7 @@ class DCAAgent(AgentCore):
         active_wallet = wallet_manager_instance.get_active_wallet()
         if not active_wallet:
             # Return user-friendly error for missing wallet
-            return AgentResponse.success(
+            return AgentResponse.needs_info(
                 content="You'll need to select or create a wallet before I can help with DCA strategies. Please set up a wallet first."
             )
 
@@ -59,7 +59,9 @@ class DCAAgent(AgentCore):
         """Execute the appropriate DCA tool based on function name."""
         try:
             # TODO: Implement DCA-specific tools
-            return AgentResponse.success(content=f"I don't know how to {func_name} yet. Please try a different action.")
+            return AgentResponse.needs_info(
+                content=f"I don't know how to {func_name} yet. Please try a different action."
+            )
 
         except Exception as e:
             logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)

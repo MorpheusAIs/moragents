@@ -57,14 +57,11 @@ class RugcheckAgent(AgentCore):
                             for risk in report.get("risks", [])
                         ]
                     )
-
                     content = (
-                        f"Token Analysis Report for {mint}\n"
-                        f"Name: {report.get('tokenMeta', {}).get('name')}\n"
-                        f"Symbol: {report.get('tokenMeta', {}).get('symbol')}\n"
-                        f"Overall Score: {report.get('score')}\n"
-                        f"\nRisk Factors:\n{risks}\n"
-                        f"\nTotal Market Liquidity: {report.get('totalMarketLiquidity')} USD"
+                        f"# Token Analysis Report for {mint}\n\n"
+                        f"- Overall Risk Score: {report.get('score') or 'Unknown'}\n\n"
+                        f"## Potential Risks:\n\n"
+                        f"{risks}\n\n"
                     )
 
                     return AgentResponse.success(content=content)

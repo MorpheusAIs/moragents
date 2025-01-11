@@ -6,6 +6,7 @@ export type ChatProps = {
   messages: ChatMessage[];
   onBackendError: () => void;
   isSidebarOpen?: boolean;
+  setIsSidebarOpen: (isSidebarOpen: boolean) => void;
 };
 
 export type SwapTransaction = {

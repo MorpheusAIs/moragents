@@ -84,24 +84,34 @@ export const sendSwapStatus = async (
   txHash?: string,
   swapType?: number
 ): Promise<ChatMessage> => {
-  const responseBody = await backendClient.post("/swap/tx_status", {
-    chain_id: chainId,
-    wallet_address: walletAddress,
-    status: swapStatus,
-    tx_hash: txHash || "",
-    tx_type: swapType === 0 ? "swap" : "approve",
-  });
+  try {
+    const responseBody = await backendClient.post("/swap/tx_status", {
+      status: swapStatus,
+      tx_hash: txHash || "",
+      tx_type: swapType === 0 ? "swap" : "approve",
+      chain_id: chainId,
+      wallet_address: walletAddress,
+    });
 
-  return {
-    role: responseBody.data.role,
-    content: responseBody.data.content,
-    agentName: responseBody.data.agentName,
-    error_message: responseBody.data.error_message,
-    metadata: responseBody.data.metadata,
-    requires_action: responseBody.data.requires_action,
-    action_type: responseBody.data.action_type,
-    timestamp: responseBody.data.timestamp,
-  } as ChatMessage;
+    return {
+      role: responseBody.data.role,
+      content: responseBody.data.content,
+      agentName: responseBody.data.agentName,
+      error_message: responseBody.data.error_message,
+      metadata: responseBody.data.metadata,
+      requires_action: responseBody.data.requires_action,
+      action_type: responseBody.data.action_type,
+      timestamp: responseBody.data.timestamp,
+    } as ChatMessage;
+  } catch (error: unknown) {
+    console.error("Failed to send swap status:", error);
+    return {
+      role: "assistant",
+      content: "Failed to process transaction status update",
+      error_message: error instanceof Error ? error.message : String(error),
+      timestamp: Date.now(),
+    } as ChatMessage;
+  }
 };
 
 export const getMessagesHistory = async (
