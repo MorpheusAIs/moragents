@@ -130,15 +130,23 @@ async def chat(chat_request: ChatRequest):
         # Add user message to chat history
         chat_manager_instance.add_message(chat_request.prompt.dict(), chat_request.conversation_id)
 
-        # Get active agent
-        if not agent_name:
+        # If command was parsed, use that agent directly
+        if agent_name:
+            logger.info(f"Using command agent flow: {agent_name}")
+            agent = agent_manager_instance.get_agent(agent_name)
+            if not agent:
+                logger.error(f"Agent {agent_name} not found")
+                raise HTTPException(status_code=404, detail=f"Agent {agent_name} not found")
+
+            agent_response = await agent.chat(chat_request)
+            current_agent = agent_name
+
+        # Otherwise use delegator to find appropriate agent
+        else:
+            logger.info("Using delegator flow")
             delegator.reset_attempted_agents()
             active_agent = await get_active_agent_for_chat(chat_request.prompt.dict())
-        else:
-            active_agent = agent_name
-
-        logger.info(f"Delegating chat to active agent: {active_agent}")
-        current_agent, agent_response = await delegator.delegate_chat(active_agent, chat_request)
+            current_agent, agent_response = await delegator.delegate_chat(active_agent, chat_request)
 
         if not isinstance(agent_response, AgentResponse):
             logger.error(f"Agent {current_agent} returned invalid response type {type(agent_response)}")

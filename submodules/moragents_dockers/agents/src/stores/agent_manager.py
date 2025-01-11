@@ -94,8 +94,6 @@ class AgentManager:
         Raises:
             ValueError: If agent_name is not in selected_agents
         """
-        if agent_name and agent_name not in self.selected_agents:
-            raise ValueError(f"Agent {agent_name} is not selected")
         self.active_agent = agent_name
 
     def clear_active_agent(self) -> None:
