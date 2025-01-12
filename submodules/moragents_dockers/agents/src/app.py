@@ -126,6 +126,8 @@ async def chat(chat_request: ChatRequest):
         if agent_name:
             agent_manager_instance.set_active_agent(agent_name)
             chat_request.prompt.content = message
+        else:
+            agent_manager_instance.clear_active_agent()
 
         # Add user message to chat history
         chat_manager_instance.add_message(chat_request.prompt.dict(), chat_request.conversation_id)
