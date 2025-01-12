@@ -42,17 +42,33 @@ class CryptoDataAgent(AgentCore):
             metadata = {}
 
             if func_name == "get_price":
+                if "coin_name" not in args:
+                    return AgentResponse.needs_info(content="Please provide the name of the coin to get its price")
                 content = tools.get_coin_price_tool(args["coin_name"])
                 trading_symbol = tools.get_tradingview_symbol(tools.get_coingecko_id(args["coin_name"]))
                 if trading_symbol:
                     metadata["coinId"] = trading_symbol
             elif func_name == "get_floor_price":
+                if "nft_name" not in args:
+                    return AgentResponse.needs_info(
+                        content="Please provide the name of the NFT collection to get its floor price"
+                    )
                 content = tools.get_nft_floor_price_tool(args["nft_name"])
             elif func_name == "get_fdv":
+                if "coin_name" not in args:
+                    return AgentResponse.needs_info(
+                        content="Please provide the name of the coin to get its fully diluted valuation"
+                    )
                 content = tools.get_fully_diluted_valuation_tool(args["coin_name"])
             elif func_name == "get_tvl":
+                if "protocol_name" not in args:
+                    return AgentResponse.needs_info(
+                        content="Please provide the name of the protocol to get its total value locked"
+                    )
                 content = tools.get_protocol_total_value_locked_tool(args["protocol_name"])
             elif func_name == "get_market_cap":
+                if "coin_name" not in args:
+                    return AgentResponse.needs_info(content="Please provide the name of the coin to get its market cap")
                 content = tools.get_coin_market_cap_tool(args["coin_name"])
             else:
                 return AgentResponse.needs_info(
