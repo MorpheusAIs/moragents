@@ -88,7 +88,7 @@ export const Workflows: React.FC = () => {
   const [config, setConfig] = useState({
     originToken: "USDC",
     destinationToken: "WETH",
-    stepSize: 100,
+    stepSize: "100",
     frequency: "weekly",
     priceThreshold: "",
     pauseOnVolatility: false,
