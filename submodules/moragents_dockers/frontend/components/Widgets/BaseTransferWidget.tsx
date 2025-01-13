@@ -17,7 +17,7 @@ import { BASE_AVAILABLE_TOKENS } from "@/services/constants";
 
 interface TransferConfig {
   token: string;
-  amount: string; // Store this as a string instead of a number
+  amount: string;
   destinationAddress: string;
 }
 
