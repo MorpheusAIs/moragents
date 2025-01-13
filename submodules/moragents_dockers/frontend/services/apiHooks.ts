@@ -1,6 +1,7 @@
 import { Axios } from "axios";
 import {
   ChatMessage,
+  UserMessage,
   ClaimTransactionPayload,
   SwapTxPayloadType,
   XCredentials,
@@ -162,10 +163,9 @@ export const writeMessage = async (
   address: string,
   conversationId: string = "default"
 ) => {
-  const newMessage: ChatMessage = {
+  const newMessage: UserMessage = {
     role: "user",
     content: message,
-    agentName: "user",
   };
 
   history.push(newMessage);

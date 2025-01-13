@@ -71,28 +71,34 @@ export const CDPWallets: React.FC = () => {
 
   // Form submission handlers
   const onCreateWallet = async () => {
-    const success = await handleCreateWallet(newWalletName, selectedNetwork);
-    if (success) {
+    try {
+      await handleCreateWallet(newWalletName, selectedNetwork);
       onClose();
       setNewWalletName("");
+    } catch (error) {
+      console.error("Failed to create wallet:", error);
     }
   };
 
   const onRestoreWallet = async () => {
     if (!walletFile) return;
-    const success = await handleRestoreWallet(walletFile);
-    if (success) {
+    try {
+      await handleRestoreWallet(walletFile);
       onClose();
       setWalletFile(null);
+    } catch (error) {
+      console.error("Failed to restore wallet:", error);
     }
   };
 
   const onDeleteWallet = async () => {
-    const success = await handleDeleteWallet(walletToDelete, confirmWalletId);
-    if (success) {
+    try {
+      await handleDeleteWallet(walletToDelete, confirmWalletId);
       onDeleteClose();
       setConfirmWalletId("");
       setWalletToDelete("");
+    } catch (error) {
+      console.error("Failed to delete wallet:", error);
     }
   };
 

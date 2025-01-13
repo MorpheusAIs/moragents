@@ -19,19 +19,29 @@ import { useSwapTransaction } from "@/components/Agents/Swaps/useSwapTransaction
 
 interface OneInchSwapWidgetProps {
   metadata: {
-    src: string;
-    dst: string;
-    src_address: string;
-    dst_address: string;
-    src_amount: number;
-    dst_amount: number;
+    src?: string;
+    dst?: string;
+    src_address?: string;
+    dst_address?: string;
+    src_amount?: number;
+    dst_amount?: number;
   };
 }
 
-const OneInchSwapWidget: FC<OneInchSwapWidgetProps> = ({ metadata }) => {
+const OneInchSwapWidget: FC<OneInchSwapWidgetProps> = ({ metadata = {} }) => {
   const { address } = useAccount();
   const { handleSwap, handleCancel, isLoading } = useSwapTransaction();
   const [slippage, setSlippage] = React.useState(0.1);
+
+  // Default values for metadata fields
+  const src = metadata.src || "ETH";
+  const dst = metadata.dst || "USDC";
+  const srcAmount = metadata.src_amount || 0;
+  const dstAmount = metadata.dst_amount || 0;
+  const srcAddress =
+    metadata.src_address || "0x0000000000000000000000000000000000000000";
+  const dstAddress =
+    metadata.dst_address || "0x0000000000000000000000000000000000000000";
 
   return (
     <Container maxW="container.md">
@@ -58,9 +68,9 @@ const OneInchSwapWidget: FC<OneInchSwapWidgetProps> = ({ metadata }) => {
                 <Text color="white">You Pay</Text>
                 <HStack>
                   <Text color="#9A9C9B" fontSize="16px">
-                    {metadata.src_amount}
+                    {srcAmount}
                   </Text>
-                  <Text color="white">{metadata.src}</Text>
+                  <Text color="white">{src}</Text>
                 </HStack>
               </VStack>
             </Box>
@@ -70,9 +80,9 @@ const OneInchSwapWidget: FC<OneInchSwapWidgetProps> = ({ metadata }) => {
                 <Text color="white">You Receive</Text>
                 <HStack>
                   <Text color="#9A9C9B" fontSize="16px">
-                    {metadata.dst_amount.toFixed(4)}
+                    {dstAmount.toFixed(4)}
                   </Text>
-                  <Text color="white">{metadata.dst}</Text>
+                  <Text color="white">{dst}</Text>
                 </HStack>
               </VStack>
             </Box>
@@ -123,14 +133,14 @@ const OneInchSwapWidget: FC<OneInchSwapWidgetProps> = ({ metadata }) => {
               variant="greenCustom"
               onClick={() =>
                 handleSwap({
-                  dstAmount: metadata.dst_amount.toString(),
+                  dstAmount: dstAmount.toString(),
                   tx: {
                     data: "0x",
                     from: address || "",
                     gas: 0,
                     gasPrice: "0",
-                    to: metadata.dst_address,
-                    value: metadata.src_amount.toString(),
+                    to: dstAddress,
+                    value: srcAmount.toString(),
                   },
                 })
               }

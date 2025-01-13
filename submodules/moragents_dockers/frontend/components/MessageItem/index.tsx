@@ -3,8 +3,6 @@ import { Grid, GridItem, Text } from "@chakra-ui/react";
 import ReactMarkdown from "react-markdown";
 import {
   ChatMessage,
-  SwapMessagePayload,
-  ClaimMessagePayload,
   ImageMessageContent,
   CryptoDataMessageContent,
   BaseMessageContent,
@@ -12,8 +10,6 @@ import {
 } from "@/services/types";
 import { getHumanReadableAgentName } from "@/services/utils";
 import { Avatar } from "@/components/Avatar";
-import { SwapMessage } from "@/components/Agents/Swaps/SwapMessage";
-import { ClaimMessage } from "@/components/Agents/MorClaims/ClaimMessage";
 import { Tweet } from "@/components/Agents/Tweet/TweetMessage";
 
 import styles from "./index.module.css";
@@ -36,30 +32,6 @@ export const MessageItem: FC<MessageItemProps> = ({ message }) => {
           {error_message}
         </Text>
       );
-    }
-
-    // Handle token swap agent messages first
-    if (
-      message.agentName === "token swap" &&
-      message.requires_action &&
-      message.action_type === "swap"
-    ) {
-      const assistantMessage = message as AssistantMessage;
-      if (
-        typeof assistantMessage.content === "object" &&
-        assistantMessage.content.metadata
-      ) {
-        return (
-          <SwapMessage
-            isActive={isLastSwapMessage}
-            onCancelSwap={onCancelSwap}
-            fromMessage={
-              assistantMessage.content.metadata as SwapMessagePayload
-            }
-            onSubmitSwap={onSwapSubmit}
-          />
-        );
-      }
     }
 
     if (typeof content === "string") {

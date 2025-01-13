@@ -1,7 +1,7 @@
 export type ChatMessageBase = {
   role: string;
   content: string | any;
-  responseType: string;
+  responseType?: string;
   agentName?: string;
   error_message?: string;
   metadata?: Record<string, any>;
