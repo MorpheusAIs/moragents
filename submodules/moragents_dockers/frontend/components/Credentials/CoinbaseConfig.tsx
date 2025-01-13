@@ -10,7 +10,7 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
-import { setCoinbaseApiKeys } from "@/services/apiHooks";
+import { setCoinbaseCredentials } from "@/services/apiHooks";
 import axios from "axios";
 
 interface CoinbaseCredentials {
@@ -43,8 +43,8 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
 
   useEffect(() => {
     const storedCredentials: CoinbaseCredentials = {
-      cdpApiKey: localStorage.getItem("cdpApiKey") || "",
-      cdpApiSecret: localStorage.getItem("cdpApiSecret") || "",
+      cdpApiKey: localStorage.getItem("coinbase_api_key") || "",
+      cdpApiSecret: localStorage.getItem("coinbase_api_secret") || "",
     };
     setCredentials(storedCredentials);
     setDisplayCredentials({
@@ -60,9 +60,8 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
 
   const handleSave = async () => {
     // Store in localStorage as backup
-    Object.entries(credentials).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
-    });
+    localStorage.setItem("coinbase_api_key", credentials.cdpApiKey);
+    localStorage.setItem("coinbase_api_secret", credentials.cdpApiSecret);
 
     // Send to backend
     const backendClient = axios.create({
@@ -70,7 +69,7 @@ export const CoinbaseConfig: React.FC<CoinbaseConfigProps> = ({ onSave }) => {
     });
 
     try {
-      await setCoinbaseApiKeys(backendClient, {
+      await setCoinbaseCredentials(backendClient, {
         cdp_api_key: credentials.cdpApiKey,
         cdp_api_secret: credentials.cdpApiSecret,
       });

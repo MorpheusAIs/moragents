@@ -8,95 +8,117 @@ import {
   ImageMessageContent,
   CryptoDataMessageContent,
   BaseMessageContent,
+  AssistantMessage,
 } from "@/services/types";
+import { getHumanReadableAgentName } from "@/services/utils";
 import { Avatar } from "@/components/Avatar";
-import { availableAgents } from "@/config";
-import { SwapMessage } from "@/components/SwapMessage";
-import { ClaimMessage } from "@/components/ClaimMessage/ClaimMessage";
-import { Tweet } from "@/components/Tweet";
+import { SwapMessage } from "@/components/Agents/Swaps/SwapMessage";
+import { ClaimMessage } from "@/components/Agents/MorClaims/ClaimMessage";
+import { Tweet } from "@/components/Agents/Tweet/TweetMessage";
+
 import styles from "./index.module.css";
 
 type MessageItemProps = {
   message: ChatMessage;
-  selectedAgent: string;
-  onCancelSwap: (fromAction: number) => void;
-  onSwapSubmit: (swapTx: any) => void;
-  onClaimSubmit: (claimTx: any) => void;
-  isLastSwapMessage: boolean;
-  isLastClaimMessage: boolean;
 };
 
-export const MessageItem: FC<MessageItemProps> = ({
-  message,
-  selectedAgent,
-  onCancelSwap,
-  onSwapSubmit,
-  onClaimSubmit,
-  isLastSwapMessage,
-  isLastClaimMessage,
-}) => {
-  const agentName = availableAgents[selectedAgent]?.name || "Undefined Agent";
+export const MessageItem: FC<MessageItemProps> = ({ message }) => {
   const isUser = message.role === "user";
-  const { content } = message;
+  const { content, error_message } = message;
+
+  console.log("Message:", message);
 
   const renderContent = () => {
+    // First check for error message
+    if (error_message) {
+      return (
+        <Text color="red.500" className={styles.messageText}>
+          {error_message}
+        </Text>
+      );
+    }
+
+    // Handle token swap agent messages first
+    if (
+      message.agentName === "token swap" &&
+      message.requires_action &&
+      message.action_type === "swap"
+    ) {
+      const assistantMessage = message as AssistantMessage;
+      if (
+        typeof assistantMessage.content === "object" &&
+        assistantMessage.content.metadata
+      ) {
+        return (
+          <SwapMessage
+            isActive={isLastSwapMessage}
+            onCancelSwap={onCancelSwap}
+            fromMessage={
+              assistantMessage.content.metadata as SwapMessagePayload
+            }
+            onSubmitSwap={onSwapSubmit}
+          />
+        );
+      }
+    }
+
     if (typeof content === "string") {
       if (message.agentName === "tweet sizzler") {
-        return <Tweet initialContent={content} selectedAgent={selectedAgent} />;
+        return <Tweet initialContent={content} />;
       }
       return (
         <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
       );
     }
 
-    if (message.agentName === "imagen") {
-      const imageContent = content as unknown as ImageMessageContent;
-      return (
-        <ReactMarkdown className={styles.messageText}>
-          {`Successfully generated image with ${imageContent.service}`}
-        </ReactMarkdown>
-      );
-    }
+    // Type guard to ensure we're working with AssistantMessage
+    if (message.role === "assistant") {
+      const assistantMessage = message as AssistantMessage;
 
-    if (message.agentName === "crypto data") {
-      const cryptoDataContent = content as unknown as CryptoDataMessageContent;
-      return (
-        <ReactMarkdown className={styles.messageText}>
-          {cryptoDataContent.data}
-        </ReactMarkdown>
-      );
-    }
+      if (message.agentName === "imagen") {
+        const imageContent = assistantMessage.content as ImageMessageContent;
+        if (!imageContent.success) {
+          return (
+            <Text color="red.500" className={styles.messageText}>
+              {imageContent.error || "Failed to generate image"}
+            </Text>
+          );
+        }
+        return (
+          <ReactMarkdown className={styles.messageText}>
+            {`Successfully generated image with ${imageContent.service}`}
+          </ReactMarkdown>
+        );
+      }
 
-    if (message.agentName === "base") {
-      const baseContent = content as unknown as BaseMessageContent;
-      return (
-        <ReactMarkdown className={styles.messageText}>
-          {baseContent.message}
-        </ReactMarkdown>
-      );
-    }
+      if (message.agentName === "crypto data") {
+        const cryptoDataContent =
+          assistantMessage.content as CryptoDataMessageContent;
+        return (
+          <ReactMarkdown className={styles.messageText}>
+            {cryptoDataContent.data}
+          </ReactMarkdown>
+        );
+      }
 
-    if (message.role === "swap") {
-      return (
-        <SwapMessage
-          isActive={isLastSwapMessage}
-          onCancelSwap={onCancelSwap}
-          selectedAgent={selectedAgent}
-          fromMessage={content as SwapMessagePayload}
-          onSubmitSwap={onSwapSubmit}
-        />
-      );
-    }
+      if (message.agentName === "base") {
+        const baseContent = assistantMessage.content as BaseMessageContent;
+        return (
+          <ReactMarkdown className={styles.messageText}>
+            {baseContent.message}
+          </ReactMarkdown>
+        );
+      }
 
-    if (message.role === "claim") {
-      return (
-        <ClaimMessage
-          isActive={isLastClaimMessage}
-          selectedAgent={selectedAgent}
-          fromMessage={content as ClaimMessagePayload}
-          onSubmitClaim={onClaimSubmit}
-        />
-      );
+      // if (assistantMessage.action_type === "claim") {
+      //   return (
+      //     <ClaimMessage
+      //       isActive={isLastClaimMessage}
+      //       fromMessage={assistantMessage.content as ClaimMessagePayload}
+      //       onSubmitClaim={onClaimSubmit}
+      //     />
+      //   );
+      // }
     }
 
     return (
@@ -111,10 +133,15 @@ export const MessageItem: FC<MessageItemProps> = ({
       className={styles.messageGrid}
     >
       <GridItem area="avatar">
-        <Avatar isAgent={!isUser} agentName={agentName} />
+        <Avatar
+          isAgent={!isUser}
+          agentName={getHumanReadableAgentName(message.agentName || "")}
+        />
       </GridItem>
       <GridItem area="name">
-        <Text className={styles.nameText}>{isUser ? "Me" : agentName}</Text>
+        <Text className={styles.nameText}>
+          {isUser ? "Me" : getHumanReadableAgentName(message.agentName || "")}
+        </Text>
       </GridItem>
       <GridItem area="message">{renderContent()}</GridItem>
     </Grid>

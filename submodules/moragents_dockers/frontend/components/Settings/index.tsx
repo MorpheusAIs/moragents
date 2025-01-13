@@ -15,8 +15,7 @@ import {
   TabPanel,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { TwitterConfig } from "./TwitterConfig";
-import { CoinbaseConfig } from "./CoinbaseConfig";
+import { GeneralSettings } from "./GeneralSettings";
 import { AgentSelection } from "./AgentSelection";
 
 export const SettingsButton: React.FC = () => {
@@ -44,22 +43,18 @@ export const SettingsButton: React.FC = () => {
         isCentered
       >
         <ModalOverlay />
-        <ModalContent bg={bgColor} textAlign="center">
+        <ModalContent bg={bgColor}>
           <ModalHeader>Settings</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <Tabs variant="enclosed" isFitted>
               <TabList mb={4}>
-                <Tab>Twitter API</Tab>
-                <Tab>Coinbase API</Tab>
+                <Tab>General</Tab>
                 <Tab>Agents</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel>
-                  <TwitterConfig onSave={() => setIsOpen(false)} />
-                </TabPanel>
-                <TabPanel>
-                  <CoinbaseConfig onSave={() => setIsOpen(false)} />
+                  <GeneralSettings onSave={() => setIsOpen(false)} />
                 </TabPanel>
                 <TabPanel>
                   <AgentSelection onSave={() => setIsOpen(false)} />

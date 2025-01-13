@@ -1,0 +1,291 @@
+/* Menu Button */
+.menuButton {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 12px 20px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  font-weight: 500 !important;
+  min-width: 160px !important;
+}
+
+.menuButton:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px);
+}
+
+/* Menu List */
+.menuList {
+  background: #141414 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  padding: 8px !important;
+  min-width: 360px !important;
+  border-radius: 12px !important;
+}
+
+/* Create Button Section */
+.createButtonWrapper {
+  padding: 12px !important;
+}
+
+.createButton {
+  width: 100% !important;
+  background-color: rgba(52, 211, 153, 0.15) !important;
+  color: rgb(52, 211, 153) !important;
+  border: 1px solid rgba(52, 211, 153, 0.2) !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  font-weight: 500 !important;
+}
+
+.createButton:hover {
+  background-color: rgba(52, 211, 153, 0.2) !important;
+  border-color: rgba(52, 211, 153, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+/* Divider */
+.divider {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 8px 0 !important;
+}
+
+/* Wallet Item */
+.walletItem {
+  padding: 16px !important;
+  border-radius: 8px !important;
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  margin: 4px 0 !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.walletItem:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  transform: translateX(2px);
+}
+
+/* Wallet Info */
+.walletInfo {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.walletName {
+  color: white !important;
+  font-weight: 500 !important;
+  font-size: 15px !important;
+}
+
+.networkId {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 13px !important;
+}
+
+.address {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 12px !important;
+  font-family: monospace !important;
+}
+
+/* Action Buttons */
+.actionButtons {
+  opacity: 0;
+  transition: opacity 0.2s ease !important;
+}
+
+.walletItem:hover .actionButtons {
+  opacity: 1;
+}
+
+.actionButton {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  padding: 8px !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.actionButton:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transform: scale(1.1);
+}
+
+.copyButton:hover {
+  color: #4299e1 !important;
+}
+
+.starButton.active {
+  color: #ecc94b !important;
+}
+
+.starButton:hover {
+  color: #ecc94b !important;
+}
+
+.downloadButton:hover {
+  color: #48bb78 !important;
+}
+
+.deleteButton:hover {
+  color: #f56565 !important;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 24px !important;
+  text-align: center !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Modal Styles */
+.modalContent {
+  background: #141414 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+}
+
+.modalHeader {
+  color: white !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 20px 24px !important;
+}
+
+.modalBody {
+  padding: 24px !important;
+}
+
+/* Tabs */
+.tabs {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.tabList {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.tab {
+  color: rgba(255, 255, 255, 0.6) !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all 0.2s ease !important;
+}
+
+.tab[aria-selected="true"] {
+  color: white !important;
+  border-bottom-color: rgb(52, 211, 153) !important;
+}
+
+/* Forms */
+.formLabel {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 14px !important;
+  margin-bottom: 8px !important;
+}
+
+.input,
+.select {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transition: all 0.2s ease !important;
+}
+
+.input:hover,
+.select:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.input:focus,
+.select:focus {
+  border-color: rgb(52, 211, 153) !important;
+  box-shadow: 0 0 0 1px rgb(52, 211, 153) !important;
+}
+
+.fileUploadButton {
+  width: 100% !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+  padding: 24px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.fileUploadButton:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.submitButton {
+  width: 100% !important;
+  background-color: rgb(52, 211, 153) !important;
+  color: #141414 !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.submitButton:hover {
+  background-color: rgb(72, 231, 173) !important;
+  transform: translateY(-1px);
+}
+
+/* Delete Dialog */
+.deleteDialog {
+  background: #141414 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+}
+
+.deleteDialogHeader {
+  color: white !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.deleteDialogBody {
+  padding: 24px !important;
+}
+
+.deleteConfirmText {
+  color: rgba(255, 255, 255, 0.8) !important;
+  margin-bottom: 16px !important;
+}
+
+.deleteConfirmInput {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.deleteDialogFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 16px 24px !important;
+}
+
+.cancelButton {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+}
+
+.confirmDeleteButton {
+  background-color: rgb(245, 101, 101) !important;
+  color: white !important;
+  margin-left: 12px !important;
+}
+
+.confirmDeleteButton:hover {
+  background-color: rgb(229, 62, 62) !important;
+}

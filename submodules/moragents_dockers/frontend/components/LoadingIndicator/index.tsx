@@ -2,18 +2,9 @@ import React, { FC } from "react";
 import { Grid, GridItem, Text, Box } from "@chakra-ui/react";
 import { Avatar } from "../Avatar";
 import { Loader } from "../Loader";
-import { availableAgents } from "../../config";
 import styles from "./index.module.css";
 
-type LoadingIndicatorProps = {
-  selectedAgent: string;
-};
-
-export const LoadingIndicator: FC<LoadingIndicatorProps> = ({
-  selectedAgent,
-}) => {
-  const agentName = availableAgents[selectedAgent]?.name || "Undefined Agent";
-
+export const LoadingIndicator: FC = () => {
   return (
     <Grid
       templateAreas={`"avatar name" "avatar message"`}
@@ -21,10 +12,10 @@ export const LoadingIndicator: FC<LoadingIndicatorProps> = ({
       className={styles.messageGrid}
     >
       <GridItem area="avatar">
-        <Avatar isAgent={true} agentName={agentName} />
+        <Avatar isAgent={true} agentName="Finding the best agent" />
       </GridItem>
       <GridItem area="name">
-        <Text className={styles.nameText}>{agentName}</Text>
+        <Text className={styles.nameText}>Finding the best agent</Text>
       </GridItem>
       <GridItem area="message">
         <Box className={styles.messageText}>

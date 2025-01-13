@@ -1,23 +1,20 @@
 import React, { FC } from "react";
-import { SwapForm } from "../SwapForm";
-import { SwapMessagePayload } from "@/services/types";
 import { Box, Text } from "@chakra-ui/react";
+import { SwapMessagePayload } from "@/services/types";
+import { SwapForm } from "@/components/Agents/Swaps/SwapForm";
+import { useSwapTransaction } from "@/components/Agents/Swaps/useSwapTransaction";
 
 type SwapMessageProps = {
   isActive: boolean;
-  onCancelSwap: (fromAction: number) => void;
-  selectedAgent: string;
   fromMessage: SwapMessagePayload | null;
-  onSubmitSwap: (swapTx: any) => void;
 };
 
 export const SwapMessage: FC<SwapMessageProps> = ({
   isActive,
-  onCancelSwap,
-  selectedAgent,
   fromMessage,
-  onSubmitSwap,
 }) => {
+  const { handleSwap, handleCancel, isLoading } = useSwapTransaction();
+
   if (!fromMessage) {
     return (
       <Box p={4} bg="red.100" color="red.800" borderRadius="md">
@@ -29,11 +26,10 @@ export const SwapMessage: FC<SwapMessageProps> = ({
   return (
     <SwapForm
       isActive={isActive}
-      onCancelSwap={onCancelSwap}
-      selectedAgent={selectedAgent}
       fromMessage={fromMessage}
-      onSubmitApprove={() => {}} // Implement approve logic if needed
-      onSubmitSwap={onSubmitSwap}
+      onCancelSwap={handleCancel}
+      onSubmitSwap={handleSwap}
+      isLoading={isLoading}
     />
   );
 };

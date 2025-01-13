@@ -1,17 +1,15 @@
 import React, { FC } from "react";
-import { ClaimForm } from "../ClaimForm/ClaimForm";
+import { ClaimForm } from "./ClaimForm";
 import { ClaimMessagePayload } from "@/services/types";
 
 type ClaimMessageProps = {
   isActive: boolean;
-  selectedAgent: string;
   fromMessage: ClaimMessagePayload;
   onSubmitClaim: (claimTx: any) => void;
 };
 
 export const ClaimMessage: FC<ClaimMessageProps> = ({
   isActive,
-  selectedAgent,
   fromMessage,
   onSubmitClaim,
 }) => {
@@ -23,7 +21,6 @@ export const ClaimMessage: FC<ClaimMessageProps> = ({
   return (
     <ClaimForm
       isActive={isActive}
-      selectedAgent={selectedAgent}
       fromMessage={fromMessage}
       onSubmitClaim={onSubmitClaim}
     />

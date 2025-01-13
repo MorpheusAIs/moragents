@@ -3,21 +3,7 @@ import { Box } from "@chakra-ui/react";
 import { ChatMessage } from "@/services/types";
 import { MessageItem } from "../MessageItem";
 
-type MessageListProps = {
-  messages: ChatMessage[];
-  selectedAgent: string;
-  onCancelSwap: (fromAction: number) => void;
-  onSwapSubmit: (swapTx: any) => void;
-  onClaimSubmit: (claimTx: any) => void;
-};
-
-export const MessageList: FC<MessageListProps> = ({
-  messages,
-  selectedAgent,
-  onCancelSwap,
-  onSwapSubmit,
-  onClaimSubmit,
-}) => {
+export const MessageList: FC<{ messages: ChatMessage[] }> = ({ messages }) => {
   return (
     <Box
       flex="1"
@@ -38,20 +24,7 @@ export const MessageList: FC<MessageListProps> = ({
       }}
     >
       {messages.map((message, index) => (
-        <MessageItem
-          key={index}
-          message={message}
-          selectedAgent={selectedAgent}
-          onCancelSwap={onCancelSwap}
-          onSwapSubmit={onSwapSubmit}
-          onClaimSubmit={onClaimSubmit}
-          isLastSwapMessage={
-            index === messages.length - 1 && message.role === "swap"
-          }
-          isLastClaimMessage={
-            index === messages.length - 1 && message.role === "claim"
-          }
-        />
+        <MessageItem key={index} message={message} />
       ))}
     </Box>
   );

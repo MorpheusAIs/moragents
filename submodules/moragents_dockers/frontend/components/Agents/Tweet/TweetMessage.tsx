@@ -21,16 +21,15 @@ import {
 } from "react-icons/fa";
 import { postTweet, regenerateTweet } from "@/services/apiHooks";
 import { getHttpClient } from "@/services/constants";
-import styles from "./index.module.css";
+import styles from "./TweetMessage.module.css";
 
 type TweetProps = {
   initialContent: string;
-  selectedAgent: string;
 };
 
 const MAX_TWEET_LENGTH = 280;
 
-export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
+export const Tweet: FC<TweetProps> = ({ initialContent }) => {
   const [tweetContent, setTweetContent] = useState(initialContent);
   const [isTweeting, setIsTweeting] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -106,7 +105,8 @@ export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
             </Text>
           </Box>
           <Flex alignItems="center">
-            <Button
+            {/* TODO: Fix Tweet regeneration */}
+            {/* <Button
               leftIcon={<FaSync />}
               onClick={handleRegenerate}
               isLoading={isRegenerating}
@@ -117,7 +117,7 @@ export const Tweet: FC<TweetProps> = ({ initialContent, selectedAgent }) => {
               <Text fontSize="sm" ml={2}>
                 Try again
               </Text>
-            </Button>
+            </Button> */}
             <Button
               leftIcon={<FaPaperPlane />}
               onClick={handleTweet}

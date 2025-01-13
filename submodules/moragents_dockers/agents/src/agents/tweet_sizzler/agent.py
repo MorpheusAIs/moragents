@@ -1,151 +1,115 @@
 import logging
+from typing import Optional
 
 import tweepy
-from src.agents.tweet_sizzler.config import Config
-from src.models.messages import ChatRequest
+from langchain.schema import HumanMessage, SystemMessage
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+from src.agents.tweet_sizzler.config import Config
+from src.models.core import ChatRequest, AgentResponse
+from src.agents.agent_core.agent import AgentCore
+
 logger = logging.getLogger(__name__)
 
 
-class TweetSizzlerAgent:
-    def __init__(self, config, llm, embeddings):
-        self.config = config
-        self.llm = llm
-        self.embeddings = embeddings
-        self.x_api_key = None
-        self.last_prompt_content = None
-        self.twitter_client = None
+class TweetSizzlerAgent(AgentCore):
+    """Agent for generating and posting tweets."""
 
-    def generate_tweet(self, prompt_content=None):
-        # State management for tweet regeneration purposes
-        if prompt_content is not None:
-            self.last_prompt_content = prompt_content
-        elif self.last_prompt_content is None:
-            logger.warning("No prompt content available for tweet generation")
-            return "Tweet generation failed. Please provide a prompt."
-        else:
+    def __init__(self, config, llm, embeddings):
+        super().__init__(config, llm, embeddings)
+        self.last_prompt_content = None
+
+    async def _process_request(self, request: ChatRequest) -> AgentResponse:
+        """Process the validated chat request for tweet generation and posting."""
+        try:
+            messages = [
+                SystemMessage(content=Config.TWEET_GENERATION_PROMPT),
+                HumanMessage(content=request.prompt.content),
+            ]
+
+            # Extract action from prompt content
+            action = "generate"  # Default action
+            if isinstance(request.prompt.content, dict):
+                action = request.prompt.content.get("action", "generate")
+                content = request.prompt.content.get("content", request.prompt.content)
+            else:
+                content = request.prompt.content
+
+            if action == "generate":
+                tweet = self.generate_tweet(content)
+                return AgentResponse.success(content=tweet)
+            elif action == "post":
+                if not hasattr(request.prompt, "metadata") or not request.prompt.metadata:
+                    return AgentResponse.error(error_message=Config.ERROR_MISSING_API_CREDENTIALS)
+
+                credentials = request.prompt.metadata.get("credentials")
+                if not credentials:
+                    return AgentResponse.error(error_message=Config.ERROR_MISSING_API_CREDENTIALS)
+
+                result = await self._post_tweet(credentials, content)
+                if "error" in result:
+                    return AgentResponse.error(error_message=result["error"])
+
+                return AgentResponse.success(
+                    content=f"Tweet posted successfully: {result['tweet']}", metadata={"tweet_id": result["tweet_id"]}
+                )
+            else:
+                return AgentResponse.error(error_message=Config.ERROR_INVALID_ACTION)
+
+        except Exception as e:
+            self.logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
+
+    def generate_tweet(self, prompt_content: Optional[str] = None) -> str:
+        """Generate tweet content based on prompt."""
+        if not prompt_content:
+            if not self.last_prompt_content:
+                raise ValueError("Tweet generation failed. Please provide a prompt.")
             prompt_content = self.last_prompt_content
 
-        logger.info(f"Generating tweet for prompt_content: {prompt_content}")
-        messages = [
-            {
-                "role": "system",
-                "content": Config.TWEET_GENERATION_PROMPT,
-            },
-            {"role": "user", "content": f"Generate a tweet for: {prompt_content}"},
-        ]
+        self.last_prompt_content = prompt_content
+        self.logger.info(f"Generating tweet for prompt_content: {prompt_content}")
 
-        try:
-            result = self.llm.invoke(messages)
-            logger.info(f"Received response from LLM: {result}")
-            tweet = result.content.strip()
-            tweet = " ".join(tweet.split())
+        result = self.llm.invoke(
+            [
+                SystemMessage(content=Config.TWEET_GENERATION_PROMPT),
+                HumanMessage(content=f"Generate a tweet for: {prompt_content}"),
+            ]
+        )
 
-            # Remove any dictionary-like formatting, if present
-            if tweet.startswith("{") and tweet.endswith("}"):
-                tweet = tweet.strip("{}").split(":", 1)[-1].strip().strip('"')
+        tweet = result.content.strip()
+        tweet = " ".join(tweet.split())
 
-            logger.info(f"Tweet generated successfully: {tweet}")
-            return tweet
-        except Exception as e:
-            logger.error(f"Error generating tweet: {str(e)}")
-            raise
+        # Remove any dictionary-like formatting
+        if tweet.startswith("{") and tweet.endswith("}"):
+            tweet = tweet.strip("{}").split(":", 1)[-1].strip().strip('"')
 
-    async def post_tweet(self, request):
-        logger.info(f"Received tweet request: {request}")
-        data = await request.json()
-        logger.info(f"Received tweet data: {data}")
+        self.logger.info(f"Tweet generated successfully: {tweet}")
+        return tweet
 
-        tweet_content = data.get("post_content")
-        logger.info(f"Received tweet content: {tweet_content}")
+    async def _post_tweet(self, credentials: dict, tweet_content: str) -> dict:
+        """Post tweet using provided credentials."""
+        required_keys = ["api_key", "api_secret", "access_token", "access_token_secret", "bearer_token"]
 
-        if not tweet_content:
-            logger.warning("Attempted to post tweet without providing content")
-            return {"error": Config.ERROR_NO_TWEET_CONTENT}, 400
-
-        required_keys = [
-            "api_key",
-            "api_secret",
-            "access_token",
-            "access_token_secret",
-            "bearer_token",
-        ]
-        if not all(key in data for key in required_keys):
-            logger.warning("Missing required API credentials")
-            return {"error": Config.ERROR_MISSING_API_CREDENTIALS}, 400
+        if not all(key in credentials for key in required_keys):
+            return {"error": Config.ERROR_MISSING_API_CREDENTIALS}
 
         try:
             client = tweepy.Client(
-                consumer_key=data["api_key"],
-                consumer_secret=data["api_secret"],
-                access_token=data["access_token"],
-                access_token_secret=data["access_token_secret"],
-                bearer_token=data["bearer_token"],
+                consumer_key=credentials["api_key"],
+                consumer_secret=credentials["api_secret"],
+                access_token=credentials["access_token"],
+                access_token_secret=credentials["access_token_secret"],
+                bearer_token=credentials["bearer_token"],
             )
 
-            # Post tweet
             response = client.create_tweet(text=tweet_content)
-            logger.info(f"Tweet posted successfully: {response}")
-            return {
-                "success": "Tweet posted successfully",
-                "tweet": response.data["text"],
-                "tweet_id": response.data["id"],
-            }, 200
+            self.logger.info(f"Tweet posted successfully: {response}")
+
+            return {"tweet": response.data["text"], "tweet_id": response.data["id"]}
         except Exception as e:
-            logger.error(f"Error posting tweet: {str(e)}")
-            return {"error": f"Failed to post tweet: {str(e)}"}, 500
+            self.logger.error(f"Error posting tweet: {str(e)}")
+            return {"error": f"Failed to post tweet: {str(e)}"}
 
-    def set_x_api_key(self, request):
-        data = request.get_json()
-        required_keys = [
-            "api_key",
-            "api_secret",
-            "access_token",
-            "access_token_secret",
-            "bearer_token",
-        ]
-
-        if not all(key in data for key in required_keys):
-            logger.warning("Missing required API credentials")
-            return {"error": Config.ERROR_MISSING_API_CREDENTIALS}, 400
-
-        # Save these credentials to local storage
-        for key in required_keys:
-            self.flask_app.config[key] = data[key]
-
-        return {"success": "API credentials saved successfully"}, 200
-
-    def chat(self, chat_request: ChatRequest):
-        try:
-            prompt = chat_request.prompt.dict()
-            logger.info(f"Received chat request: {prompt}")
-
-            action = prompt.get("action", Config.DEFAULT_ACTION)
-            logger.debug(f"Extracted prompt content: {prompt['content']}, action: {action}")
-
-            if action == "generate":
-                logger.info(f"Generating tweet for prompt: {prompt['content']}")
-                tweet = self.generate_tweet(prompt["content"])
-                logger.info(f"Generated tweet: {tweet}")
-                return {"role": "assistant", "content": tweet}
-            elif action == "post":
-                logger.info("Attempting to post tweet")
-                result, status_code = self.post_tweet(chat_request)
-                logger.info(f"Posted tweet result: {result}, status code: {status_code}")
-                if isinstance(result, dict) and "error" in result:
-                    return result, status_code
-                return {
-                    "role": "assistant",
-                    "content": f"Tweet posted successfully: {result.get('tweet', '')}",
-                }, status_code
-            else:
-                logger.error(f"Invalid action received: {action}")
-                return {"role": "assistant", "content": Config.ERROR_INVALID_ACTION}
-
-        except Exception as e:
-            logger.error(f"Unexpected error in chat method: {str(e)}, request: {chat_request}")
-            raise e
+    async def _execute_tool(self, func_name: str, args: dict) -> AgentResponse:
+        """Not implemented as this agent doesn't use tools."""
+        return AgentResponse.error(error_message="This agent does not support tool execution")

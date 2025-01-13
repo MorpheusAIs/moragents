@@ -21,7 +21,7 @@ async def upload_file(file: UploadFile = File(...)):
             )
 
         response = await rag_agent.upload_file({"file": file})
-        chat_manager_instance.add_message(response)
+        chat_manager_instance.add_response(response.dict(), "rag")
         return response
     except Exception as e:
         logger.error(f"Failed to upload file: {str(e)}")

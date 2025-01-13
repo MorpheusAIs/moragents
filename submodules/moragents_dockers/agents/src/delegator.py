@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from langchain.schema import HumanMessage, SystemMessage
 from src.stores import chat_manager_instance, agent_manager_instance
+from src.models.core import ChatRequest, AgentResponse
 
 logger = logging.getLogger(__name__)
 
@@ -29,10 +30,7 @@ class Delegator:
             for agent_config in agent_manager_instance.get_available_agents()
             if agent_config["name"] in agent_manager_instance.get_selected_agents()
             and agent_config["name"] not in self.attempted_agents
-            and not (
-                agent_config["upload_required"]
-                and not chat_manager_instance.get_uploaded_file_status()
-            )
+            and not (agent_config["upload_required"] and not chat_manager_instance.get_uploaded_file_status())
         ]
 
     def get_delegator_response(self, prompt: Dict) -> Dict[str, str]:
@@ -91,47 +89,54 @@ class Delegator:
 
         # Track this agent as attempted
         self.attempted_agents.add(selected_agent_name)
-        logger.info(
-            f"Added {selected_agent_name} to attempted agents. Current attempts: {self.attempted_agents}"
-        )
+        logger.info(f"Added {selected_agent_name} to attempted agents. Current attempts: {self.attempted_agents}")
 
         return {"agent": selected_agent_name}
 
-    def delegate_chat(self, agent_name: str, chat_request: Any) -> Tuple[Optional[str], Any]:
+    async def delegate_chat(self, agent_name: str, chat_request: ChatRequest) -> Tuple[Optional[str], AgentResponse]:
         """Delegate chat to specific agent with cascading fallback"""
         logger.info(f"Attempting to delegate chat to agent: {agent_name}")
 
+        # Add agent to attempted set before trying to use it
+        self.attempted_agents.add(agent_name)
+
         if agent_name not in agent_manager_instance.get_selected_agents():
             logger.warning(f"Attempted to delegate to unselected agent: {agent_name}")
-            return self._try_next_agent(chat_request)
+            return await self._try_next_agent(chat_request)
 
         agent = agent_manager_instance.get_agent(agent_name)
         if not agent:
             logger.error(f"Agent {agent_name} is selected but not loaded")
-            return self._try_next_agent(chat_request)
+            return await self._try_next_agent(chat_request)
 
         try:
-            result = agent.chat(chat_request)
+            result = await agent.chat(chat_request)
             logger.info(f"Chat delegation to {agent_name} completed successfully")
             return agent_name, result
         except Exception as e:
             logger.error(f"Error during chat delegation to {agent_name}: {str(e)}")
-            return self._try_next_agent(chat_request)
+            return await self._try_next_agent(chat_request)
 
-    def _try_next_agent(self, chat_request: Any) -> Tuple[Optional[str], Any]:
+    async def _try_next_agent(self, chat_request: ChatRequest) -> Tuple[Optional[str], AgentResponse]:
         """Try to get a response from the next best available agent"""
         try:
             # Get next best agent
             result = self.get_delegator_response(chat_request.prompt.dict())
 
             if "agent" not in result:
-                return None, {"error": "No suitable agent found"}
+                return None, AgentResponse.error(error_message="No suitable agent found")
 
             next_agent = result["agent"]
             logger.info(f"Cascading to next agent: {next_agent}")
 
-            return self.delegate_chat(next_agent, chat_request)
+            # Check if we've already tried this agent to prevent infinite loop
+            if next_agent in self.attempted_agents:
+                return None, AgentResponse.error(
+                    error_message="All available agents have been attempted without success"
+                )
+
+            return await self.delegate_chat(next_agent, chat_request)
         except ValueError as ve:
             # No more agents available
             logger.error(f"No more agents available: {str(ve)}")
-            return None, {"error": "All available agents have been attempted without success"}
+            return None, AgentResponse.error(error_message="All available agents have been attempted without success")

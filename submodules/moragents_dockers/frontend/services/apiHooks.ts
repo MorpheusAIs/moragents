@@ -3,8 +3,9 @@ import {
   ChatMessage,
   ClaimTransactionPayload,
   SwapTxPayloadType,
-  XApiKeys,
-  CoinbaseApiKeys,
+  XCredentials,
+  CoinbaseCredentials,
+  OneInchCredentials,
 } from "./types";
 
 export const getChats = async () => {
@@ -83,39 +84,70 @@ export const sendSwapStatus = async (
   txHash?: string,
   swapType?: number
 ): Promise<ChatMessage> => {
-  const responseBody = await backendClient.post("/swap/tx_status", {
-    chain_id: chainId,
-    wallet_address: walletAddress,
-    status: swapStatus,
-    tx_hash: txHash || "",
-    tx_type: swapType === 0 ? "swap" : "approve",
-  });
+  try {
+    const responseBody = await backendClient.post("/swap/tx_status", {
+      status: swapStatus,
+      tx_hash: txHash || "",
+      tx_type: swapType === 0 ? "swap" : "approve",
+      chain_id: chainId,
+      wallet_address: walletAddress,
+    });
 
-  return {
-    role: responseBody.data.role,
-    content: responseBody.data.content,
-  } as ChatMessage;
+    return {
+      role: responseBody.data.role,
+      content: responseBody.data.content,
+      agentName: responseBody.data.agentName,
+      error_message: responseBody.data.error_message,
+      metadata: responseBody.data.metadata,
+      requires_action: responseBody.data.requires_action,
+      action_type: responseBody.data.action_type,
+      timestamp: responseBody.data.timestamp,
+    } as ChatMessage;
+  } catch (error: unknown) {
+    console.error("Failed to send swap status:", error);
+    return {
+      role: "assistant",
+      content: "Failed to process transaction status update",
+      error_message: error instanceof Error ? error.message : String(error),
+      timestamp: Date.now(),
+    } as ChatMessage;
+  }
 };
 
 export const getMessagesHistory = async (
-  backendClient: Axios
+  backendClient: Axios,
+  conversationId: string = "default"
 ): Promise<ChatMessage[]> => {
-  const responseBody = await backendClient.get("/chat/messages");
+  const responseBody = await backendClient.get("/chat/messages", {
+    params: {
+      conversation_id: conversationId,
+    },
+  });
 
   return responseBody.data.messages.map((message: any) => {
     return {
       role: message.role,
       content: message.content,
       agentName: message.agentName,
+      error_message: message.error_message,
+      metadata: message.metadata,
+      requires_action: message.requires_action,
+      action_type: message.action_type,
+      timestamp: message.timestamp,
     } as ChatMessage;
   });
 };
 
 export const clearMessagesHistory = async (
-  backendClient: Axios
+  backendClient: Axios,
+  conversationId: string = "default"
 ): Promise<void> => {
   try {
-    await backendClient.get("/chat/clear");
+    await backendClient.get("/chat/clear", {
+      params: {
+        conversation_id: conversationId,
+      },
+    });
   } catch (error) {
     console.error("Failed to clear message history:", error);
     throw error;
@@ -127,7 +159,8 @@ export const writeMessage = async (
   message: string,
   backendClient: Axios,
   chainId: number,
-  address: string
+  address: string,
+  conversationId: string = "default"
 ) => {
   const newMessage: ChatMessage = {
     role: "user",
@@ -145,12 +178,27 @@ export const writeMessage = async (
       },
       chain_id: String(chainId),
       wallet_address: address,
+      conversation_id: conversationId,
     });
   } catch (e) {
     console.error(e);
   }
 
-  return await getMessagesHistory(backendClient);
+  return await getMessagesHistory(backendClient, conversationId);
+};
+
+export const createNewConversation = async (
+  backendClient: Axios
+): Promise<string> => {
+  const response = await backendClient.post("/chat/conversations");
+  return response.data.conversation_id;
+};
+
+export const deleteConversation = async (
+  backendClient: Axios,
+  conversationId: string
+): Promise<void> => {
+  await backendClient.delete(`/chat/conversations/${conversationId}`);
 };
 
 export const postTweet = async (
@@ -228,6 +276,12 @@ export const sendClaimStatus = async (
   return {
     role: responseBody.data.role,
     content: responseBody.data.content,
+    agentName: responseBody.data.agentName,
+    error_message: responseBody.data.error_message,
+    metadata: responseBody.data.metadata,
+    requires_action: responseBody.data.requires_action,
+    action_type: responseBody.data.action_type,
+    timestamp: responseBody.data.timestamp,
   } as ChatMessage;
 };
 
@@ -256,9 +310,9 @@ export const setSelectedAgents = async (
   }
 };
 
-export const setXApiKeys = async (
+export const setXCredentials = async (
   backendClient: Axios,
-  keys: XApiKeys
+  keys: XCredentials
 ): Promise<{ status: string; message: string }> => {
   try {
     const response = await backendClient.post("/keys/x", keys);
@@ -269,15 +323,30 @@ export const setXApiKeys = async (
   }
 };
 
-export const setCoinbaseApiKeys = async (
+export const setCoinbaseCredentials = async (
   backendClient: Axios,
-  keys: CoinbaseApiKeys
+  keys: CoinbaseCredentials
 ): Promise<{ status: string; message: string }> => {
   try {
     const response = await backendClient.post("/keys/coinbase", keys);
     return response.data;
   } catch (error) {
     console.error("Failed to set Coinbase API keys:", error);
+    throw error;
+  }
+};
+
+export const setOneInchCredentials = async (
+  backendClient: Axios,
+  keys: OneInchCredentials
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/keys/1inch", {
+      api_key: keys.api_key,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set 1inch API keys:", error);
     throw error;
   }
 };

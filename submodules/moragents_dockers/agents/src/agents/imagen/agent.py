@@ -1,6 +1,7 @@
 import base64
 import logging
 from io import BytesIO
+from typing import Dict, Any, List, Optional
 
 import requests
 from PIL import Image
@@ -10,21 +11,56 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from src.models.messages import ChatRequest
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+from src.models.core import ChatRequest, AgentResponse
+from src.agents.agent_core.agent import AgentCore
+from langchain.schema import HumanMessage, SystemMessage
+
 logger = logging.getLogger(__name__)
 
 
-class ImagenAgent:
-    def __init__(self, config, llm, embeddings):
-        self.config = config
-        self.llm = llm
-        self.embeddings = embeddings
+class ImagenAgent(AgentCore):
+    """Agent for handling image generation requests."""
 
-    def _setup_headless_browser(self):
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any):
+        super().__init__(config, llm, embeddings)
+        self.tools_provided: List[str] = []  # No tools needed for image generation
+        self.tool_bound_llm = self.llm
+
+    async def _process_request(self, request: ChatRequest) -> AgentResponse:
+        """Process the validated chat request for image generation."""
+        try:
+            messages = [
+                SystemMessage(
+                    content=(
+                        "You are an image generation assistant. "
+                        "Help users create images by understanding their prompts "
+                        "and generating appropriate images."
+                    )
+                ),
+                HumanMessage(content=request.prompt.content),
+            ]
+
+            # For image generation, we'll directly use the prompt content
+            result = self.generate_image(request.prompt.content)
+
+            if result["success"]:
+                return AgentResponse.success(
+                    content="Image generated successfully",
+                    metadata={"success": True, "service": result["service"], "image": result["image"]},
+                )
+            else:
+                return AgentResponse.error(error_message=result["error"])
+
+        except Exception as e:
+            logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
+
+    async def _execute_tool(self, func_name: str, args: Dict[str, Any]) -> AgentResponse:
+        """Image generation agent doesn't use tools."""
+        return AgentResponse.error(error_message=f"Unknown tool: {func_name}")
+
+    def _setup_headless_browser(self) -> webdriver.Chrome:
         chrome_options = Options()
 
         # Essential Chromium flags for running in Docker
@@ -54,8 +90,9 @@ class ImagenAgent:
             logger.error(f"Failed to setup Chromium browser: {str(e)}")
             raise
 
-    def _generate_with_fluxai(self, prompt):
+    def _generate_with_fluxai(self, prompt: str) -> Optional[Image.Image]:
         logger.info(f"Attempting image generation for prompt: {prompt}")
+        driver = None
         try:
             driver = self._setup_headless_browser()
             driver.set_page_load_timeout(30)
@@ -76,13 +113,15 @@ class ImagenAgent:
 
             # Wait for the generated image
             img_element = WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located(
-                    (By.XPATH, "//img[@alt='Generated' and @loading='lazy']")
-                )
+                EC.presence_of_element_located((By.XPATH, "//img[@alt='Generated' and @loading='lazy']"))
             )
 
             if img_element:
                 img_src = img_element.get_attribute("src")
+                if not img_src:
+                    logger.warning("Image source URL is empty")
+                    return None
+
                 logger.debug(f"Image source: {img_src}")
 
                 # Download the image
@@ -97,28 +136,25 @@ class ImagenAgent:
                         img_data = response.content
                         return Image.open(BytesIO(img_data))
                     else:
-                        logger.error(
-                            f"Failed to download image. Status code: {response.status_code}"
-                        )
+                        logger.error(f"Failed to download image. Status code: {response.status_code}")
                 else:
-                    logger.warning(
-                        "Image format not supported. Expected a valid imgproxy or replicate URL."
-                    )
+                    logger.warning("Image format not supported. Expected a valid imgproxy or replicate URL.")
             else:
-                logger.warning(
-                    "Image not found or still generating. You may need to increase the wait time."
-                )
+                logger.warning("Image not found or still generating. You may need to increase the wait time.")
 
         except Exception as e:
             logger.error(f"Error in image generation: {str(e)}")
-            return None
-        finally:
-            try:
-                driver.quit()
-            except Exception as e:
-                logger.error(f"Error closing browser: {str(e)}")
 
-    def _encode_image(self, image):
+        finally:
+            if driver:
+                try:
+                    driver.quit()
+                except Exception as e:
+                    logger.error(f"Error closing browser: {str(e)}")
+
+        return None
+
+    def _encode_image(self, image: Optional[Image.Image]) -> Optional[str]:
         if image:
             buffered = BytesIO()
             image.save(buffered, format="PNG")
@@ -126,7 +162,7 @@ class ImagenAgent:
             return img_str
         return None
 
-    def generate_image(self, prompt):
+    def generate_image(self, prompt: str) -> Dict[str, Any]:
         logger.info(f"Starting image generation for prompt: {prompt}")
 
         # Generate image using the new method
@@ -140,18 +176,3 @@ class ImagenAgent:
             "success": False,
             "error": "Failed to generate image with FluxAI",
         }
-
-    def chat(self, request: ChatRequest):
-        try:
-            data = request.dict()
-            logger.info(f"Received chat request: {data}")
-            if "prompt" in data:
-                prompt = data["prompt"]
-                result = self.generate_image(prompt["content"])
-                return {"role": "assistant", "content": result}
-            else:
-                logger.error("Missing 'prompt' in chat request data")
-                return {"error": "Missing parameters"}, 400
-        except Exception as e:
-            logger.error(f"Unexpected error in chat method: {str(e)}, request: {request}")
-            raise e

@@ -4,8 +4,9 @@ export type ChatProps = {
   onSubmitMessage: (message: string, file: File | null) => Promise<boolean>;
   onCancelSwap: (fromAction: number) => void;
   messages: ChatMessage[];
-  selectedAgent: string;
   onBackendError: () => void;
+  isSidebarOpen?: boolean;
+  setIsSidebarOpen: (isSidebarOpen: boolean) => void;
 };
 
 export type SwapTransaction = {

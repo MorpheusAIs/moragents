@@ -29,3 +29,18 @@ async def set_selected_agents(request: Request) -> JSONResponse:
     logger.info(f"Newly selected agents: {agent_manager_instance.get_selected_agents()}")
 
     return JSONResponse(content={"status": "success", "agents": agent_names})
+
+
+@router.get("/commands")
+async def get_agent_commands() -> JSONResponse:
+    """Get the list of available agent commands"""
+    available_agents = agent_manager_instance.get_available_agents()
+    commands = [
+        {
+            "command": agent["command"],
+            "description": agent["description"],
+            "name": agent["human_readable_name"],
+        }
+        for agent in available_agents
+    ]
+    return JSONResponse(content={"commands": commands})

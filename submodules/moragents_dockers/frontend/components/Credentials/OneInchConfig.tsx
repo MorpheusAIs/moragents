@@ -10,64 +10,40 @@ import {
   useColorModeValue,
   Box,
 } from "@chakra-ui/react";
-import { setXApiKeys } from "@/services/apiHooks";
+import { setOneInchCredentials } from "@/services/apiHooks";
 import axios from "axios";
 
-interface TwitterCredentials {
+interface OneInchCredentials {
   apiKey: string;
-  apiSecret: string;
-  accessToken: string;
-  accessTokenSecret: string;
-  bearerToken: string;
 }
 
-interface TwitterConfigProps {
+interface OneInchConfigProps {
   onSave: () => void;
 }
 
-export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
-  const [credentials, setCredentials] = useState<TwitterCredentials>({
+export const OneInchConfig: React.FC<OneInchConfigProps> = ({ onSave }) => {
+  const [credentials, setCredentials] = useState<OneInchCredentials>({
     apiKey: "",
-    apiSecret: "",
-    accessToken: "",
-    accessTokenSecret: "",
-    bearerToken: "",
   });
   const [displayCredentials, setDisplayCredentials] =
-    useState<TwitterCredentials>({
+    useState<OneInchCredentials>({
       apiKey: "",
-      apiSecret: "",
-      accessToken: "",
-      accessTokenSecret: "",
-      bearerToken: "",
     });
 
   const textColor = useColorModeValue("gray.600", "gray.300");
   const labelColor = useColorModeValue("gray.700", "gray.200");
 
-  const credentialLabels: Record<keyof TwitterCredentials, string> = {
+  const credentialLabels: Record<keyof OneInchCredentials, string> = {
     apiKey: "API Key",
-    apiSecret: "API Secret",
-    accessToken: "Access Token",
-    accessTokenSecret: "Access Token Secret",
-    bearerToken: "Bearer Token",
   };
 
   useEffect(() => {
-    const storedCredentials: TwitterCredentials = {
-      apiKey: localStorage.getItem("apiKey") || "",
-      apiSecret: localStorage.getItem("apiSecret") || "",
-      accessToken: localStorage.getItem("accessToken") || "",
-      accessTokenSecret: localStorage.getItem("accessTokenSecret") || "",
-      bearerToken: localStorage.getItem("bearerToken") || "",
+    const storedCredentials: OneInchCredentials = {
+      apiKey: localStorage.getItem("oneinch_api_key") || "",
     };
     setCredentials(storedCredentials);
     setDisplayCredentials({
       apiKey: obscureCredential(storedCredentials.apiKey),
-      apiSecret: obscureCredential(storedCredentials.apiSecret),
-      accessToken: obscureCredential(storedCredentials.accessToken),
-      accessTokenSecret: obscureCredential(storedCredentials.accessTokenSecret),
-      bearerToken: obscureCredential(storedCredentials.bearerToken),
     });
   }, []);
 
@@ -79,7 +55,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
   const handleSave = async () => {
     // Store in localStorage as backup
     Object.entries(credentials).forEach(([key, value]) => {
-      localStorage.setItem(key, value);
+      localStorage.setItem("oneinch_api_key", value);
     });
 
     // Send to backend
@@ -88,16 +64,12 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
     });
 
     try {
-      await setXApiKeys(backendClient, {
+      await setOneInchCredentials(backendClient, {
         api_key: credentials.apiKey,
-        api_secret: credentials.apiSecret,
-        access_token: credentials.accessToken,
-        access_token_secret: credentials.accessTokenSecret,
-        bearer_token: credentials.bearerToken,
       });
       onSave();
     } catch (error) {
-      console.error("Failed to save X credentials to backend:", error);
+      console.error("Failed to save 1inch API key to backend:", error);
     }
   };
 
@@ -105,11 +77,12 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
     <VStack spacing={6} align="stretch">
       <Box>
         <Heading size="md" mb={2}>
-          Twitter API Configuration
+          1inch API Configuration
         </Heading>
         <Text fontSize="sm" color={textColor}>
-          Enter your X API credentials. These can be found in your X Developer
-          Portal. Please follow the readme to set up these X API keys properly.
+          Enter your 1inch API key. This can be obtained from the 1inch
+          developer portal. The API key is required for accessing 1inch&apos;s
+          swap functionality.
         </Text>
       </Box>
 
@@ -117,10 +90,10 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
         {Object.entries(credentials).map(([key, value]) => (
           <FormControl key={key}>
             <FormLabel color={labelColor} display="flex" alignItems="center">
-              {credentialLabels[key as keyof TwitterCredentials]}
+              {credentialLabels[key as keyof OneInchCredentials]}
               <Text fontSize="xs" color={textColor} ml={2}>
                 (
-                {displayCredentials[key as keyof TwitterCredentials] ||
+                {displayCredentials[key as keyof OneInchCredentials] ||
                   "Not set"}
                 )
               </Text>
@@ -128,7 +101,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
             <Input
               type="password"
               placeholder={`Enter new ${
-                credentialLabels[key as keyof TwitterCredentials]
+                credentialLabels[key as keyof OneInchCredentials]
               }`}
               value={value}
               onChange={(e) =>
@@ -143,7 +116,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
       </VStack>
 
       <Button colorScheme="green" onClick={handleSave} mt={4}>
-        Save Twitter Credentials
+        Save 1inch API Key
       </Button>
     </VStack>
   );

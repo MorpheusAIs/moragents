@@ -1,95 +1,85 @@
-import json
 import logging
-
 from src.agents.crypto_data import tools
-from src.models.messages import ChatRequest
+from src.models.core import ChatRequest, AgentResponse
+from src.agents.agent_core.agent import AgentCore
+from langchain.schema import HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
 
-class CryptoDataAgent:
+class CryptoDataAgent(AgentCore):
+    """Agent for handling cryptocurrency-related queries and data retrieval."""
+
     def __init__(self, config, llm, embeddings):
-        self.config = config
-        self.llm = llm
-        self.embeddings = embeddings
+        super().__init__(config, llm, embeddings)
         self.tools_provided = tools.get_tools()
+        self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
 
-    def get_response(self, message):
-        system_prompt = (
-            "Don't make assumptions about the value of the arguments for the function "
-            "they should always be supplied by the user and do not alter the value of the arguments. "
-            "Don't make assumptions about what values to plug into functions. Ask for clarification if a user "
-            "request is ambiguous."
-        )
-
-        messages = [
-            {"role": "system", "content": system_prompt},
-        ]
-        messages.extend(message)
-
-        logger.info("Sending request to LLM with %d messages", len(messages))
-
-        llm_with_tools = self.llm.bind_tools(self.tools_provided)
-
+    async def _process_request(self, request: ChatRequest) -> AgentResponse:
+        """Process the validated chat request for crypto-related queries."""
         try:
-            result = llm_with_tools.invoke(messages)
-            logger.info("Received response from LLM: %s", result)
-
-            if result.tool_calls:
-                tool_call = result.tool_calls[0]
-                func_name = tool_call.get("name")
-                args = tool_call.get("args")
-                logger.info("LLM suggested using tool: %s", func_name)
-
-                response_data = {"data": None, "coinId": None}
-
-                if func_name == "get_price":
-                    response_data["data"] = tools.get_coin_price_tool(args["coin_name"])
-                    response_data["coinId"] = tools.get_tradingview_symbol(
-                        tools.get_coingecko_id(args["coin_name"])
+            messages = [
+                SystemMessage(
+                    content=(
+                        "Don't make assumptions about function arguments - "
+                        "they should always be supplied by the user. "
+                        "Ask for clarification if a request is ambiguous."
                     )
-                    return response_data, "assistant"
-                elif func_name == "get_floor_price":
-                    response_data["data"] = tools.get_nft_floor_price_tool(args["nft_name"])
-                    return response_data, "assistant"
-                elif func_name == "get_fdv":
-                    response_data["data"] = tools.get_fully_diluted_valuation_tool(
-                        args["coin_name"]
-                    )
-                    return response_data, "assistant"
-                elif func_name == "get_tvl":
-                    response_data["data"] = tools.get_protocol_total_value_locked_tool(
-                        args["protocol_name"]
-                    )
-                    return response_data, "assistant"
-                elif func_name == "get_market_cap":
-                    response_data["data"] = tools.get_coin_market_cap_tool(args["coin_name"])
-                    return response_data, "assistant"
-            else:
-                logger.info("LLM provided a direct response without using tools")
-                return {"data": result.content, "coinId": None}, "assistant"
+                ),
+                HumanMessage(content=request.prompt.content),
+            ]
+
+            result = self.tool_bound_llm.invoke(messages)
+            return await self._handle_llm_response(result)
+
         except Exception as e:
-            logger.error(f"Error in get_response: {str(e)}")
-            raise e
+            logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
 
-    def generate_response(self, prompt):
-        response, role = self.get_response([prompt])
-        return response, role
-
-    def chat(self, request: ChatRequest):
+    async def _execute_tool(self, func_name: str, args: dict) -> AgentResponse:
+        """Execute the appropriate crypto tool based on function name."""
         try:
-            data = request.dict()
-            if "prompt" in data:
-                prompt = data["prompt"]
-                logger.info(
-                    "Received chat request with prompt: %s",
-                    prompt[:50] + "..." if len(prompt) > 50 else prompt,
+            metadata = {}
+
+            if func_name == "get_price":
+                if "coin_name" not in args:
+                    return AgentResponse.needs_info(content="Please provide the name of the coin to get its price")
+                content = tools.get_coin_price_tool(args["coin_name"])
+                trading_symbol = tools.get_tradingview_symbol(tools.get_coingecko_id(args["coin_name"]))
+                if trading_symbol:
+                    metadata["coinId"] = trading_symbol
+            elif func_name == "get_floor_price":
+                if "nft_name" not in args:
+                    return AgentResponse.needs_info(
+                        content="Please provide the name of the NFT collection to get its floor price"
+                    )
+                content = tools.get_nft_floor_price_tool(args["nft_name"])
+            elif func_name == "get_fdv":
+                if "coin_name" not in args:
+                    return AgentResponse.needs_info(
+                        content="Please provide the name of the coin to get its fully diluted valuation"
+                    )
+                content = tools.get_fully_diluted_valuation_tool(args["coin_name"])
+            elif func_name == "get_tvl":
+                if "protocol_name" not in args:
+                    return AgentResponse.needs_info(
+                        content="Please provide the name of the protocol to get its total value locked"
+                    )
+                content = tools.get_protocol_total_value_locked_tool(args["protocol_name"])
+            elif func_name == "get_market_cap":
+                if "coin_name" not in args:
+                    return AgentResponse.needs_info(content="Please provide the name of the coin to get its market cap")
+                content = tools.get_coin_market_cap_tool(args["coin_name"])
+            else:
+                return AgentResponse.needs_info(
+                    content=f"I don't know how to handle that type of request. Could you try asking about cryptocurrency news instead?"
                 )
-                response, role = self.generate_response(prompt)
-                return {"role": role, "content": response}
-            else:
-                logger.warning("Received chat request without 'prompt' in data")
-                return {"error": "Missing required parameters"}, 400
+
+            if "error" in content.lower() or "not found" in content.lower():
+                return AgentResponse.needs_info(content=content)
+
+            return AgentResponse.success(content=content, metadata=metadata)
+
         except Exception as e:
-            logger.error("Error in chat method: %s", str(e), exc_info=True)
-            raise e
+            logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
