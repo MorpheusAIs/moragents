@@ -91,16 +91,10 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   };
 
   return (
-    <Container
-      maxW="container.md"
-      h="100vh"
-      py={4}
-      display="flex"
-      flexDirection="column"
-    >
-      <VStack align="stretch" spacing={6} flex={1}>
+    <Container maxW="container.md" py={4}>
+      <Box display="flex" flexDirection="column" gap={4}>
         <Box>
-          <Heading size="md" mb={3}>
+          <Heading size="md" mb={2}>
             Agent Configuration
           </Heading>
           <Text fontSize="sm" color={textColor}>
@@ -109,8 +103,23 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
           </Text>
         </Box>
 
-        <Box flex={1} minH={0}>
-          <VStack align="stretch" spacing={2} h="100%" overflowY="auto" px={2}>
+        <Box
+          overflowY="auto"
+          maxH="40vh"
+          sx={{
+            "&::-webkit-scrollbar": {
+              width: "8px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: useColorModeValue("gray.100", "gray.800"),
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: useColorModeValue("gray.300", "gray.600"),
+              borderRadius: "4px",
+            },
+          }}
+        >
+          <VStack align="stretch" spacing={2}>
             {availableAgents.map((agent) => (
               <Box
                 key={agent.name}
@@ -148,7 +157,7 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
         <Button colorScheme="green" onClick={handleSave} size="md" width="100%">
           Save Configuration
         </Button>
-      </VStack>
+      </Box>
 
       <WalletRequiredModal agentRequiresWallet={showWalletModal} />
     </Container>

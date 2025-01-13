@@ -115,15 +115,16 @@ class Config:
                 "command": "search",
                 "upload_required": False,
             },
-            {
-                "path": "src.agents.news_agent.agent",
-                "class": "NewsAgent",
-                "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
-                "name": "crypto news",
-                "human_readable_name": "Crypto News Analyst",
-                "command": "news",
-                "upload_required": False,
-            },
+            # TODO: Pending fix to RSS feed. The RSS feed finds very irrelevant news right now.
+            # {
+            #     "path": "src.agents.news_agent.agent",
+            #     "class": "NewsAgent",
+            #     "description": "Fetches and analyzes cryptocurrency news for potential price impacts.",
+            #     "name": "crypto news",
+            #     "human_readable_name": "Crypto News Analyst",
+            #     "command": "news",
+            #     "upload_required": False,
+            # },
             {
                 "path": "src.agents.dexscreener.agent",
                 "class": "DexScreenerAgent",
