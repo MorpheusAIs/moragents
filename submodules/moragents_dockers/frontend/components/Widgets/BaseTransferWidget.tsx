@@ -4,11 +4,6 @@ import {
   Box,
   Text,
   Select,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   Button,
   useColorModeValue,
   Heading,
@@ -139,18 +134,19 @@ const BaseTransferWidget: React.FC = () => {
 
           <FormControl>
             <FormLabel color="white">Amount</FormLabel>
-            <NumberInput
+            <Input
+              type="number"
+              step="any"
+              min="0"
+              color="white"
               value={config.amount}
-              onChange={(_, value) => setConfig({ ...config, amount: value })}
-              min={0}
-              precision={6}
-            >
-              <NumberInputField color="white" />
-              <NumberInputStepper>
-                <NumberIncrementStepper color="white" />
-                <NumberDecrementStepper color="white" />
-              </NumberInputStepper>
-            </NumberInput>
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  amount: e.target.value ? parseFloat(e.target.value) : 0,
+                })
+              }
+            />
             <Text fontSize="sm" color="gray.400" mt={1}>
               Amount of {config.token} to transfer
             </Text>
