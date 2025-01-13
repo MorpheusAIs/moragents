@@ -1,33 +1,36 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
+  VStack,
+  Box,
+  Text,
+  Select,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
   Button,
+  useColorModeValue,
+  FormControl,
+  FormLabel,
+  Checkbox,
+  Container,
+  useToast,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  FormControl,
-  FormLabel,
-  Input,
-  Select,
-  VStack,
-  Text,
-  useToast,
-  NumberInput,
-  NumberInputField,
-  Switch,
+  HStack,
+  IconButton,
   Tabs,
   TabList,
   TabPanels,
   Tab,
   TabPanel,
-  useColorModeValue,
-  Box,
-  HStack,
-  IconButton,
 } from "@chakra-ui/react";
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { DeleteIcon } from "@chakra-ui/icons";
 import { FaRobot } from "react-icons/fa";
 
 interface Workflow {
@@ -35,14 +38,39 @@ interface Workflow {
   name: string;
   description: string;
   action: string;
-  params: any;
+  params: {
+    origin_token: string;
+    destination_token: string;
+    step_size: number;
+    frequency: string;
+    price_threshold: number | null;
+    pause_on_volatility: boolean;
+  };
   interval: number;
   status: string;
   last_run?: string;
   next_run?: string;
 }
 
+const tokens = [
+  { symbol: "USDC", name: "USD Coin" },
+  { symbol: "WETH", name: "Wrapped Ethereum" },
+  { symbol: "WBTC", name: "Wrapped Bitcoin" },
+  { symbol: "CBETH", name: "Coinbase Wrapped Staked ETH" },
+  { symbol: "DAI", name: "Dai Stablecoin" },
+];
+
+const frequencies = [
+  { value: "minute", label: "Every Minute" },
+  { value: "hourly", label: "Hourly" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "biweekly", label: "Bi-weekly" },
+  { value: "monthly", label: "Monthly" },
+];
+
 const FREQUENCIES = {
+  minute: 60,
   hourly: 3600,
   daily: 86400,
   weekly: 604800,
@@ -53,18 +81,17 @@ const FREQUENCIES = {
 export const Workflows: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
-  const [editingWorkflow, setEditingWorkflow] = useState<Workflow | null>(null);
   const toast = useToast();
-  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  // DCA Form State
-  const [originToken, setOriginToken] = useState("ETH");
-  const [destinationToken, setDestinationToken] = useState("USDC");
-  const [stepSize, setStepSize] = useState("0.1");
-  const [frequency, setFrequency] = useState("weekly");
-  const [priceThreshold, setPriceThreshold] = useState("");
-  const [pauseOnVolatility, setPauseOnVolatility] = useState(false);
-  const [selectedWalletId, setSelectedWalletId] = useState("");
+  const [config, setConfig] = useState({
+    originToken: "USDC",
+    destinationToken: "WETH",
+    stepSize: 100,
+    frequency: "weekly",
+    priceThreshold: "",
+    pauseOnVolatility: false,
+  });
 
   const fetchWorkflows = useCallback(async () => {
     try {
@@ -88,21 +115,32 @@ export const Workflows: React.FC = () => {
   }, [fetchWorkflows, isOpen]);
 
   const handleCreateWorkflow = async () => {
+    if (config.originToken === config.destinationToken) {
+      toast({
+        title: "Invalid Configuration",
+        description: "Origin and destination tokens must be different",
+        status: "error",
+        duration: 3000,
+      });
+      return;
+    }
+
     try {
       const workflowData = {
-        name: `DCA ${originToken} to ${destinationToken}`,
-        description: `Dollar cost average from ${originToken} to ${destinationToken}`,
+        name: `DCA ${config.originToken} to ${config.destinationToken}`,
+        description: `Dollar cost average from ${config.originToken} to ${config.destinationToken}`,
         action: "dca_trade",
         params: {
-          origin_token: originToken,
-          destination_token: destinationToken,
-          step_size: stepSize,
-          frequency,
-          price_threshold: priceThreshold || null,
-          pause_on_volatility: pauseOnVolatility,
-          wallet_id: selectedWalletId,
+          origin_token: config.originToken.toLowerCase(),
+          destination_token: config.destinationToken.toLowerCase(),
+          step_size: config.stepSize,
+          frequency: config.frequency,
+          price_threshold: config.priceThreshold
+            ? Number(config.priceThreshold)
+            : null,
+          pause_on_volatility: config.pauseOnVolatility,
         },
-        interval: FREQUENCIES[frequency as keyof typeof FREQUENCIES],
+        interval: FREQUENCIES[config.frequency as keyof typeof FREQUENCIES],
       };
 
       const response = await fetch("http://localhost:8080/workflows/create", {
@@ -120,6 +158,7 @@ export const Workflows: React.FC = () => {
           duration: 3000,
         });
         fetchWorkflows();
+        setIsOpen(false);
       } else {
         throw new Error("Failed to create workflow");
       }
@@ -160,45 +199,38 @@ export const Workflows: React.FC = () => {
   };
 
   const WorkflowsList = () => (
-    <VStack spacing={4} align="stretch" width="100%">
+    <VStack spacing={4} align="stretch">
       {workflows.length > 0 ? (
         workflows.map((workflow) => (
           <Box
             key={workflow.id}
             p={4}
             borderWidth="1px"
+            borderColor={borderColor}
             borderRadius="md"
-            position="relative"
           >
             <HStack justify="space-between">
               <VStack align="start" spacing={1}>
-                <Text fontWeight="bold">{workflow.name}</Text>
-                <Text fontSize="sm" color="gray.500">
+                <Text color="white" fontWeight="semibold">
+                  {workflow.name}
+                </Text>
+                <Text color="gray.400" fontSize="sm">
                   Status: {workflow.status}
                 </Text>
                 {workflow.next_run && (
-                  <Text fontSize="xs" color="gray.400">
+                  <Text color="gray.500" fontSize="xs">
                     Next run: {new Date(workflow.next_run).toLocaleString()} UTC
                   </Text>
                 )}
               </VStack>
-              <HStack>
-                <IconButton
-                  aria-label="Edit workflow"
-                  icon={<EditIcon />}
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setEditingWorkflow(workflow)}
-                />
-                <IconButton
-                  aria-label="Delete workflow"
-                  icon={<DeleteIcon />}
-                  size="sm"
-                  variant="ghost"
-                  colorScheme="red"
-                  onClick={() => handleDeleteWorkflow(workflow.id)}
-                />
-              </HStack>
+              <IconButton
+                aria-label="Delete workflow"
+                icon={<DeleteIcon />}
+                onClick={() => handleDeleteWorkflow(workflow.id)}
+                variant="ghost"
+                colorScheme="red"
+                size="sm"
+              />
             </HStack>
           </Box>
         ))
@@ -212,67 +244,140 @@ export const Workflows: React.FC = () => {
 
   const CreateWorkflowForm = () => (
     <VStack spacing={4}>
+      <HStack spacing={4} width="100%">
+        <FormControl>
+          <FormLabel color="white">From (Origin)</FormLabel>
+          <Select
+            value={config.originToken}
+            onChange={(e) =>
+              setConfig({ ...config, originToken: e.target.value })
+            }
+            color="white"
+            sx={{
+              "& > option": {
+                color: "black",
+              },
+            }}
+          >
+            {tokens
+              .filter((t) => t.symbol !== config.destinationToken)
+              .map((token) => (
+                <option key={token.symbol} value={token.symbol}>
+                  {token.symbol} - {token.name}
+                </option>
+              ))}
+          </Select>
+        </FormControl>
+
+        <FormControl>
+          <FormLabel color="white">To (Destination)</FormLabel>
+          <Select
+            value={config.destinationToken}
+            onChange={(e) =>
+              setConfig({ ...config, destinationToken: e.target.value })
+            }
+            color="white"
+            sx={{
+              "& > option": {
+                color: "black",
+              },
+            }}
+          >
+            {tokens
+              .filter((t) => t.symbol !== config.originToken)
+              .map((token) => (
+                <option key={token.symbol} value={token.symbol}>
+                  {token.symbol} - {token.name}
+                </option>
+              ))}
+          </Select>
+        </FormControl>
+      </HStack>
+
       <FormControl>
-        <FormLabel>Origin Token</FormLabel>
-        <Input
-          value={originToken}
-          onChange={(e) => setOriginToken(e.target.value)}
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>Destination Token</FormLabel>
-        <Input
-          value={destinationToken}
-          onChange={(e) => setDestinationToken(e.target.value)}
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>Step Size</FormLabel>
-        <NumberInput value={stepSize} onChange={(value) => setStepSize(value)}>
-          <NumberInputField />
-        </NumberInput>
-      </FormControl>
-      <FormControl>
-        <FormLabel>Frequency</FormLabel>
-        <Select
-          value={frequency}
-          onChange={(e) => setFrequency(e.target.value)}
+        <FormLabel color="white">Investment Step Size</FormLabel>
+        <NumberInput
+          value={config.stepSize}
+          onChange={(_, value) => setConfig({ ...config, stepSize: value })}
+          min={1}
         >
-          {Object.keys(FREQUENCIES).map((freq) => (
-            <option key={freq} value={freq}>
-              {freq.charAt(0).toUpperCase() + freq.slice(1)}
+          <NumberInputField color="white" />
+          <NumberInputStepper>
+            <NumberIncrementStepper color="white" />
+            <NumberDecrementStepper color="white" />
+          </NumberInputStepper>
+        </NumberInput>
+        <Text fontSize="sm" color="gray.400" mt={1}>
+          Amount to invest at each interval
+        </Text>
+      </FormControl>
+
+      <FormControl>
+        <FormLabel color="white">Frequency</FormLabel>
+        <Select
+          value={config.frequency}
+          onChange={(e) => setConfig({ ...config, frequency: e.target.value })}
+          color="white"
+          sx={{
+            "& > option": {
+              color: "black",
+            },
+          }}
+        >
+          {frequencies.map((freq) => (
+            <option key={freq.value} value={freq.value}>
+              {freq.label}
             </option>
           ))}
         </Select>
       </FormControl>
+
       <FormControl>
-        <FormLabel>Price Threshold (Optional)</FormLabel>
+        <FormLabel color="white">Price Threshold (Optional)</FormLabel>
         <NumberInput
-          value={priceThreshold}
-          onChange={(value) => setPriceThreshold(value)}
+          value={config.priceThreshold}
+          onChange={(_, valueAsNumber) =>
+            setConfig({ ...config, priceThreshold: valueAsNumber.toString() })
+          }
         >
-          <NumberInputField />
+          <NumberInputField
+            placeholder="Only buy below this price"
+            color="white"
+          />
+          <NumberInputStepper>
+            <NumberIncrementStepper color="white" />
+            <NumberDecrementStepper color="white" />
+          </NumberInputStepper>
         </NumberInput>
       </FormControl>
-      <FormControl>
-        <FormLabel>Pause on High Volatility</FormLabel>
-        <Switch
-          isChecked={pauseOnVolatility}
-          onChange={(e) => setPauseOnVolatility(e.target.checked)}
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>Wallet ID</FormLabel>
-        <Input
-          value={selectedWalletId}
-          onChange={(e) => setSelectedWalletId(e.target.value)}
-        />
-      </FormControl>
+
+      <Checkbox
+        isChecked={config.pauseOnVolatility}
+        onChange={(e) =>
+          setConfig({
+            ...config,
+            pauseOnVolatility: e.target.checked,
+          })
+        }
+        color="white"
+        sx={{
+          "[data-checked]": {
+            backgroundColor: "white !important",
+            borderColor: "white !important",
+          },
+          "& .chakra-checkbox__control": {
+            borderColor: "white",
+          },
+        }}
+      >
+        Pause strategy during high volatility
+      </Checkbox>
+
       <Button
-        colorScheme="blue"
-        width="full"
-        mt={4}
         onClick={handleCreateWorkflow}
+        width="100%"
+        mt={6}
+        colorScheme="green"
       >
         Create Workflow
       </Button>
@@ -287,37 +392,44 @@ export const Workflows: React.FC = () => {
         size="md"
         colorScheme="gray"
         variant="solid"
-        mr={2}
       >
         Workflows
       </Button>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        size="xl"
-        scrollBehavior="inside"
-        isCentered
-      >
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="xl">
         <ModalOverlay />
-        <ModalContent bg={bgColor} textAlign="center">
-          <ModalHeader>Workflows</ModalHeader>
-          <ModalCloseButton />
+        <ModalContent bg="gray.900">
+          <ModalHeader color="white" textAlign="center">
+            Workflows
+          </ModalHeader>
+          <ModalCloseButton color="white" />
           <ModalBody pb={6}>
-            <Tabs variant="enclosed" isFitted>
-              <TabList mb={4}>
-                <Tab>Active Workflows</Tab>
-                <Tab>Create New</Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <WorkflowsList />
-                </TabPanel>
-                <TabPanel>
-                  <CreateWorkflowForm />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+            <Container maxW="container.md">
+              <Tabs variant="enclosed" colorScheme="blue" isFitted>
+                <TabList mb={4}>
+                  <Tab
+                    color="white"
+                    _selected={{ color: "white", bg: "blue.500" }}
+                  >
+                    Active Workflows
+                  </Tab>
+                  <Tab
+                    color="white"
+                    _selected={{ color: "white", bg: "blue.500" }}
+                  >
+                    Create New
+                  </Tab>
+                </TabList>
+                <TabPanels>
+                  <TabPanel>
+                    <WorkflowsList />
+                  </TabPanel>
+                  <TabPanel>
+                    <CreateWorkflowForm />
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </Container>
           </ModalBody>
         </ModalContent>
       </Modal>

@@ -34,6 +34,23 @@ export const CLAIM_STATUS = {
   INIT: "initiated",
 };
 
+export const BASE_AVAILABLE_TOKENS = [
+  { symbol: "usdc", name: "USD Coin" },
+  { symbol: "weth", name: "Wrapped Ethereum" },
+  { symbol: "wbtc", name: "Wrapped Bitcoin" },
+  { symbol: "cbeth", name: "Coinbase Wrapped Staked ETH" },
+  { symbol: "dai", name: "Dai Stablecoin" },
+];
+
+export const DCA_AVAILABLE_FREQUENCIES = [
+  { value: "minute", label: "Every Minute" },
+  { value: "hourly", label: "Hourly" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "biweekly", label: "Bi-weekly" },
+  { value: "monthly", label: "Monthly" },
+];
+
 export enum AGENT_TYPES {
   DEFAULT = "default",
   IMAGEN = "imagen",
