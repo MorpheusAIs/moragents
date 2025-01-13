@@ -245,8 +245,9 @@ const DCAWidget: React.FC = () => {
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  // Store as string so partial decimals like "1." won't break
-                  totalInvestmentAmount: e.target.value,
+                  totalInvestmentAmount: e.target.value
+                    ? parseFloat(e.target.value)
+                    : undefined,
                 })
               }
             />
