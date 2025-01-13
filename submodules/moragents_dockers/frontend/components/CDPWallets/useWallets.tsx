@@ -287,4 +287,4 @@ export const NETWORKS = [
   "ethereum-mainnet",
   "ethereum-goerli",
   "ethereum-sepolia",
-] as const;
+] as string[];

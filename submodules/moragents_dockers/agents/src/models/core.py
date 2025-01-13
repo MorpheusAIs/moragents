@@ -63,9 +63,13 @@ class AgentResponse(BaseModel):
 
     def to_chat_message(self, agent_name: str) -> ChatMessage:
         """Convert AgentResponse to ChatMessage"""
+        content = self.content
+        if self.error_message:
+            content = f"{content} {self.error_message}"
+
         return ChatMessage(
             role="assistant",
-            content=self.content,
+            content=content,
             agentName=agent_name,
             error_message=self.error_message,
             metadata=self.metadata,
@@ -81,7 +85,15 @@ class AgentResponse(BaseModel):
     @classmethod
     def error(cls, error_message: str) -> "AgentResponse":
         """Create an error response"""
-        return cls(response_type=ResponseType.ERROR, content="An error occurred", error_message=error_message)
+        return cls(
+            response_type=ResponseType.ERROR,
+            content=(
+                "An unexpected error occurred. "
+                "Please raise this issue in Discord so developers can fix it. "
+                "The error message is:"
+            ),
+            error_message=error_message,
+        )
 
     @classmethod
     def needs_info(cls, content: str, metadata: Optional[Dict[str, Any]] = None) -> "AgentResponse":

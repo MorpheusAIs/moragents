@@ -150,14 +150,10 @@ async def chat(chat_request: ChatRequest):
             active_agent = await get_active_agent_for_chat(chat_request.prompt.dict())
             current_agent, agent_response = await delegator.delegate_chat(active_agent, chat_request)
 
+        # We only critically fail if we don't get an AgentResponse
         if not isinstance(agent_response, AgentResponse):
             logger.error(f"Agent {current_agent} returned invalid response type {type(agent_response)}")
             raise HTTPException(status_code=500, detail="Agent returned invalid response type")
-
-        # Handle error responses
-        if agent_response.error_message:
-            status_code = 400 if "required parameters" in agent_response.error_message else 500
-            raise HTTPException(status_code=status_code, detail=agent_response.error_message)
 
         # Convert to API response and add to chat history
         chat_manager_instance.add_response(agent_response.dict(), current_agent, chat_request.conversation_id)
