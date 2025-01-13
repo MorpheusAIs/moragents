@@ -1,7 +1,9 @@
 import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from src.stores import chat_manager_instance, agent_manager_instance
+from src.models.core import AgentResponse
+from src.stores import chat_manager_instance, agent_manager_instance, key_manager_instance
+
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +44,20 @@ async def post_tweet(request: Request):
                 status_code=400,
                 content={"status": "error", "message": "Tweet sizzler agent not found"},
             )
-
-        response = await tweet_agent.post_tweet(request)
-        chat_manager_instance.add_message(response)
-        return response
+        request_body = await request.json()
+        tweet_response = await tweet_agent.post_tweet(request_body["post_content"])
+        if "error" in tweet_response:
+            agent_response = AgentResponse.error(error_message=tweet_response["error"])
+        else:
+            agent_response = AgentResponse.success(
+                content=f"Tweet posted successfully: {tweet_response['tweet']}",
+                metadata={"tweet_id": tweet_response["tweet_id"]},
+            )
+        chat_manager_instance.add_response(agent_response.dict(), "tweet sizzler")
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "tweet": tweet_response["tweet"], "tweet_id": tweet_response["tweet_id"]},
+        )
     except Exception as e:
         logger.error(f"Failed to post tweet: {str(e)}")
         return JSONResponse(

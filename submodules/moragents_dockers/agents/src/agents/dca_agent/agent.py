@@ -15,9 +15,12 @@ class DCAAgent(AgentCore):
     def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any):
         """Initialize the DCAAgent."""
         super().__init__(config, llm, embeddings)
-        # Initialize any DCA-specific tools here
-        self.tools_provided = []  # TODO: Add DCA-specific tools
-        self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
+
+        # TODO: Create specialized tools to pull out DCA params from user message
+        # For now, we can ignore these tools
+
+        # self.tools_provided = []  # TODO: Add DCA-specific tools
+        # self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
 
     async def _process_request(self, request: ChatRequest) -> AgentResponse:
         """Process the validated chat request for DCA-related queries."""
@@ -36,24 +39,27 @@ class DCAAgent(AgentCore):
                 content="You'll need to select or create a wallet before I can help with DCA strategies. Please set up a wallet first."
             )
 
-        try:
-            messages = [
-                SystemMessage(
-                    content=(
-                        "You are a DCA strategy manager. "
-                        "Help users set up and manage their DCA strategies. "
-                        "Ask for clarification if a request is ambiguous."
-                    )
-                ),
-                HumanMessage(content=request.prompt.content),
-            ]
+        return AgentResponse.action_required(content="Ready to set up DCA", action_type="dca")
+        # TODO: Create specialized tools to pull out DCA params from user message
+        # For now, we can ignore these tools
+        # try:
+        #     messages = [
+        #         SystemMessage(
+        #             content=(
+        #                 "You are a DCA strategy manager. "
+        #                 "Help users set up and manage their DCA strategies. "
+        #                 "Ask for clarification if a request is ambiguous."
+        #             )
+        #         ),
+        #         HumanMessage(content=request.prompt.content),
+        #     ]
 
-            result = self.tool_bound_llm.invoke(messages)
-            return await self._handle_llm_response(result)
+        #     result = self.tool_bound_llm.invoke(messages)
+        #     return await self._handle_llm_response(result)
 
-        except Exception as e:
-            logger.error(f"Error processing request: {str(e)}", exc_info=True)
-            return AgentResponse.error(error_message=str(e))
+        # except Exception as e:
+        #     logger.error(f"Error processing request: {str(e)}", exc_info=True)
+        #     return AgentResponse.error(error_message=str(e))
 
     async def _execute_tool(self, func_name: str, args: Dict[str, Any]) -> AgentResponse:
         """Execute the appropriate DCA tool based on function name."""

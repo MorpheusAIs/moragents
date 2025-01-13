@@ -134,7 +134,7 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
     title: "Crypto News Analysis 📰",
     icon: <Newspaper size={20} />,
     examples: [
-      { text: "Analyze recent crypto market news", agent: "news" },
+      { text: "Analyze recent crypto market news for ETH", agent: "news" },
       { text: "What's the latest news impact on BTC?", agent: "news" },
     ],
   },

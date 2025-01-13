@@ -115,7 +115,7 @@ class NewsAgent(AgentCore):
         logger.info(f"Processing RSS feed for {coin}: {feed_url}")
         feed = fetch_rss_feed(feed_url)
         results = []
-        for entry in feed.entries:
+        for entry in (feed.entries or [])[:5]:  # Process max 5 entries
             published_time = entry.get("published") or entry.get("updated")
             if is_within_time_window(published_time):
                 title = clean_html(entry.title)

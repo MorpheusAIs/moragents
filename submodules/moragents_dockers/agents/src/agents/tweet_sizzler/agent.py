@@ -7,6 +7,7 @@ from langchain.schema import HumanMessage, SystemMessage
 from src.agents.tweet_sizzler.config import Config
 from src.models.core import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
+from src.stores import key_manager_instance
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +39,10 @@ class TweetSizzlerAgent(AgentCore):
                 tweet = self.generate_tweet(content)
                 return AgentResponse.success(content=tweet)
             elif action == "post":
-                if not hasattr(request.prompt, "metadata") or not request.prompt.metadata:
+                if not key_manager_instance.has_x_keys():
                     return AgentResponse.error(error_message=Config.ERROR_MISSING_API_CREDENTIALS)
 
-                credentials = request.prompt.metadata.get("credentials")
-                if not credentials:
-                    return AgentResponse.error(error_message=Config.ERROR_MISSING_API_CREDENTIALS)
-
-                result = await self._post_tweet(credentials, content)
+                result = await self.post_tweet(content)
                 if "error" in result:
                     return AgentResponse.error(error_message=result["error"])
 
@@ -86,20 +83,16 @@ class TweetSizzlerAgent(AgentCore):
         self.logger.info(f"Tweet generated successfully: {tweet}")
         return tweet
 
-    async def _post_tweet(self, credentials: dict, tweet_content: str) -> dict:
-        """Post tweet using provided credentials."""
-        required_keys = ["api_key", "api_secret", "access_token", "access_token_secret", "bearer_token"]
-
-        if not all(key in credentials for key in required_keys):
-            return {"error": Config.ERROR_MISSING_API_CREDENTIALS}
-
+    async def post_tweet(self, tweet_content: str) -> dict:
+        """Post tweet using stored X API credentials."""
         try:
+            x_keys = key_manager_instance.get_x_keys()
             client = tweepy.Client(
-                consumer_key=credentials["api_key"],
-                consumer_secret=credentials["api_secret"],
-                access_token=credentials["access_token"],
-                access_token_secret=credentials["access_token_secret"],
-                bearer_token=credentials["bearer_token"],
+                consumer_key=x_keys.api_key,
+                consumer_secret=x_keys.api_secret,
+                access_token=x_keys.access_token,
+                access_token_secret=x_keys.access_token_secret,
+                bearer_token=x_keys.bearer_token,
             )
 
             response = client.create_tweet(text=tweet_content)
