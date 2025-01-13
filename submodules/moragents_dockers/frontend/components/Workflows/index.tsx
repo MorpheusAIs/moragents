@@ -29,6 +29,7 @@ import {
   TabPanels,
   Tab,
   TabPanel,
+  Input,
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { FaRobot } from "react-icons/fa";
@@ -296,17 +297,19 @@ export const Workflows: React.FC = () => {
 
       <FormControl>
         <FormLabel color="white">Investment Step Size</FormLabel>
-        <NumberInput
+        <Input
+          type="number"
+          step="any"
+          min="0"
+          color="white"
           value={config.stepSize}
-          onChange={(_, value) => setConfig({ ...config, stepSize: value })}
-          min={1}
-        >
-          <NumberInputField color="white" />
-          <NumberInputStepper>
-            <NumberIncrementStepper color="white" />
-            <NumberDecrementStepper color="white" />
-          </NumberInputStepper>
-        </NumberInput>
+          onChange={(e) =>
+            setConfig({
+              ...config,
+              stepSize: e.target.value ? parseFloat(e.target.value) : 0,
+            })
+          }
+        />
         <Text fontSize="sm" color="gray.400" mt={1}>
           Amount to invest at each interval
         </Text>
