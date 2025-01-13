@@ -28,9 +28,9 @@ Docker compose will build and run two containers. One will be for the agents, th
       ```sh
       docker-compose up
       ```
-   2. For Apple silicon (M1, M2, M3, etc)
+   2. For Apple silicon (M1, M2, M3, M4, etc)
       ```sh
-      docker-compose -f docker-compose-apple.yml up
+      docker compose -f docker-compose-apple.yml up
       ```
 
 Open in the browser: `http://localhost:3333/`
