@@ -31,11 +31,11 @@ import {
 interface DCAConfig {
   originToken: string;
   destinationToken: string;
-  stepSize: number;
-  totalInvestmentAmount?: number;
+  stepSize: string;
+  totalInvestmentAmount?: string;
   frequency: string;
-  maxPurchaseAmount?: number;
-  priceThreshold?: number;
+  maxPurchaseAmount?: string;
+  priceThreshold?: string;
   pauseOnVolatility: boolean;
 }
 
@@ -47,12 +47,16 @@ const DCAWidget: React.FC = () => {
   const [config, setConfig] = useState<DCAConfig>({
     originToken: "usdc",
     destinationToken: "weth",
-    stepSize: 100,
+    stepSize: "100",
     frequency: "weekly",
     pauseOnVolatility: false,
   });
 
   const handleSave = async () => {
+    // Parse stepSize from string
+    const stepSizeNum = parseFloat(config.stepSize);
+
+    // Validate origin/destination
     if (config.originToken === config.destinationToken) {
       toast({
         title: "Invalid Configuration",
@@ -64,16 +68,28 @@ const DCAWidget: React.FC = () => {
       return;
     }
 
-    if (config.stepSize <= 0) {
+    // Validate stepSize
+    if (isNaN(stepSizeNum) || stepSizeNum <= 0) {
       toast({
         title: "Invalid Step Size",
-        description: "Step size must be greater than 0",
+        description: "Step size must be a valid number greater than 0",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
       return;
     }
+
+    // Prepare parsed values for the request
+    const totalInvestment = config.totalInvestmentAmount
+      ? parseFloat(config.totalInvestmentAmount)
+      : null;
+    const maxPurchase = config.maxPurchaseAmount
+      ? parseFloat(config.maxPurchaseAmount)
+      : null;
+    const priceThres = config.priceThreshold
+      ? parseFloat(config.priceThreshold)
+      : null;
 
     try {
       const response = await fetch(
@@ -83,7 +99,13 @@ const DCAWidget: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(config),
+          body: JSON.stringify({
+            ...config,
+            stepSize: stepSizeNum,
+            totalInvestmentAmount: totalInvestment ?? undefined,
+            maxPurchaseAmount: maxPurchase ?? undefined,
+            priceThreshold: priceThres ?? undefined,
+          }),
         }
       );
 
@@ -115,6 +137,25 @@ const DCAWidget: React.FC = () => {
   };
 
   const calculateTimeToCompletion = () => {
+    // Parse strings to numbers
+    const stepSizeNum = parseFloat(config.stepSize);
+    const totalInvestmentNum = config.totalInvestmentAmount
+      ? parseFloat(config.totalInvestmentAmount)
+      : undefined;
+
+    if (
+      !totalInvestmentNum ||
+      isNaN(totalInvestmentNum) ||
+      !stepSizeNum ||
+      isNaN(stepSizeNum) ||
+      stepSizeNum === 0
+    ) {
+      return "Ongoing strategy";
+    }
+
+    const totalPurchases = Math.ceil(totalInvestmentNum / stepSizeNum);
+
+    // Map frequencies to approximate days
     const frequencyInDays =
       {
         hourly: 1 / 24,
@@ -123,12 +164,6 @@ const DCAWidget: React.FC = () => {
         biweekly: 14,
         monthly: 30,
       }[config.frequency] || 0;
-
-    const totalPurchases = config.totalInvestmentAmount
-      ? Math.ceil(config.totalInvestmentAmount / config.stepSize)
-      : null;
-
-    if (!totalPurchases) return "Ongoing strategy";
 
     const daysToComplete = totalPurchases * frequencyInDays;
 
@@ -209,45 +244,42 @@ const DCAWidget: React.FC = () => {
             </FormControl>
           </HStack>
 
-          {/* Step size */}
+          {/* Step size (store as string) */}
           <FormControl>
             <FormLabel color="white">Investment Step Size</FormLabel>
-            <NumberInput
+            <Input
+              type="number"
+              step="any"
+              min="0"
+              color="white"
               value={config.stepSize}
-              onChange={(_, valueAsNumber) =>
-                setConfig({ ...config, stepSize: valueAsNumber })
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  stepSize: e.target.value,
+                })
               }
-              min={1}
-            >
-              <NumberInputField color="white" />
-              <NumberInputStepper>
-                <NumberIncrementStepper color="white" />
-                <NumberDecrementStepper color="white" />
-              </NumberInputStepper>
-            </NumberInput>
+            />
             <Text fontSize="sm" color="gray.400" mt={1}>
               Amount to invest at each interval
             </Text>
           </FormControl>
 
-          {/* Total Investment Amount */}
+          {/* Total Investment Amount (optional) */}
           <FormControl>
             <FormLabel color="white">
               Total Investment Amount (Optional)
             </FormLabel>
             <Input
               type="number"
-              step="any" // Allows any decimal input
+              step="any"
               min="0"
               color="white"
-              placeholder="No limit"
               value={config.totalInvestmentAmount ?? ""}
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  totalInvestmentAmount: e.target.value
-                    ? parseFloat(e.target.value)
-                    : undefined,
+                  totalInvestmentAmount: e.target.value,
                 })
               }
             />
@@ -293,15 +325,15 @@ const DCAWidget: React.FC = () => {
             <Box>
               <Divider borderColor="white" mb={4} />
               <VStack align="stretch" spacing={4}>
-                {/* Max Purchase Amount */}
+                {/* Max Purchase Amount (store as string) */}
                 <FormControl>
                   <FormLabel color="white">
                     Maximum Purchase Amount (Optional)
                   </FormLabel>
                   <NumberInput
                     value={config.maxPurchaseAmount ?? ""}
-                    onChange={(_, valueAsNumber) =>
-                      setConfig({ ...config, maxPurchaseAmount: valueAsNumber })
+                    onChange={(valueString) =>
+                      setConfig({ ...config, maxPurchaseAmount: valueString })
                     }
                     min={1}
                   >
@@ -313,20 +345,20 @@ const DCAWidget: React.FC = () => {
                   </NumberInput>
                 </FormControl>
 
-                {/* Price Threshold */}
+                {/* Price Threshold (store as string) */}
                 <FormControl>
                   <FormLabel color="white">
                     Price Threshold (Optional)
                   </FormLabel>
                   <NumberInput
                     value={config.priceThreshold ?? ""}
-                    onChange={(_, valueAsNumber) =>
-                      setConfig({ ...config, priceThreshold: valueAsNumber })
+                    onChange={(valueString) =>
+                      setConfig({ ...config, priceThreshold: valueString })
                     }
                   >
                     <NumberInputField
-                      placeholder="Only buy below this price"
                       color="white"
+                      placeholder="Only buy below this price"
                     />
                     <NumberInputStepper>
                       <NumberIncrementStepper color="white" />

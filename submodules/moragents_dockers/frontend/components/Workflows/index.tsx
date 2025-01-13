@@ -42,7 +42,7 @@ interface Workflow {
   params: {
     origin_token: string;
     destination_token: string;
-    step_size: number;
+    step_size: string;
     frequency: string;
     price_threshold: number | null;
     pause_on_volatility: boolean;
@@ -306,7 +306,7 @@ export const Workflows: React.FC = () => {
           onChange={(e) =>
             setConfig({
               ...config,
-              stepSize: e.target.value ? parseFloat(e.target.value) : 0,
+              stepSize: e.target.value,
             })
           }
         />

@@ -17,7 +17,7 @@ import { BASE_AVAILABLE_TOKENS } from "@/services/constants";
 
 interface TransferConfig {
   token: string;
-  amount: number;
+  amount: string;
   destinationAddress: string;
 }
 
@@ -27,11 +27,12 @@ const BaseTransferWidget: React.FC = () => {
 
   const [config, setConfig] = useState<TransferConfig>({
     token: "usdc",
-    amount: 0,
+    amount: "",
     destinationAddress: "",
   });
 
   const handleTransfer = async () => {
+    // Validate destination address
     if (!config.destinationAddress) {
       toast({
         title: "Invalid Configuration",
@@ -43,10 +44,12 @@ const BaseTransferWidget: React.FC = () => {
       return;
     }
 
-    if (config.amount <= 0) {
+    // Convert the string amount to a float only here
+    const parsedAmount = parseFloat(config.amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Amount must be greater than 0",
+        description: "Please enter a valid number greater than 0",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -54,6 +57,7 @@ const BaseTransferWidget: React.FC = () => {
       return;
     }
 
+    // Attempt the transfer
     try {
       const response = await fetch("http://localhost:8080/base/transfer", {
         method: "POST",
@@ -62,7 +66,7 @@ const BaseTransferWidget: React.FC = () => {
         },
         body: JSON.stringify({
           asset: config.token,
-          amount: config.amount,
+          amount: parsedAmount,
           destinationAddress: config.destinationAddress,
         }),
       });
@@ -143,7 +147,7 @@ const BaseTransferWidget: React.FC = () => {
               onChange={(e) =>
                 setConfig({
                   ...config,
-                  amount: e.target.value ? parseFloat(e.target.value) : 0,
+                  amount: e.target.value,
                 })
               }
             />
