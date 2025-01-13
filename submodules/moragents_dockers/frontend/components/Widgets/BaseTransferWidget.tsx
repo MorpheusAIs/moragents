@@ -18,7 +18,7 @@ import {
   useToast,
   Input,
 } from "@chakra-ui/react";
-import { tokens } from "./Base.constants";
+import { BASE_AVAILABLE_TOKENS } from "@/services/constants";
 
 interface TransferConfig {
   token: string;
@@ -129,7 +129,7 @@ const BaseTransferWidget: React.FC = () => {
                 },
               }}
             >
-              {tokens.map((token) => (
+              {BASE_AVAILABLE_TOKENS.map((token) => (
                 <option key={token.symbol} value={token.symbol}>
                   {token.symbol} - {token.name}
                 </option>
