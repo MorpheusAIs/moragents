@@ -59,3 +59,13 @@ async def get_top_boosted_tokens(chain_id: Optional[str] = None) -> List[Boosted
         return sorted(filtered_tokens, key=lambda x: float(x.get("totalAmount", 0) or 0), reverse=True)
     except Exception as e:
         raise Exception(f"Failed to get top boosted tokens: {str(e)}")
+
+
+async def search_dex_pairs(query: str) -> List[Dict[str, Any]]:
+    """Search for DEX pairs matching the query."""
+    try:
+        endpoint = f"{Config.ENDPOINTS['dex_search']}?q={query}"
+        response = await _make_request(endpoint)
+        return response.get("pairs", [])
+    except Exception as e:
+        raise Exception(f"Failed to search DEX pairs: {str(e)}")

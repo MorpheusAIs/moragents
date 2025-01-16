@@ -8,6 +8,7 @@ class Config:
         "token_profiles": "/token-profiles/latest/v1",
         "latest_boosts": "/token-boosts/latest/v1",
         "top_boosts": "/token-boosts/top/v1",
+        "dex_search": "/latest/dex/search",
     }
 
     tools = [
@@ -49,6 +50,20 @@ class Config:
                         "type": "string",
                         "description": "Optional chain ID to filter results (e.g., 'solana', 'ethereum')",
                         "required": False,
+                    }
+                },
+            },
+        },
+        {
+            "name": "search_dex_pairs",
+            "description": "Search for DEX trading pairs and their activity",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Search query (e.g., token symbol like 'ETH' or 'BTC')",
+                        "required": True,
                     }
                 },
             },

@@ -147,17 +147,17 @@ const prefilledOptionsMap: Record<string, PrefilledOption> = {
         agent: "dexscreener",
       },
       {
-        text: "Which ethereum tokens have the most trading liquidity?",
+        text: "Show me DEX activity for ETH",
         agent: "dexscreener",
       },
     ],
   },
   [AGENT_TYPES.RUGCHECK]: {
-    title: "Token Safety Analysis 🛡️",
+    title: "Solana Token Safety 🛡️",
     icon: <Shield size={20} />,
     examples: [
       {
-        text: "Check token safety for this mint",
+        text: "Check token safety for SAMO",
         agent: "rugcheck",
       },
       { text: "Show me the most voted tokens on rugcheck", agent: "rugcheck" },
