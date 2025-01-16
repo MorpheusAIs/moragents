@@ -52,15 +52,16 @@ class Config:
                 "command": "crypto",
                 "upload_required": False,
             },
-            {
-                "path": "src.agents.token_swap.agent",
-                "class": "TokenSwapAgent",
-                "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
-                "name": "token swap",
-                "human_readable_name": "Token Swap Manager",
-                "command": "swap",
-                "upload_required": False,
-            },
+            # TODO: Pending fix to swap agent. The swap agent's preview is often correct however the metamask preview is wrong.
+            # {
+            #     "path": "src.agents.token_swap.agent",
+            #     "class": "TokenSwapAgent",
+            #     "description": "Handles cryptocurrency swapping operations. Use when the query explicitly mentions swapping, exchanging, or converting one cryptocurrency to another.",
+            #     "name": "token swap",
+            #     "human_readable_name": "Token Swap Manager",
+            #     "command": "swap",
+            #     "upload_required": False,
+            # },
             {
                 "path": "src.agents.tweet_sizzler.agent",
                 "class": "TweetSizzlerAgent",
