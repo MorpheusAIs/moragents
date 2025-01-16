@@ -1,7 +1,7 @@
 import importlib
 import logging
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 
@@ -94,8 +94,6 @@ class AgentManager:
         Raises:
             ValueError: If agent_name is not in selected_agents
         """
-        if agent_name and agent_name not in self.selected_agents:
-            raise ValueError(f"Agent {agent_name} is not selected")
         self.active_agent = agent_name
 
     def clear_active_agent(self) -> None:
@@ -164,6 +162,41 @@ class AgentManager:
             Optional[Any]: Agent instance if found, None otherwise
         """
         return self.agents.get(agent_name)
+
+    def get_agent_by_command(self, command: str) -> Optional[str]:
+        """
+        Get agent name by command.
+
+        Args:
+            command (str): Command to look up
+
+        Returns:
+            Optional[str]: Agent name if found, None otherwise
+        """
+        for agent in self.config["agents"]:
+            if agent["command"] == command:
+                return agent["name"]
+        return None
+
+    def parse_command(self, message: str) -> Tuple[Optional[str], str]:
+        """
+        Parse a message for commands.
+
+        Args:
+            message (str): Message to parse
+
+        Returns:
+            Tuple[Optional[str], str]: Tuple of (agent_name, message_without_command)
+        """
+        if not message.startswith("/"):
+            return None, message
+
+        parts = message[1:].split(maxsplit=1)
+        command = parts[0]
+        remaining_message = parts[1] if len(parts) > 1 else ""
+
+        agent_name = self.get_agent_by_command(command)
+        return agent_name, remaining_message
 
 
 # Create an instance to act as a singleton store

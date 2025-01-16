@@ -4,11 +4,6 @@ import {
   Box,
   Text,
   Select,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   Button,
   useColorModeValue,
   Heading,
@@ -18,11 +13,11 @@ import {
   useToast,
   Input,
 } from "@chakra-ui/react";
-import { tokens } from "./Base.constants";
+import { BASE_AVAILABLE_TOKENS } from "@/services/constants";
 
 interface TransferConfig {
   token: string;
-  amount: number;
+  amount: string;
   destinationAddress: string;
 }
 
@@ -32,11 +27,12 @@ const BaseTransferWidget: React.FC = () => {
 
   const [config, setConfig] = useState<TransferConfig>({
     token: "usdc",
-    amount: 0,
+    amount: "",
     destinationAddress: "",
   });
 
   const handleTransfer = async () => {
+    // Validate destination address
     if (!config.destinationAddress) {
       toast({
         title: "Invalid Configuration",
@@ -48,10 +44,12 @@ const BaseTransferWidget: React.FC = () => {
       return;
     }
 
-    if (config.amount <= 0) {
+    // Convert the string amount to a float only here
+    const parsedAmount = parseFloat(config.amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Amount must be greater than 0",
+        description: "Please enter a valid number greater than 0",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -59,6 +57,7 @@ const BaseTransferWidget: React.FC = () => {
       return;
     }
 
+    // Attempt the transfer
     try {
       const response = await fetch("http://localhost:8080/base/transfer", {
         method: "POST",
@@ -67,7 +66,7 @@ const BaseTransferWidget: React.FC = () => {
         },
         body: JSON.stringify({
           asset: config.token,
-          amount: config.amount,
+          amount: parsedAmount,
           destinationAddress: config.destinationAddress,
         }),
       });
@@ -129,7 +128,7 @@ const BaseTransferWidget: React.FC = () => {
                 },
               }}
             >
-              {tokens.map((token) => (
+              {BASE_AVAILABLE_TOKENS.map((token) => (
                 <option key={token.symbol} value={token.symbol}>
                   {token.symbol} - {token.name}
                 </option>
@@ -139,18 +138,19 @@ const BaseTransferWidget: React.FC = () => {
 
           <FormControl>
             <FormLabel color="white">Amount</FormLabel>
-            <NumberInput
+            <Input
+              type="number"
+              step="any"
+              min="0"
+              color="white"
               value={config.amount}
-              onChange={(_, value) => setConfig({ ...config, amount: value })}
-              min={0}
-              precision={6}
-            >
-              <NumberInputField color="white" />
-              <NumberInputStepper>
-                <NumberIncrementStepper color="white" />
-                <NumberDecrementStepper color="white" />
-              </NumberInputStepper>
-            </NumberInput>
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  amount: e.target.value,
+                })
+              }
+            />
             <Text fontSize="sm" color="gray.400" mt={1}>
               Amount of {config.token} to transfer
             </Text>

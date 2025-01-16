@@ -33,3 +33,37 @@ export const CLAIM_STATUS = {
   FAIL: "failed",
   INIT: "initiated",
 };
+
+export const BASE_AVAILABLE_TOKENS = [
+  { symbol: "usdc", name: "USD Coin" },
+  { symbol: "weth", name: "Wrapped Ethereum" },
+  { symbol: "wbtc", name: "Wrapped Bitcoin" },
+  { symbol: "cbeth", name: "Coinbase Wrapped Staked ETH" },
+  { symbol: "dai", name: "Dai Stablecoin" },
+];
+
+export const DCA_AVAILABLE_FREQUENCIES = [
+  { value: "minute", label: "Every Minute" },
+  { value: "hourly", label: "Hourly" },
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "biweekly", label: "Bi-weekly" },
+  { value: "monthly", label: "Monthly" },
+];
+
+export enum AGENT_TYPES {
+  DEFAULT = "default",
+  IMAGEN = "imagen",
+  RAG = "rag",
+  CRYPTO_DATA = "crypto data",
+  TOKEN_SWAP = "token swap",
+  TWEET_SIZZLER = "tweet sizzler",
+  DCA = "dca",
+  BASE = "base",
+  MOR_CLAIMS = "mor claims",
+  MOR_REWARDS = "mor rewards",
+  REALTIME_SEARCH = "realtime search",
+  CRYPTO_NEWS = "crypto news",
+  DEXSCREENER = "dexscreener",
+  RUGCHECK = "rugcheck",
+}

@@ -21,18 +21,21 @@ import {
   useToast,
   Collapse,
   useDisclosure,
+  Input,
 } from "@chakra-ui/react";
-import { tokens, frequencies } from "./DCAWidget.constants";
-import axios from "axios";
+import {
+  BASE_AVAILABLE_TOKENS,
+  DCA_AVAILABLE_FREQUENCIES,
+} from "@/services/constants";
 
 interface DCAConfig {
   originToken: string;
   destinationToken: string;
-  stepSize: number;
-  totalInvestmentAmount?: number;
+  stepSize: string;
+  totalInvestmentAmount?: string;
   frequency: string;
-  maxPurchaseAmount?: number;
-  priceThreshold?: number;
+  maxPurchaseAmount?: string;
+  priceThreshold?: string;
   pauseOnVolatility: boolean;
 }
 
@@ -42,14 +45,18 @@ const DCAWidget: React.FC = () => {
   const { isOpen, onToggle } = useDisclosure();
 
   const [config, setConfig] = useState<DCAConfig>({
-    originToken: "USDC",
-    destinationToken: "WETH",
-    stepSize: 100,
+    originToken: "usdc",
+    destinationToken: "weth",
+    stepSize: "100",
     frequency: "weekly",
     pauseOnVolatility: false,
   });
 
   const handleSave = async () => {
+    // Parse stepSize from string
+    const stepSizeNum = parseFloat(config.stepSize);
+
+    // Validate origin/destination
     if (config.originToken === config.destinationToken) {
       toast({
         title: "Invalid Configuration",
@@ -61,16 +68,28 @@ const DCAWidget: React.FC = () => {
       return;
     }
 
-    if (config.stepSize <= 0) {
+    // Validate stepSize
+    if (isNaN(stepSizeNum) || stepSizeNum <= 0) {
       toast({
         title: "Invalid Step Size",
-        description: "Step size must be greater than 0",
+        description: "Step size must be a valid number greater than 0",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
       return;
     }
+
+    // Prepare parsed values for the request
+    const totalInvestment = config.totalInvestmentAmount
+      ? parseFloat(config.totalInvestmentAmount)
+      : null;
+    const maxPurchase = config.maxPurchaseAmount
+      ? parseFloat(config.maxPurchaseAmount)
+      : null;
+    const priceThres = config.priceThreshold
+      ? parseFloat(config.priceThreshold)
+      : null;
 
     try {
       const response = await fetch(
@@ -80,7 +99,13 @@ const DCAWidget: React.FC = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(config),
+          body: JSON.stringify({
+            ...config,
+            stepSize: stepSizeNum,
+            totalInvestmentAmount: totalInvestment ?? undefined,
+            maxPurchaseAmount: maxPurchase ?? undefined,
+            priceThreshold: priceThres ?? undefined,
+          }),
         }
       );
 
@@ -94,7 +119,6 @@ const DCAWidget: React.FC = () => {
           duration: 3000,
           isClosable: true,
         });
-        window.location.reload();
       } else {
         throw new Error(data.message);
       }
@@ -113,6 +137,25 @@ const DCAWidget: React.FC = () => {
   };
 
   const calculateTimeToCompletion = () => {
+    // Parse strings to numbers
+    const stepSizeNum = parseFloat(config.stepSize);
+    const totalInvestmentNum = config.totalInvestmentAmount
+      ? parseFloat(config.totalInvestmentAmount)
+      : undefined;
+
+    if (
+      !totalInvestmentNum ||
+      isNaN(totalInvestmentNum) ||
+      !stepSizeNum ||
+      isNaN(stepSizeNum) ||
+      stepSizeNum === 0
+    ) {
+      return "Ongoing strategy";
+    }
+
+    const totalPurchases = Math.ceil(totalInvestmentNum / stepSizeNum);
+
+    // Map frequencies to approximate days
     const frequencyInDays =
       {
         hourly: 1 / 24,
@@ -121,12 +164,6 @@ const DCAWidget: React.FC = () => {
         biweekly: 14,
         monthly: 30,
       }[config.frequency] || 0;
-
-    const totalPurchases = config.totalInvestmentAmount
-      ? Math.ceil(config.totalInvestmentAmount / config.stepSize)
-      : null;
-
-    if (!totalPurchases) return "Ongoing strategy";
 
     const daysToComplete = totalPurchases * frequencyInDays;
 
@@ -156,6 +193,7 @@ const DCAWidget: React.FC = () => {
           borderColor={borderColor}
           borderRadius="md"
         >
+          {/* From / To selection */}
           <HStack spacing={4}>
             <FormControl>
               <FormLabel color="white">From (Origin)</FormLabel>
@@ -171,13 +209,13 @@ const DCAWidget: React.FC = () => {
                   },
                 }}
               >
-                {tokens
-                  .filter((t) => t.symbol !== config.destinationToken)
-                  .map((token) => (
-                    <option key={token.symbol} value={token.symbol}>
-                      {token.symbol} - {token.name}
-                    </option>
-                  ))}
+                {BASE_AVAILABLE_TOKENS.filter(
+                  (t) => t.symbol !== config.destinationToken
+                ).map((token) => (
+                  <option key={token.symbol} value={token.symbol}>
+                    {token.symbol} - {token.name}
+                  </option>
+                ))}
               </Select>
             </FormControl>
 
@@ -195,60 +233,62 @@ const DCAWidget: React.FC = () => {
                   },
                 }}
               >
-                {tokens
-                  .filter((t) => t.symbol !== config.originToken)
-                  .map((token) => (
-                    <option key={token.symbol} value={token.symbol}>
-                      {token.symbol} - {token.name}
-                    </option>
-                  ))}
+                {BASE_AVAILABLE_TOKENS.filter(
+                  (t) => t.symbol !== config.originToken
+                ).map((token) => (
+                  <option key={token.symbol} value={token.symbol}>
+                    {token.symbol} - {token.name}
+                  </option>
+                ))}
               </Select>
             </FormControl>
           </HStack>
 
+          {/* Step size (store as string) */}
           <FormControl>
             <FormLabel color="white">Investment Step Size</FormLabel>
-            <NumberInput
+            <Input
+              type="number"
+              step="any"
+              min="0"
+              color="white"
               value={config.stepSize}
-              onChange={(_, value) => setConfig({ ...config, stepSize: value })}
-              min={1}
-            >
-              <NumberInputField color="white" />
-              <NumberInputStepper>
-                <NumberIncrementStepper color="white" />
-                <NumberDecrementStepper color="white" />
-              </NumberInputStepper>
-            </NumberInput>
+              onChange={(e) =>
+                setConfig({
+                  ...config,
+                  stepSize: e.target.value,
+                })
+              }
+            />
             <Text fontSize="sm" color="gray.400" mt={1}>
               Amount to invest at each interval
             </Text>
           </FormControl>
 
+          {/* Total Investment Amount (optional) */}
           <FormControl>
             <FormLabel color="white">
               Total Investment Amount (Optional)
             </FormLabel>
-            <NumberInput
+            <Input
+              type="number"
+              step="any"
+              min="0"
+              color="white"
               value={config.totalInvestmentAmount ?? ""}
-              onChange={(valueString, value) =>
+              onChange={(e) =>
                 setConfig({
                   ...config,
-                  totalInvestmentAmount: valueString === "" ? undefined : value,
+                  totalInvestmentAmount: e.target.value,
                 })
               }
-              min={config.stepSize}
-            >
-              <NumberInputField color="white" placeholder="No limit" />
-              <NumberInputStepper>
-                <NumberIncrementStepper color="white" />
-                <NumberDecrementStepper color="white" />
-              </NumberInputStepper>
-            </NumberInput>
+            />
             <Text fontSize="sm" color="gray.400" mt={1}>
               Total amount to invest over time
             </Text>
           </FormControl>
 
+          {/* Frequency */}
           <FormControl>
             <FormLabel color="white">Frequency</FormLabel>
             <Select
@@ -263,7 +303,7 @@ const DCAWidget: React.FC = () => {
                 },
               }}
             >
-              {frequencies.map((freq) => (
+              {DCA_AVAILABLE_FREQUENCIES.map((freq) => (
                 <option key={freq.value} value={freq.value}>
                   {freq.label}
                 </option>
@@ -271,6 +311,7 @@ const DCAWidget: React.FC = () => {
             </Select>
           </FormControl>
 
+          {/* Advanced Settings */}
           <Button
             onClick={onToggle}
             variant="ghost"
@@ -284,14 +325,15 @@ const DCAWidget: React.FC = () => {
             <Box>
               <Divider borderColor="white" mb={4} />
               <VStack align="stretch" spacing={4}>
+                {/* Max Purchase Amount (store as string) */}
                 <FormControl>
                   <FormLabel color="white">
                     Maximum Purchase Amount (Optional)
                   </FormLabel>
                   <NumberInput
-                    value={config.maxPurchaseAmount}
-                    onChange={(_, value) =>
-                      setConfig({ ...config, maxPurchaseAmount: value })
+                    value={config.maxPurchaseAmount ?? ""}
+                    onChange={(valueString) =>
+                      setConfig({ ...config, maxPurchaseAmount: valueString })
                     }
                     min={1}
                   >
@@ -303,19 +345,20 @@ const DCAWidget: React.FC = () => {
                   </NumberInput>
                 </FormControl>
 
+                {/* Price Threshold (store as string) */}
                 <FormControl>
                   <FormLabel color="white">
                     Price Threshold (Optional)
                   </FormLabel>
                   <NumberInput
-                    value={config.priceThreshold}
-                    onChange={(_, value) =>
-                      setConfig({ ...config, priceThreshold: value })
+                    value={config.priceThreshold ?? ""}
+                    onChange={(valueString) =>
+                      setConfig({ ...config, priceThreshold: valueString })
                     }
                   >
                     <NumberInputField
-                      placeholder="Only buy below this price"
                       color="white"
+                      placeholder="Only buy below this price"
                     />
                     <NumberInputStepper>
                       <NumberIncrementStepper color="white" />
@@ -324,6 +367,7 @@ const DCAWidget: React.FC = () => {
                   </NumberInput>
                 </FormControl>
 
+                {/* Volatility Checkbox */}
                 <Checkbox
                   isChecked={config.pauseOnVolatility}
                   onChange={(e) =>
@@ -350,10 +394,12 @@ const DCAWidget: React.FC = () => {
           </Collapse>
         </VStack>
 
+        {/* Time to completion */}
         <Text color="white" textAlign="center" fontSize="sm">
           Estimated time to completion: {calculateTimeToCompletion()}
         </Text>
 
+        {/* Execute Strategy */}
         <Button colorScheme="green" onClick={handleSave} size="md" width="100%">
           Execute Strategy
         </Button>

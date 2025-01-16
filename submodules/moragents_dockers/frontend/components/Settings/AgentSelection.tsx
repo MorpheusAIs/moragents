@@ -10,6 +10,7 @@ import {
   Container,
   useToast,
 } from "@chakra-ui/react";
+import { WalletRequiredModal } from "@/components/WalletRequiredModal";
 
 interface Agent {
   name: string;
@@ -24,6 +25,7 @@ interface AgentSelectionProps {
 export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const toast = useToast();
 
   const borderColor = useColorModeValue("gray.200", "gray.700");
@@ -45,6 +47,11 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   }, []);
 
   const handleAgentToggle = (agentName: string) => {
+    if (agentName === "swap" && !selectedAgents.includes(agentName)) {
+      setShowWalletModal(true);
+      return;
+    }
+
     setSelectedAgents((prev) => {
       if (prev.includes(agentName)) {
         return prev.filter((name) => name !== agentName);
@@ -84,10 +91,10 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   };
 
   return (
-    <Container maxW="container.md">
-      <VStack align="stretch" spacing={6}>
+    <Container maxW="container.md" py={4}>
+      <Box display="flex" flexDirection="column" gap={4}>
         <Box>
-          <Heading size="md" mb={3}>
+          <Heading size="md" mb={2}>
             Agent Configuration
           </Heading>
           <Text fontSize="sm" color={textColor}>
@@ -96,50 +103,63 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
           </Text>
         </Box>
 
-        <VStack
-          align="stretch"
-          spacing={2}
-          maxH="500px"
+        <Box
           overflowY="auto"
-          px={2}
+          maxH="40vh"
+          sx={{
+            "&::-webkit-scrollbar": {
+              width: "8px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: useColorModeValue("gray.100", "gray.800"),
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: useColorModeValue("gray.300", "gray.600"),
+              borderRadius: "4px",
+            },
+          }}
         >
-          {availableAgents.map((agent) => (
-            <Box
-              key={agent.name}
-              p={4}
-              borderWidth="1px"
-              borderColor={borderColor}
-              borderRadius="md"
-              width="100%"
-            >
-              <Checkbox
-                isChecked={selectedAgents.includes(agent.name)}
-                onChange={() => handleAgentToggle(agent.name)}
+          <VStack align="stretch" spacing={2}>
+            {availableAgents.map((agent) => (
+              <Box
+                key={agent.name}
+                p={4}
+                borderWidth="1px"
+                borderColor={borderColor}
+                borderRadius="md"
                 width="100%"
-                isDisabled={
-                  !selectedAgents.includes(agent.name) &&
-                  selectedAgents.length >= 6
-                }
               >
-                <Box ml={4}>
-                  <VStack align="start" width="100%">
-                    <Text fontWeight="medium" textAlign="left">
-                      {agent.human_readable_name}
-                    </Text>
-                    <Text fontSize="sm" color={textColor} textAlign="left">
-                      {agent.description}
-                    </Text>
-                  </VStack>
-                </Box>
-              </Checkbox>
-            </Box>
-          ))}
-        </VStack>
+                <Checkbox
+                  isChecked={selectedAgents.includes(agent.name)}
+                  onChange={() => handleAgentToggle(agent.name)}
+                  width="100%"
+                  isDisabled={
+                    !selectedAgents.includes(agent.name) &&
+                    selectedAgents.length >= 6
+                  }
+                >
+                  <Box ml={4}>
+                    <VStack align="start" width="100%">
+                      <Text fontWeight="medium" textAlign="left">
+                        {agent.human_readable_name}
+                      </Text>
+                      <Text fontSize="sm" color={textColor} textAlign="left">
+                        {agent.description}
+                      </Text>
+                    </VStack>
+                  </Box>
+                </Checkbox>
+              </Box>
+            ))}
+          </VStack>
+        </Box>
 
         <Button colorScheme="green" onClick={handleSave} size="md" width="100%">
           Save Configuration
         </Button>
-      </VStack>
+      </Box>
+
+      <WalletRequiredModal agentRequiresWallet={showWalletModal} />
     </Container>
   );
 };

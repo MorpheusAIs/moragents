@@ -15,23 +15,47 @@ logger = logging.getLogger(__name__)
 class WorkflowStatus(str, Enum):
     """Status states for workflows"""
 
-    ACTIVE = "active"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+    ACTIVE = "active"  # Workflow is active and will be executed on schedule
+    PAUSED = "paused"  # Workflow is temporarily paused but can be resumed
+    COMPLETED = "completed"  # Workflow has finished successfully
+    FAILED = "failed"  # Workflow encountered an error and stopped
+    CANCELLED = "cancelled"  # Workflow was manually cancelled
 
 
 @dataclass
 class Workflow:
-    """Represents a scheduled recurring action workflow"""
+    """
+    Represents a scheduled recurring action workflow.
+
+    A workflow defines an automated task that runs on a schedule. It contains all the
+    information needed to execute an action periodically, track its progress, and
+    manage its lifecycle.
+
+    Attributes:
+        id (str): Unique identifier for the workflow
+        name (str): Human-readable name for the workflow
+        description (str): Detailed description of what the workflow does
+        action (str): Name of the action to execute (e.g. "dca_trade")
+        params (Dict[str, Any]): Parameters required by the action
+        interval (timedelta): Time between workflow executions
+        last_run (Optional[datetime]): When the workflow last executed
+        next_run (Optional[datetime]): When the workflow will next execute
+        status (WorkflowStatus): Current status of the workflow
+        created_at (datetime): When the workflow was created
+        updated_at (datetime): When the workflow was last modified
+        metadata (Dict): Additional workflow metadata
+
+    Methods:
+        to_dict(): Serializes workflow to dictionary format
+        from_dict(): Creates workflow instance from dictionary data
+    """
 
     id: str
     name: str
     description: str
-    action: str  # Name of the action to execute (e.g. "dca_trade")
-    params: Dict[str, Any]  # Parameters for the action
-    interval: timedelta  # How often to execute the action
+    action: str
+    params: Dict[str, Any]
+    interval: timedelta
     last_run: Optional[datetime] = None
     next_run: Optional[datetime] = None
     status: WorkflowStatus = WorkflowStatus.ACTIVE
@@ -40,7 +64,12 @@ class Workflow:
     metadata: Dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
-        """Convert workflow to dictionary format"""
+        """
+        Convert workflow to dictionary format for storage.
+
+        Returns:
+            dict: Dictionary representation of the workflow with all attributes
+        """
         return {
             "id": self.id,
             "name": self.name,
@@ -58,7 +87,15 @@ class Workflow:
 
     @classmethod
     def from_dict(cls, data: dict) -> "Workflow":
-        """Create workflow instance from dictionary"""
+        """
+        Create workflow instance from dictionary data.
+
+        Args:
+            data (dict): Dictionary containing workflow data
+
+        Returns:
+            Workflow: New workflow instance initialized with the provided data
+        """
         workflow = cls(
             id=data["id"],
             name=data["name"],
@@ -79,7 +116,50 @@ class Workflow:
 
 
 class WorkflowManager:
-    """Manages workflow persistence and operations"""
+    """
+    Manages the lifecycle and execution of automated workflows.
+
+    The WorkflowManager handles creation, scheduling, execution, and persistence of
+    workflows. It provides a robust system for running recurring automated tasks with
+    proper error handling, state management, and data persistence.
+
+    Key Features:
+        - Asynchronous workflow execution
+        - Persistent storage of workflow data
+        - Configurable action handlers
+        - Automatic scheduling and execution
+        - Thread-safe operations with locking
+        - Comprehensive error handling and logging
+
+    Attributes:
+        storage_path (Path): Path to workflow storage file
+        workflows (Dict[str, Workflow]): In-memory store of active workflows
+        _lock (asyncio.Lock): Lock for thread-safe operations
+        _scheduler_task (Optional[asyncio.Task]): Background scheduler task
+        _action_handlers (Dict[str, Any]): Registered workflow action handlers
+
+    Example Usage:
+        manager = WorkflowManager()
+        await manager.initialize()
+
+        # Create a new workflow
+        workflow = await manager.create_workflow(
+            name="DCA Bitcoin",
+            description="Weekly BTC purchase",
+            action="dca_trade",
+            params={"amount": 100, "asset": "BTC"},
+            interval=timedelta(days=7)
+        )
+
+        # List active workflows
+        workflows = await manager.list_workflows()
+
+        # Update workflow
+        await manager.update_workflow(workflow.id, status=WorkflowStatus.PAUSED)
+
+        # Delete workflow
+        await manager.delete_workflow(workflow.id)
+    """
 
     def __init__(self, storage_path: str = "workflows.json"):
         """Initialize the WorkflowManager"""
@@ -114,18 +194,12 @@ class WorkflowManager:
             try:
                 logger.info("Workflow scheduler checking for due workflows...")
                 now = datetime.now()
-                active_workflows = [
-                    w for w in self.workflows.values() if w.status == WorkflowStatus.ACTIVE
-                ]
+                active_workflows = [w for w in self.workflows.values() if w.status == WorkflowStatus.ACTIVE]
                 logger.info(f"Found {len(active_workflows)} active workflows")
 
                 for workflow in self.workflows.values():
                     logger.info(f"Checking workflow {workflow.id} ({workflow.name})")
-                    if (
-                        workflow.status == WorkflowStatus.ACTIVE
-                        and workflow.next_run
-                        and now >= workflow.next_run
-                    ):
+                    if workflow.status == WorkflowStatus.ACTIVE and workflow.next_run and now >= workflow.next_run:
                         logger.info(f"Executing workflow {workflow.id} ({workflow.name})")
                         await self._execute_workflow(workflow)
 
@@ -167,9 +241,7 @@ class WorkflowManager:
                 if total_invested >= total_target:
                     workflow.status = WorkflowStatus.COMPLETED
                     should_remove = True
-                    logger.info(
-                        f"Workflow {workflow.id} completed - reached total investment target"
-                    )
+                    logger.info(f"Workflow {workflow.id} completed - reached total investment target")
 
             # Remove completed/failed workflows, keep active ones
             if should_remove:
@@ -287,8 +359,7 @@ class WorkflowManager:
                 content = await f.read()
                 data = json.loads(content)
                 self.workflows = {
-                    workflow_id: Workflow.from_dict(workflow_data)
-                    for workflow_id, workflow_data in data.items()
+                    workflow_id: Workflow.from_dict(workflow_data) for workflow_id, workflow_data in data.items()
                 }
         except Exception as e:
             logger.error(f"Failed to load workflows: {e}")

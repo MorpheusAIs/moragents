@@ -1,0 +1,186 @@
+/*********************************
+ * Container that holds BOTH
+ * the sidebar and the toggle button
+ *********************************/
+.sidebarContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  /* 300px for the sidebar, 40px for the button = 340px total width. */
+  width: 340px;
+  overflow: visible;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+
+/*
+  When collapsed, shift the entire container left by 300px.
+  This leaves 40px (the button width) visible on the screen
+  so the user can re-open it.
+*/
+.sidebarContainer.collapsed {
+  transform: translateX(-300px);
+}
+
+/*********************************
+ * Sidebar itself
+ *********************************/
+.sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 300px;
+  background: #141414;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  height: 100%;
+  /* The .sidebarContainer handles the transform; no need here */
+}
+
+/* The main container inside the sidebar */
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 64px 16px 16px 16px;
+  overflow: hidden; /* vertical scroll in .mainContent if needed */
+}
+
+/* Allows the conversation list to be scrollable and pushes the footer to bottom */
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*********************************
+ * New Chat Button
+ *********************************/
+.newChatButton {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.newChatButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/*********************************
+ * Conversation List
+ *********************************/
+.conversationItem {
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  min-height: 48px;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.conversationItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  transform: translateX(2px);
+}
+
+.conversationActive {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid rgba(255, 255, 255, 0.5);
+}
+
+.conversationName {
+  font-size: 15px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*********************************
+ * Action Buttons (Delete & Reset)
+ *********************************/
+.buttonGroup {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.deleteButton,
+.resetButton {
+  opacity: 0;
+  background-color: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.conversationItem:hover .deleteButton,
+.conversationItem:hover .resetButton {
+  opacity: 1;
+}
+
+.deleteButton:hover,
+.resetButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+/*********************************
+ * Footer area at the bottom
+ *********************************/
+.sidebarFooter {
+  margin-top: auto; /* push it to the bottom */
+}
+
+/*********************************
+ * Toggle Button
+ * Sits on the right edge of the sidebar
+ *********************************/
+.toggleButton {
+  position: absolute;
+  top: 72px;
+  left: 300px; /* flush with the sidebar's right edge */
+  width: 40px;
+  height: 40px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.toggleButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}

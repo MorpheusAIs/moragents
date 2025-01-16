@@ -32,3 +32,12 @@ async def set_coinbase_api_key(request: Request) -> JSONResponse:
         cdp_api_key=data.get("cdp_api_key"), cdp_api_secret=data.get("cdp_api_secret")
     )
     return JSONResponse(content={"status": "success", "message": "Coinbase API keys updated"})
+
+
+@router.post("/1inch")
+async def set_oneinch_api_key(request: Request) -> JSONResponse:
+    """Set 1inch API key"""
+    logger.info("Received set 1inch API key request")
+    data = await request.json()
+    key_manager_instance.set_oneinch_keys(api_key=data.get("api_key"))
+    return JSONResponse(content={"status": "success", "message": "1inch API key updated"})

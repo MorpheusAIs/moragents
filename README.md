@@ -5,6 +5,8 @@
 Python for AI Agents, JS for UI. Runs in your favorite browser. Made possible by Docker.
 Fully Extensible! Add your own agents and have them automatically invoked based on user intent.
 
+**Note:** This repository is meant to act as a sandbox for Smart Agent developers to explore existing agents and to build their own. It is not designed to be a production-ready application or consumer-based product. Please set your expectations accordingly. For additional information about a specific agent, browse to the submodules/moragents_dockers/agents/src/agents/ directory in the repo and view the README file for the agent you are interested in.
+
 ![UI 1](images/MORagents-UI.png)
 
 ![UI 2](images/gasless-usdc-base-agent.png)
@@ -52,6 +54,8 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 #### Upload a PDF with paperclip icon, then ask questions about the PDF 📄
   - "Can you give me a summary?"
   - "What's the main point of the document?"
+#### Ask about popular tokens and summary reports for tokens 🍿
+  - "What are the most active tokens on Solana?"
 
 ---
 
@@ -62,8 +66,8 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 #### Steps to Install
 1. Download Installer
    1. For Mac on Apple Silicon M1, M2, M3, M4 (arm64)
-      1. Download and run MORagents installer [MORagents021-apple.pkg](https://drive.proton.me/urls/AG19JG17JC#EYS7RDpLVVWK)
-      > SHA256 b4e7126410561f986ba116af567e7ac05b9eb59e7f1dcbaca3d7cd85b69a30c4 MORagents021-apple.pkg
+      1. Download and run MORagents installer [MORagents022-apple.pkg](https://drive.proton.me/urls/YA24T6MMT0#iCrO2BCuVZff)
+      > SHA256 3f51ce7cb5a81903f1cc612901c5c63cacc106e83e14c5ca791ddd6b5e71e883 MORagents022-apple.pkg
 2. Wait several minutes for background files to download and then your browser should automatically open to http://localhost:3333
     > Note: After installation is complete, the MORagents app icon will bounce for several minutes on your dock, and then stop. This is normal behavior as it's downloading <7GB of files in the background. You can open "Activity Monitor" and in the Network tab see that it's downloading.
 
@@ -83,9 +87,9 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 >Best performance when >=16GB RAM
 
 #### Steps
-1. Download [MORagentsSetupWindows021.zip](https://drive.proton.me/urls/GXAJKN82JG#U4ZDz5eqgQ7Y)
-    > SHA256 fc4631c1f1fa260cb9a206d27aa20c70812fffe524cbec421ad267e205d8c5c5 MORagentsSetupWindows021.zip
-2. Go to downloaded **MORagentsSetupWindows021(.zip)** file and double click to open
+1. Download [MORagentsSetupWindows022.zip](https://drive.proton.me/urls/MGNQ086Y2G#1cVhZOkkY1TU)
+    > SHA256 823790f9c2e2a1db7071012ad720e21a446d2fa86a58ac100cff134a107e7a3d MORagentsSetupWindows022.zip
+2. Go to downloaded **MORagentsSetupWindows022(.zip)** file and double click to open
 3. Double click **MORagentsSetup.exe**
    1. You may need to click "More info" -> "Run anyway"
    2. If that still doesn't work, try temporarily disabling your antivirus and open the .exe again

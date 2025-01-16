@@ -14,7 +14,7 @@ import {
   useToast,
   HStack,
 } from "@chakra-ui/react";
-import { tokens } from "./Base.constants";
+import { BASE_AVAILABLE_TOKENS } from "@/services/constants";
 
 interface SwapConfig {
   fromToken: string;
@@ -145,13 +145,13 @@ const BaseSwapWidget: React.FC = () => {
                   },
                 }}
               >
-                {tokens
-                  .filter((t) => t.symbol !== config.toToken)
-                  .map((token) => (
-                    <option key={token.symbol} value={token.symbol}>
-                      {token.symbol} - {token.name}
-                    </option>
-                  ))}
+                {BASE_AVAILABLE_TOKENS.filter(
+                  (t) => t.symbol !== config.toToken
+                ).map((token) => (
+                  <option key={token.symbol} value={token.symbol}>
+                    {token.symbol} - {token.name}
+                  </option>
+                ))}
               </Select>
             </FormControl>
 
@@ -169,13 +169,13 @@ const BaseSwapWidget: React.FC = () => {
                   },
                 }}
               >
-                {tokens
-                  .filter((t) => t.symbol !== config.fromToken)
-                  .map((token) => (
-                    <option key={token.symbol} value={token.symbol}>
-                      {token.symbol} - {token.name}
-                    </option>
-                  ))}
+                {BASE_AVAILABLE_TOKENS.filter(
+                  (t) => t.symbol !== config.fromToken
+                ).map((token) => (
+                  <option key={token.symbol} value={token.symbol}>
+                    {token.symbol} - {token.name}
+                  </option>
+                ))}
               </Select>
             </FormControl>
           </HStack>
