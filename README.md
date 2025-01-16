@@ -54,6 +54,8 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 #### Upload a PDF with paperclip icon, then ask questions about the PDF 📄
   - "Can you give me a summary?"
   - "What's the main point of the document?"
+#### Ask about popular tokens and summary reports for tokens 🍿
+  - "What are the most active tokens on Solana?"
 
 ---
 
@@ -64,8 +66,8 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 #### Steps to Install
 1. Download Installer
    1. For Mac on Apple Silicon M1, M2, M3, M4 (arm64)
-      1. Download and run MORagents installer [MORagents021-apple.pkg](https://drive.proton.me/urls/AG19JG17JC#EYS7RDpLVVWK)
-      > SHA256 b4e7126410561f986ba116af567e7ac05b9eb59e7f1dcbaca3d7cd85b69a30c4 MORagents021-apple.pkg
+      1. Download and run MORagents installer [MORagents022-apple.pkg](https://drive.proton.me/urls/YA24T6MMT0#iCrO2BCuVZff)
+      > SHA256 3f51ce7cb5a81903f1cc612901c5c63cacc106e83e14c5ca791ddd6b5e71e883 MORagents022-apple.pkg
 2. Wait several minutes for background files to download and then your browser should automatically open to http://localhost:3333
     > Note: After installation is complete, the MORagents app icon will bounce for several minutes on your dock, and then stop. This is normal behavior as it's downloading <7GB of files in the background. You can open "Activity Monitor" and in the Network tab see that it's downloading.
 
