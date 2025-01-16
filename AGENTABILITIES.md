@@ -35,10 +35,12 @@ This is due to the limitations of current LLMs in understanding complex transact
    3. Replaced llama 3.1 and functionary with llama 3.2 to massively increase speed 10X and reduce install footprint 6X
    5. Inter-agent Delegator which can coordinate between local and decentralized agents
    6. Coinbase DCA and Gasless USDC Agents
-   7. (pending) Agent forge to allow devs to publish their custom agents to the Morpheus/Lumerin Agent Registry
+   7. Trending tokens and rugcheck agents
+   8. Improved UI with multi-wallet connect
+   9. (pending) Agent forge to allow devs to publish their custom agents to the Morpheus/Lumerin Agent Registry
 6. **Niveshi**
    1. [MOR Rewards agent](https://github.com/MorpheusAIs/moragents/tree/main/submodules/moragents_dockers/agents/src/reward_agent/src). Lets you see how many MOR tokens are claimable for your wallet
-   2. Cryto Live News Agent
+   2. (being debugged) Cryto Live News Agent
 
 
 ### Decentralized Inference:
@@ -56,4 +58,4 @@ Pending Lumerin's work. Eventually Agent Builders will be able to permission-les
 ### Contact
 Join the [Morpheus Discord](https://discord.com/invite/Dc26EFb6JK)
 
-*Last Updated: December 12, 2024*
+*Last Updated: January 16, 2025*

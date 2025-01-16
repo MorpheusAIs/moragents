@@ -87,8 +87,8 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
 >Best performance when >=16GB RAM
 
 #### Steps
-1. Download [MORagentsSetupWindows021.zip](https://drive.proton.me/urls/GXAJKN82JG#U4ZDz5eqgQ7Y)
-    > SHA256 fc4631c1f1fa260cb9a206d27aa20c70812fffe524cbec421ad267e205d8c5c5 MORagentsSetupWindows021.zip
+1. Download [MORagentsSetupWindows022.zip](https://drive.proton.me/urls/MGNQ086Y2G#1cVhZOkkY1TU)
+    > SHA256 823790f9c2e2a1db7071012ad720e21a446d2fa86a58ac100cff134a107e7a3d MORagentsSetupWindows022.zip
 2. Go to downloaded **MORagentsSetupWindows021(.zip)** file and double click to open
 3. Double click **MORagentsSetup.exe**
    1. You may need to click "More info" -> "Run anyway"
