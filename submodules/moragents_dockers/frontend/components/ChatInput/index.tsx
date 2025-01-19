@@ -8,6 +8,7 @@ import {
   Box,
   VStack,
   Text,
+  useMediaQuery,
 } from "@chakra-ui/react";
 import { AttachmentIcon } from "@chakra-ui/icons";
 import { SendIcon } from "../CustomIcon/SendIcon";
@@ -43,6 +44,8 @@ export const ChatInput: FC<ChatInputProps> = ({
     left: 0,
     width: 0,
   });
+  const [isMobile] = useMediaQuery("(max-width: 768px)");
+
   const inputGroupRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const commandsRef = useRef<HTMLDivElement>(null);
@@ -57,13 +60,14 @@ export const ChatInput: FC<ChatInputProps> = ({
   useEffect(() => {
     if (inputGroupRef.current && message.startsWith("/")) {
       const rect = inputGroupRef.current.getBoundingClientRect();
+      const mobileOffset = isMobile ? 20 : 400; // Adjust dropdown position for mobile
       setDropdownPosition({
         top: rect.top,
-        left: rect.left - 400,
+        left: rect.left - mobileOffset,
         width: rect.width,
       });
     }
-  }, [message, showCommands]);
+  }, [message, showCommands, isMobile]);
 
   const filteredCommands = message.startsWith("/")
     ? commands.filter((cmd) =>
@@ -124,7 +128,7 @@ export const ChatInput: FC<ChatInputProps> = ({
     }
   };
 
-  const agentSupportsFileUploads = true;
+  const agentSupportsFileUploads = !isMobile;
 
   const handleSubmit = async () => {
     if (!message && !file) return;
@@ -143,7 +147,7 @@ export const ChatInput: FC<ChatInputProps> = ({
         <Box
           ref={commandsRef}
           position="fixed"
-          top={`${dropdownPosition.top - 210}px`}
+          top={`${dropdownPosition.top - (isMobile ? 160 : 210)}px`}
           left={`${dropdownPosition.left}px`}
           right={0}
           mx="auto"
@@ -151,7 +155,7 @@ export const ChatInput: FC<ChatInputProps> = ({
           bg="#353936"
           borderRadius="8px"
           boxShadow="0 4px 12px rgba(0, 0, 0, 0.3)"
-          maxH="200px"
+          maxH={isMobile ? "160px" : "200px"}
           overflowY="auto"
           border="1px solid #454945"
           zIndex={1000}
@@ -173,8 +177,8 @@ export const ChatInput: FC<ChatInputProps> = ({
               <Box
                 key={cmd.command}
                 data-index={index}
-                px={4}
-                py={3}
+                px={3}
+                py={2}
                 bg={index === selectedCommandIndex ? "#454945" : "transparent"}
                 _hover={{ bg: "#404540" }}
                 cursor="pointer"
@@ -183,10 +187,14 @@ export const ChatInput: FC<ChatInputProps> = ({
                 borderBottom="1px solid #454945"
                 _last={{ borderBottom: "none" }}
               >
-                <Text fontWeight="bold" fontSize="sm" color="#59f886">
+                <Text
+                  fontWeight="bold"
+                  fontSize={isMobile ? "xs" : "sm"}
+                  color="#59f886"
+                >
                   /{cmd.command}
                 </Text>
-                <Text fontSize="xs" color="#A0A0A0">
+                <Text fontSize={isMobile ? "2xs" : "xs"} color="#A0A0A0">
                   {cmd.name} - {cmd.description}
                 </Text>
               </Box>
@@ -231,7 +239,11 @@ export const ChatInput: FC<ChatInputProps> = ({
               disabled={disabled || file !== null}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type / for commands or enter your message..."
+              placeholder={
+                isMobile
+                  ? "Type / for commands or enter your message..."
+                  : "Type / for commands or enter your message..."
+              }
               rows={1}
               resize="none"
               overflow="hidden"
@@ -243,7 +255,12 @@ export const ChatInput: FC<ChatInputProps> = ({
                 disabled={disabled}
                 aria-label="Send"
                 onClick={handleSubmit}
-                icon={<SendIcon width="24px" height="24px" />}
+                icon={
+                  <SendIcon
+                    width={isMobile ? "20px" : "24px"}
+                    height={isMobile ? "20px" : "24px"}
+                  />
+                }
               />
             </InputRightAddon>
           </InputGroup>

@@ -3,22 +3,76 @@
   bottom: 120px;
   left: 0;
   right: 0;
-  padding: 0 1.5rem;
+  padding: 0 0.75rem;
   background-color: transparent;
+  z-index: 50;
+}
+
+@media (min-width: 640px) {
+  .prefilledContainer {
+    padding: 0 1.5rem;
+  }
 }
 
 .prefilledInner {
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@media (min-width: 640px) {
+  .prefilledInner {
+    gap: 1rem;
+  }
+}
+
+/* Desktop grid layout */
+@media (min-width: 768px) {
+  .prefilledInner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Row layout containers for mobile */
+.rowWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.titleRow {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
 }
 
 .prefilledSection {
   background-color: #2d2e33;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Add mobile specific styles for the expanded state */
+@media (max-width: 767px) {
+  .prefilledSection.expanded {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: -0.5rem; /* Remove gap between title and examples */
+    position: relative;
+    z-index: 2;
+  }
+}
+
+@media (min-width: 640px) {
+  .prefilledSection {
+    padding: 1rem;
+  }
 }
 
 .sectionTitle {
@@ -26,23 +80,97 @@
   align-items: center;
   gap: 0.5rem;
   color: white;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  margin-bottom: 0.75rem;
   line-height: 1.2;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+/* Only show hover and cursor pointer on mobile */
+@media (max-width: 767px) {
+  .sectionTitle {
+    cursor: pointer;
+  }
+
+  .sectionTitle:hover {
+    opacity: 0.8;
+  }
+}
+
+@media (min-width: 640px) {
+  .sectionTitle {
+    font-size: 0.875rem;
+  }
 }
 
 .sectionIcon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
   color: #a0a0a0;
 }
 
-.examplesList {
+@media (min-width: 640px) {
+  .sectionIcon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Mobile expanded examples container */
+.expandedExamples {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  background-color: #2d2e33;
+  padding: 0.75rem;
+  animation: slideDown 0.2s ease-out;
+  position: relative;
+  z-index: 1;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* For items in first column */
+.expandedExamples.firstColumn {
+  border-top-right-radius: 8px;
+}
+
+/* For items in second column */
+.expandedExamples.secondColumn {
+  border-top-left-radius: 8px;
+}
+
+/* Desktop examples list */
+.examplesList {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* Always show examples list on desktop */
+@media (min-width: 768px) {
+  .examplesList {
+    display: flex;
+  }
 }
 
 .exampleButton {
@@ -53,24 +181,25 @@
   border-radius: 4px;
   border: none;
   cursor: pointer;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   transition: background-color 0.2s;
   line-height: 1.2;
+  word-break: break-word;
+}
+
+@media (min-width: 640px) {
+  .exampleButton {
+    font-size: 0.8125rem;
+  }
 }
 
 .exampleButton:hover {
   background-color: #404142;
 }
 
-/* For smaller screens */
-@media (max-width: 768px) {
-  .prefilledInner {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .prefilledInner {
-    grid-template-columns: 1fr;
+/* Handle iOS safe areas */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .prefilledContainer {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }

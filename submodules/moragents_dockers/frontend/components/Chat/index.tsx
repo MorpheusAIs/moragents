@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
-import { Flex, Box } from "@chakra-ui/react";
+import { Flex, Box, useBreakpointValue } from "@chakra-ui/react";
 import { ChatMessage } from "@/services/types";
 // import { useTransactionConfirmations } from "wagmi";
 import { MessageList } from "@/components/MessageList";
@@ -18,6 +18,8 @@ export const Chat: FC<ChatProps> = ({
   const [activeWidget, setActiveWidget] = useState<ChatMessage | null>(null);
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -48,8 +50,12 @@ export const Chat: FC<ChatProps> = ({
         width="100%"
         transition="all 0.3s ease-in-out"
         mt={4}
-        paddingLeft={isWidgetOpen ? "5%" : "20%"}
-        paddingRight={isWidgetOpen ? "35%" : "20%"}
+        paddingLeft={
+          isMobile ? "5%" : isWidgetOpen ? "5%" : isSidebarOpen ? "5%" : "20%"
+        }
+        paddingRight={
+          isMobile ? "5%" : isWidgetOpen ? "35%" : isSidebarOpen ? "5%" : "20%"
+        }
         ml="auto"
         mr="auto"
       >
@@ -67,7 +73,7 @@ export const Chat: FC<ChatProps> = ({
         position="fixed"
         right={0}
         top={0}
-        width="30%"
+        width={isMobile ? "100%" : "30%"}
         height="100%"
         transition="transform 0.3s ease-in-out"
         transform={isWidgetOpen ? "translateX(0)" : "translateX(100%)"}
