@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from src.agents.base_agent import tools
 from src.models.core import ChatRequest, AgentResponse
