@@ -4,7 +4,7 @@ import pyshorteners
 
 from src.agents.news_agent.config import Config
 from src.agents.news_agent.tools import clean_html, fetch_rss_feed, is_within_time_window
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
 

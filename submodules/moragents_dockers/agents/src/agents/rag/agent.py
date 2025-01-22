@@ -9,7 +9,7 @@ from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 from werkzeug.utils import secure_filename
 
 from src.agents.agent_core.agent import AgentCore
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.stores import chat_manager_instance
 
 logger = logging.getLogger(__name__)

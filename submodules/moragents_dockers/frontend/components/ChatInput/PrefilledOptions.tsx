@@ -7,6 +7,10 @@ const PrefilledOptions = ({
   onSelect,
   isWidgetOpen = false,
   isSidebarOpen = true,
+}: {
+  onSelect: (text: string) => void;
+  isWidgetOpen?: boolean;
+  isSidebarOpen?: boolean;
 }) => {
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);

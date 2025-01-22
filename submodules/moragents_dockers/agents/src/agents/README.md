@@ -209,7 +209,7 @@ Create tests for your agent in the `tests/agents/your_agent_name/` directory:
 
 ```python
 from src.agents.your_agent_name.agent import YourAgentNameAgent
-from src.models.core import ChatRequest
+from src.models.service.chat_models import ChatRequest
 
 # Initialize agent
 agent = YourAgentNameAgent(config, llm, embeddings)

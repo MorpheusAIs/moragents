@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any, List, Union, Optional
 from src.agents.agent_core.agent import AgentCore
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 from langchain.schema import HumanMessage, SystemMessage
 from .config import Config
 from . import tools

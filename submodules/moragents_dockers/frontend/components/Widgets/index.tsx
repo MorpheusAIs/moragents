@@ -18,6 +18,11 @@ export const WIDGET_COMPATIBLE_AGENTS = [
 ];
 
 export const shouldOpenWidget = (message: ChatMessage) => {
+  // Don't open widgets on mobile devices
+  if (typeof window !== "undefined" && window.innerWidth <= 768) {
+    return false;
+  }
+
   if (!message.agentName) return false;
 
   if (message.agentName === "base") {

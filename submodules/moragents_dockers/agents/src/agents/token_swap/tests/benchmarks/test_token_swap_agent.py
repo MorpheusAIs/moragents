@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, Mock
 from src.agents.token_swap.agent import TokenSwapAgent
-from src.models.core import AgentResponse, ChatRequest
+from src.models.service.chat_models import AgentResponse, ChatRequest
 from src.agents.token_swap.tools import InsufficientFundsError, TokenNotFoundError, SwapNotPossibleError
 
 

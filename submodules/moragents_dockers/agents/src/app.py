@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Tuple, Dict, Any
+from typing import Dict, Any
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -9,9 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_ollama import ChatOllama
 
-from src.config import Config
+from src.config import Config, load_agent_routes
 from src.delegator import Delegator
-from src.models.core import AgentResponse, ChatRequest
+from src.models.service.chat_models import AgentResponse, ChatRequest
 from src.stores import (
     agent_manager_instance,
     chat_manager_instance,
@@ -26,15 +26,6 @@ from src.routes import (
     wallet_manager_routes,
     workflow_manager_routes,
 )
-
-# Configure agent routes
-from src.agents.crypto_data.routes import router as crypto_router
-from src.agents.rag.routes import router as rag_router
-from src.agents.mor_claims.routes import router as claim_router
-from src.agents.tweet_sizzler.routes import router as tweet_router
-from src.agents.token_swap.routes import router as swap_router
-from src.agents.dca_agent.routes import router as dca_router
-from src.agents.base_agent.routes import router as base_router
 
 # Configure logging
 logging.basicConfig(
@@ -69,21 +60,20 @@ embeddings = OllamaEmbeddings(model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Conf
 # Initialize delegator
 delegator = Delegator(llm, embeddings)
 
-# Include all routers
+# Include core routers
 ROUTERS = [
     agent_manager_routes.router,
     key_manager_routes.router,
     chat_manager_routes.router,
     wallet_manager_routes.router,
     workflow_manager_routes.router,
-    crypto_router,
-    rag_router,
-    claim_router,
-    tweet_router,
-    swap_router,
-    dca_router,
-    base_router,
 ]
+
+# Dynamically load and add agent routers
+agent_routers = load_agent_routes()
+for router in agent_routers:
+    app.include_router(router)
+
 
 for router in ROUTERS:
     app.include_router(router)

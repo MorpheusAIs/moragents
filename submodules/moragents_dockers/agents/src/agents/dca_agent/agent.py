@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, Any
 
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
 from src.stores import wallet_manager_instance
 from langchain.schema import HumanMessage, SystemMessage

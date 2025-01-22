@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 
 from src.agents.dexscreener.agent import DexScreenerAgent
-from src.models.core import AgentResponse
+from src.models.service.chat_models import AgentResponse
 
 
 @pytest.fixture

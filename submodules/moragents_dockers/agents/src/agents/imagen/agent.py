@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
 

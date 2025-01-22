@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Dict, Any, Optional
 from functools import wraps
 
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 
 
 def handle_exceptions(func):

@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 from src.agents.base_agent.agent import BaseAgent
-from src.models.core import AgentResponse
+from src.models.service.chat_models import AgentResponse
 from src.stores import wallet_manager_instance
 
 

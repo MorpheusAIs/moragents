@@ -139,9 +139,7 @@ def start_ollama_server():
     try:
         # Start Ollama server
         logger.info("Starting Ollama server...")
-        subprocess.Popen(
-            [ollama_path, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        subprocess.Popen([ollama_path, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         logger.info("Ollama server started successfully.")
     except Exception as e:
         logger.info("Failed to start Ollama server.")

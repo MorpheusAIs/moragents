@@ -2,7 +2,7 @@ import logging
 from typing import Dict, Any
 
 from src.agents.mor_claims import tools
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.agents.agent_core.agent import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
 from src.stores import agent_manager_instance

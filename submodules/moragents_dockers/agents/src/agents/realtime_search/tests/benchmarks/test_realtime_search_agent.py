@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 from bs4 import BeautifulSoup
 
 from src.agents.realtime_search.agent import RealtimeSearchAgent
-from src.models.core import AgentResponse
+from src.models.service.chat_models import AgentResponse
 
 
 @pytest.fixture

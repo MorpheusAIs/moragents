@@ -6,7 +6,7 @@ import pytest
 from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 
-from src.models.core import ChatRequest, ChatMessage
+from src.models.service.chat_models import ChatRequest, ChatMessage
 from src.config import Config
 
 

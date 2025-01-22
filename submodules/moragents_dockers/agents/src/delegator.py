@@ -1,9 +1,9 @@
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from langchain.schema import HumanMessage, SystemMessage
 from src.stores import chat_manager_instance, agent_manager_instance
-from src.models.core import ChatRequest, AgentResponse
+from src.models.service.chat_models import ChatRequest, AgentResponse
 
 logger = logging.getLogger(__name__)
 

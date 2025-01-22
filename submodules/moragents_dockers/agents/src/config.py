@@ -1,8 +1,59 @@
 import logging
 import datetime
+import os
+import importlib.util
+from typing import List
+from fastapi import APIRouter
 
 # Logging configuration
 logging.basicConfig(level=logging.INFO)
+
+
+def load_agent_routes() -> List[APIRouter]:
+    """
+    Dynamically load all route modules from agent subdirectories.
+    Returns a list of FastAPI router objects.
+    """
+    routers = []
+    agents_dir = os.path.join(os.path.dirname(__file__), "agents")
+    logger = logging.getLogger(__name__)
+
+    for agent_dir in os.listdir(agents_dir):
+        agent_path = os.path.join(agents_dir, agent_dir)
+        routes_file = os.path.join(agent_path, "routes.py")
+
+        # Skip non-agent directories
+        if not os.path.isdir(agent_path) or agent_dir.startswith("__"):
+            continue
+
+        # Skip if no routes file exists
+        if not os.path.exists(routes_file):
+            continue
+
+        try:
+            module_name = f"src.agents.{agent_dir}.routes"
+            spec = importlib.util.spec_from_file_location(module_name, routes_file)
+
+            if spec is None or spec.loader is None:
+                logger.error(f"Failed to load module spec for {routes_file}")
+                continue
+
+            if isinstance(spec, importlib.machinery.ModuleSpec):
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+
+                if hasattr(module, "router"):
+                    routers.append(module.router)
+                    logger.info(f"Successfully loaded routes from {agent_dir}")
+                else:
+                    logger.warning(f"No router found in {agent_dir}/routes.py")
+            else:
+                logger.error(f"Invalid module spec type for {routes_file}")
+
+        except Exception as e:
+            logger.error(f"Error loading routes from {agent_dir}: {str(e)}")
+
+    return routers
 
 
 # Configuration object

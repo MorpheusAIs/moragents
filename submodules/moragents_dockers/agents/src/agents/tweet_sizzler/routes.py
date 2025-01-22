@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from src.models.core import AgentResponse
+from src.models.service.chat_models import AgentResponse
 from src.stores import chat_manager_instance, agent_manager_instance, key_manager_instance
 
 
