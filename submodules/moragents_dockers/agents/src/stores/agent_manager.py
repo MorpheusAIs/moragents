@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Optional, Tuple
 from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 
-from src.config import load_agent_configs
+from src.config import load_agent_configs, setup_logging, LLM, EMBEDDINGS
 
-logger = logging.getLogger(__name__)
+logger = setup_logging()
 
 
 class AgentManager:
@@ -39,6 +39,7 @@ class AgentManager:
 
         # Select first 6 agents by default
         self.set_selected_agents([agent["name"] for agent in config])
+        # self.load_all_agents(LLM, EMBEDDINGS)
         logger.info(f"AgentManager initialized with {len(self.selected_agents)} default agents")
 
     def _load_agent(self, agent_config: Dict) -> bool:

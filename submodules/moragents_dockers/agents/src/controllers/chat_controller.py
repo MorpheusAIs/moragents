@@ -1,10 +1,10 @@
-import logging
 from fastapi import HTTPException
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.stores import agent_manager_instance, chat_manager_instance
 from src.delegator import Delegator
+from src.config import setup_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_logging()
 
 
 class ChatController:
@@ -42,7 +42,7 @@ class ChatController:
             # Otherwise use delegator to find appropriate agent
             else:
                 logger.info("Using delegator flow")
-                self.delegator.reset_attempted_agents()
+                # self.delegator.reset_attempted_agents()
                 current_agent, agent_response = await self.delegator.delegate_chat(chat_request)
 
             # We only critically fail if we don't get an AgentResponse

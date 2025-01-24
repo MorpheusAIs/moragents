@@ -1,12 +1,11 @@
 import logging
 from fastapi import APIRouter, HTTPException
-from src.models.service.chat_models import ChatRequest, AgentResponse
-from src.stores import agent_manager_instance, chat_manager_instance
+from src.models.service.chat_models import ChatRequest
 from src.delegator import Delegator
 from src.controllers.chat_controller import ChatController
-from src.config import llm, embeddings
+from src.config import LLM, EMBEDDINGS, setup_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_logging()
 
 router = APIRouter(prefix="/api/v1", tags=["chat"])
 
@@ -17,7 +16,7 @@ async def chat(chat_request: ChatRequest):
     logger.info(f"Received chat request for conversation {chat_request.conversation_id}")
 
     # Initialize new delegator and controller for each request
-    delegator = Delegator(llm, embeddings)
+    delegator = Delegator(LLM, EMBEDDINGS)
     controller = ChatController(delegator)
 
     try:

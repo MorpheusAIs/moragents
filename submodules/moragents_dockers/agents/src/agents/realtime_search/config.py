@@ -11,7 +11,7 @@ class Config:
     agent_config = AgentConfig(
         path="src.agents.realtime_search.agent",
         class_name="RealtimeSearchAgent",
-        description="Performs real-time web searches to find current information",
+        description="Performs real-time web searches to find current information. Should be used whenever the user refers to something recent or time-sensitive.",
         human_readable_name="Web Search Assistant",
         command="search",
         upload_required=False,

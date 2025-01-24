@@ -1,12 +1,11 @@
 import logging
 import os
-
+import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.config import load_agent_routes
+from src.config import load_agent_routes, setup_logging
 from src.stores import workflow_manager_instance
-from src.stores.agent_manager import agent_manager_instance
 
 # Configure routes
 from src.routes import (
@@ -19,13 +18,8 @@ from src.routes import (
 )
 
 # Configure logging
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-#     filename="app.log",
-#     filemode="a",
-# )
-logger = logging.getLogger(__name__)
+logger = setup_logging()
+logger.info("Logging configured successfully")
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -40,6 +34,7 @@ app.add_middleware(
 # Setup upload directory
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+logger.info(f"Upload folder created at {UPLOAD_FOLDER}")
 
 # Include core routers
 ROUTERS = [
@@ -63,10 +58,13 @@ for router in ROUTERS:
 @app.on_event("startup")
 async def startup_event():
     """Initialize workflow manager on startup"""
+    logger.info("Starting workflow manager initialization")
     await workflow_manager_instance.initialize()
+    logger.info("Workflow manager initialized successfully")
 
 
 if __name__ == "__main__":
     import uvicorn
 
+    logger.info("Starting FastAPI application")
     uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)

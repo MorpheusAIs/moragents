@@ -1,7 +1,9 @@
 import logging
 import os
+import sys
 import importlib.util
-from typing import List, Dict, Any
+
+from typing import List, Dict, Any, Optional
 
 from fastapi import APIRouter
 from langchain_community.embeddings import OllamaEmbeddings
@@ -57,6 +59,58 @@ def load_agent_routes() -> List[APIRouter]:
     return routers
 
 
+def load_agent_config(agent_name: str) -> Optional[Dict[str, Any]]:
+    """
+    Load configuration for a specific agent by name.
+
+    Args:
+        agent_name (str): Name of the agent to load config for
+
+    Returns:
+        Optional[Dict[str, Any]]: Agent configuration if found and loaded successfully, None otherwise
+    """
+    agents_dir = os.path.join(os.path.dirname(__file__), "agents")
+    agent_path = os.path.join(agents_dir, agent_name)
+    config_file = os.path.join(agent_path, "config.py")
+
+    # Verify agent directory exists and is valid
+    if not os.path.isdir(agent_path) or agent_name.startswith("__"):
+        logger.error(f"Invalid agent directory: {agent_name}")
+        return None
+
+    # Check config file exists
+    if not os.path.exists(config_file):
+        logger.warning(f"No config file found for agent: {agent_name}")
+        return None
+
+    try:
+        # Import the config module
+        module_name = f"src.agents.{agent_name}.config"
+        spec = importlib.util.spec_from_file_location(module_name, config_file)
+
+        if spec is None or spec.loader is None:
+            logger.error(f"Failed to load module spec for {config_file}")
+            return None
+
+        if isinstance(spec, importlib.machinery.ModuleSpec):
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            # Check for Config class and agent_config
+            if hasattr(module, "Config") and hasattr(module.Config, "agent_config"):
+                config_dict = module.Config.agent_config.model_dump()
+                config_dict["name"] = agent_name
+                logger.info(f"Successfully loaded config for {agent_name}")
+                return config_dict
+            else:
+                logger.warning(f"No Config class or agent_config found in {agent_name}/config.py")
+                return None
+
+    except Exception as e:
+        logger.error(f"Error loading config for {agent_name}: {str(e)}")
+        return None
+
+
 def load_agent_configs() -> List[Dict[str, Any]]:
     """
     Dynamically load configurations from all agent subdirectories.
@@ -66,44 +120,39 @@ def load_agent_configs() -> List[Dict[str, Any]]:
     configs = []
 
     for agent_dir in os.listdir(agents_dir):
-        agent_path = os.path.join(agents_dir, agent_dir)
-        config_file = os.path.join(agent_path, "config.py")
-
-        # Skip non-agent directories and special directories
-        if not os.path.isdir(agent_path) or agent_dir.startswith("__"):
-            continue
-
-        # Skip if no config file exists
-        if not os.path.exists(config_file):
-            logger.warning(f"No config file found for agent: {agent_dir}")
-            continue
-
-        try:
-            # Import the config module
-            module_name = f"src.agents.{agent_dir}.config"
-            spec = importlib.util.spec_from_file_location(module_name, config_file)
-
-            if spec is None or spec.loader is None:
-                logger.error(f"Failed to load module spec for {config_file}")
-                continue
-
-            if isinstance(spec, importlib.machinery.ModuleSpec):
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-
-                # Check for Config class and agent_config in the module
-                if hasattr(module, "Config") and hasattr(module.Config, "agent_config"):
-                    config_dict = module.Config.agent_config.model_dump()
-                    config_dict["name"] = agent_dir
-                    configs.append(config_dict)
-                    logger.info(f"Successfully loaded config from {agent_dir}")
-                else:
-                    logger.warning(f"No Config class or agent_config found in {agent_dir}/config.py")
-
-        except Exception as e:
-            logger.error(f"Error loading config from {agent_dir}: {str(e)}")
+        config = load_agent_config(agent_dir)
+        if config:
+            configs.append(config)
 
     return configs
+
+
+def setup_logging():
+    # Create formatter
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+    # Setup file handler
+    file_handler = logging.FileHandler("app.log")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+
+    # Setup console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+
+    # Get the root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+
+    # Remove any existing handlers
+    root_logger.handlers = []
+
+    # Add our handlers
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+
+    return root_logger
 
 
 # Configuration object
@@ -117,8 +166,8 @@ class AppConfig:
 
 
 # Initialize LLM and embeddings
-llm = ChatOllama(
+LLM = ChatOllama(
     model=AppConfig.OLLAMA_MODEL,
     base_url=AppConfig.OLLAMA_URL,
 )
-embeddings = OllamaEmbeddings(model=AppConfig.OLLAMA_EMBEDDING_MODEL, base_url=AppConfig.OLLAMA_URL)
+EMBEDDINGS = OllamaEmbeddings(model=AppConfig.OLLAMA_EMBEDDING_MODEL, base_url=AppConfig.OLLAMA_URL)

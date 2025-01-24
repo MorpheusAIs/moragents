@@ -12,6 +12,7 @@ from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.models.service.agent_core import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
 from src.agents.realtime_search.config import Config
+from src.config import LLM
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class RealtimeSearchAgent(AgentCore):
                     return AgentResponse.needs_info(content="Could you please provide a search term?")
 
                 search_results = self._perform_search_with_web_scraping(search_term)
+                logger.info(f"Search results: {search_results}")
                 if "Error performing web search" in search_results:
                     return AgentResponse.error(error_message=search_results)
 
@@ -146,7 +148,7 @@ class RealtimeSearchAgent(AgentCore):
         ]
 
         try:
-            result = self.llm.invoke(messages, max_tokens=Config.MAX_TOKENS, temperature=Config.TEMPERATURE)
+            result = LLM.invoke(messages)
             if not result.content.strip():
                 return AgentResponse.needs_info(
                     content="I found some results but couldn't understand them well. Could you rephrase your question?"
