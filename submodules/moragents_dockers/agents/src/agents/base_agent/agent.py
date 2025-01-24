@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from src.agents.base_agent import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
-from src.agents.agent_core.agent import AgentCore
+from src.models.service.agent_core import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
 from src.agents.base_agent.config import Config
 from src.stores import wallet_manager_instance

@@ -6,7 +6,7 @@ from langchain.schema import HumanMessage, SystemMessage
 
 from src.agents.tweet_sizzler.config import Config
 from src.models.service.chat_models import ChatRequest, AgentResponse
-from src.agents.agent_core.agent import AgentCore
+from src.models.service.agent_core import AgentCore
 from src.stores import key_manager_instance
 
 logger = logging.getLogger(__name__)

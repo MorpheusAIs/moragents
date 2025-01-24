@@ -1,4 +1,26 @@
+from src.models.service.agent_config import AgentConfig
+
+
 class Config:
+    """Configuration for Base Network Agent."""
+
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.base_agent.agent",
+        class_name="BaseAgent",
+        description="Handles transactions on the Base crypto network. Use when the user makes any reference to Base, base, the base network, or Coinbase",
+        human_readable_name="Base Transaction Manager",
+        command="base",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
+
     tools = [
         {
             "name": "swap_assets",
@@ -30,9 +52,7 @@ class Config:
             "description": "Get balance of a specific asset",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "asset_id": {"type": "string", "description": "Asset ID to check balance for"}
-                },
+                "properties": {"asset_id": {"type": "string", "description": "Asset ID to check balance for"}},
                 "required": ["asset_id"],
             },
         },

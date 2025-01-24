@@ -1,15 +1,70 @@
-import logging
-
-# Logging configuration
-logging.basicConfig(level=logging.INFO)
+from src.models.service.agent_config import AgentConfig
 
 
-# Configuration object
 class Config:
+    """Configuration for Crypto Data Agent."""
 
-    # API endpoints
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.crypto_data.agent",
+        class_name="CryptoDataAgent",
+        description="Fetches cryptocurrency price and market data from various sources.",
+        human_readable_name="Crypto Data Analyst",
+        command="cryptodata",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
+
+    tools = [
+        {
+            "name": "get_price",
+            "description": "Get current price of a cryptocurrency",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "coin_name": {"type": "string", "description": "Name of the cryptocurrency"},
+                },
+                "required": ["coin_name"],
+            },
+        },
+        {
+            "name": "get_floor_price",
+            "description": "Get NFT collection floor price",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "nft_name": {"type": "string", "description": "Name of the NFT collection"},
+                },
+                "required": ["nft_name"],
+            },
+        },
+        {
+            "name": "get_tvl",
+            "description": "Get total value locked (TVL) of a protocol",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "protocol_name": {"type": "string", "description": "Name of the protocol"},
+                },
+                "required": ["protocol_name"],
+            },
+        },
+    ]
+
+    # *************
+    # API CONFIG
+    # *************
+
     COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3"
     DEFILLAMA_BASE_URL = "https://api.llama.fi"
+
+    # Response messages
     PRICE_SUCCESS_MESSAGE = "The price of {coin_name} is ${price:,}"
     PRICE_FAILURE_MESSAGE = "Failed to retrieve price. Please enter a valid coin name."
     FLOOR_PRICE_SUCCESS_MESSAGE = "The floor price of {nft_name} is ${floor_price:,}"

@@ -1,18 +1,46 @@
-import logging
-
-# Logging configuration
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+from src.models.service.agent_config import AgentConfig
 
 
-# Configuration object
 class Config:
+    """Configuration for Tweet Sizzler Agent."""
 
-    # Twitter API configuration
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.tweet_sizzler.agent",
+        class_name="TweetSizzlerAgent",
+        description="Generates engaging tweets and manages Twitter interactions",
+        human_readable_name="Tweet Generator",
+        command="tweet",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
+
+    tools = [
+        {
+            "name": "generate_tweet",
+            "description": "Generate an engaging tweet based on provided content",
+            "parameters": {
+                "type": "object",
+                "properties": {"content": {"type": "string", "description": "Content to base the tweet on"}},
+                "required": ["content"],
+            },
+        }
+    ]
+
+    # *************
+    # TWITTER CONFIG
+    # *************
+
     TWITTER_API_VERSION = "2"
     TWEET_MAX_LENGTH = 280
 
+    # LLM configuration
     LLM_MAX_TOKENS = 280
     LLM_TEMPERATURE = 0.7
 
@@ -27,12 +55,9 @@ class Config:
         "quotes or braces. Do not use any other formatting."
     )
 
-    DEFAULT_ACTION = "generate"
-
+    # Error messages
     ERROR_NO_TWEET_CONTENT = "No tweet content provided"
-    ERROR_TWITTER_CLIENT_NOT_INITIALIZED = (
-        "Twitter client not initialized. Please set X API credentials first."
-    )
+    ERROR_TWITTER_CLIENT_NOT_INITIALIZED = "Twitter client not initialized. Please set X API credentials first."
     ERROR_MISSING_API_CREDENTIALS = "Missing required X API credentials"
     ERROR_INVALID_ACTION = "Invalid action"
     ERROR_MISSING_PARAMETERS = "Missing required parameters"

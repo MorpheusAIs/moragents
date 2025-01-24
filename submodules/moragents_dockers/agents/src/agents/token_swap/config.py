@@ -1,13 +1,26 @@
-import logging
-
-# Logging configuration
-logging.basicConfig(level=logging.INFO)
+from src.models.service.agent_config import AgentConfig
 
 
-# Configuration object
 class Config:
+    """Configuration for Token Swap Agent."""
 
-    # API endpoints
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.token_swap.agent",
+        class_name="TokenSwapAgent",
+        description="Handles token swaps across multiple networks",
+        human_readable_name="Token Swap Manager",
+        command="swap",
+        upload_required=False,
+    )
+
+    # *************
+    # API CONFIG
+    # *************
+
     INCH_URL = "https://api.1inch.dev/token"
     QUOTE_URL = "https://api.1inch.dev/swap"
     APIBASEURL = f"https://api.1inch.dev/swap/v6.0/"
@@ -15,6 +28,11 @@ class Config:
         "Authorization": "Bearer WvQuxaMYpPvDiiOL5RHWUm7OzOd20nt4",
         "accept": "application/json",
     }
+
+    # *************
+    # NETWORK CONFIG
+    # *************
+
     WEB3RPCURL = {
         "56": "https://bsc-dataseed.binance.org",
         "42161": "https://arb1.arbitrum.io/rpc",
@@ -23,6 +41,7 @@ class Config:
         "10": "https://mainnet.optimism.io",
         "8453": "https://mainnet.base.org",
     }
+
     NATIVE_TOKENS = {
         "137": "MATIC",
         "56": "BNB",
@@ -31,6 +50,11 @@ class Config:
         "10": "ETH",
         "8453": "ETH",
     }
+
+    # *************
+    # CONTRACT CONFIG
+    # *************
+
     ERC20_ABI = [
         {
             "constant": True,
@@ -51,4 +75,5 @@ class Config:
             "type": "function",
         },
     ]
+
     INCH_NATIVE_TOKEN_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"

@@ -1,6 +1,6 @@
 import logging
 
-from src.agents.agent_core.agent import AgentCore
+from src.models.service.agent_core import AgentCore
 from src.agents.mor_rewards import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
 

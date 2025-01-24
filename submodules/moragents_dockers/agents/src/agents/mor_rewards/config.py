@@ -1,11 +1,44 @@
-import logging
-
-# Logging configuration
-logging.basicConfig(level=logging.INFO)
+from src.models.service.agent_config import AgentConfig
 
 
-# Configuration object
 class Config:
+    """Configuration for MOR Rewards Agent."""
+
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.mor_rewards.agent",
+        class_name="MORRewardsAgent",
+        description="Handles MOR token rewards distribution and claiming",
+        human_readable_name="MOR Rewards Manager",
+        command="morrewards",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
+
+    tools = [
+        {
+            "name": "get_rewards",
+            "description": "Get claimable MOR rewards for a user",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pool_id": {"type": "string", "description": "Pool ID to check rewards for"},
+                    "user": {"type": "string", "description": "User address to check rewards for"},
+                },
+                "required": ["pool_id", "user"],
+            },
+        }
+    ]
+
+    # *************
+    # CONTRACT CONFIG
+    # *************
 
     WEB3RPCURL = {
         "1": "https://eth.llamarpc.com/",

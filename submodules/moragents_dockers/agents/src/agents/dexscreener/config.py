@@ -1,15 +1,28 @@
+from src.models.service.agent_config import AgentConfig
+
+
 class Config:
     """Configuration for DexScreener Token API."""
 
-    BASE_URL = "https://api.dexscreener.com"
-    RATE_LIMIT = 60  # requests per minute
+    # *************
+    # AGENT CONFIG
+    # ------------
+    # This must be defined in every agent config file
+    # It is required to load the agent
+    # *************
 
-    ENDPOINTS = {
-        "token_profiles": "/token-profiles/latest/v1",
-        "latest_boosts": "/token-boosts/latest/v1",
-        "top_boosts": "/token-boosts/top/v1",
-        "dex_search": "/latest/dex/search",
-    }
+    agent_config = AgentConfig(
+        path="src.agents.dexscreener.agent",
+        class_name="DexScreenerAgent",
+        description="Fetches and analyzes cryptocurrency trading data from DexScreener.",
+        human_readable_name="DexScreener Analyst",
+        command="dexscreener",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
 
     tools = [
         {
@@ -69,3 +82,17 @@ class Config:
             },
         },
     ]
+
+    # *************
+    # API CONFIG
+    # *************
+
+    BASE_URL = "https://api.dexscreener.com"
+    RATE_LIMIT = 60  # requests per minute
+
+    ENDPOINTS = {
+        "token_profiles": "/token-profiles/latest/v1",
+        "latest_boosts": "/token-boosts/latest/v1",
+        "top_boosts": "/token-boosts/top/v1",
+        "dex_search": "/latest/dex/search",
+    }

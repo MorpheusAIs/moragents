@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from src.agents.token_swap import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
-from src.agents.agent_core.agent import AgentCore
+from src.models.service.agent_core import AgentCore
 from src.stores.key_manager import key_manager_instance
 
 logger = logging.getLogger(__name__)

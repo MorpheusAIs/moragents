@@ -1,17 +1,51 @@
-import logging
-
-logging.basicConfig(level=logging.INFO)
+from src.models.service.agent_config import AgentConfig
 
 
 class Config:
-    # RSS Feed URL
+    """Configuration for News Agent."""
+
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.news_agent.agent",
+        class_name="NewsAgent",
+        description="Fetches and analyzes cryptocurrency news for potential price impacts",
+        human_readable_name="Crypto News Analyst",
+        command="news",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
+
+    tools = [
+        {
+            "name": "fetch_crypto_news",
+            "description": "Fetch and analyze cryptocurrency news for potential price impacts",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "coins": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of cryptocurrency symbols to fetch news for",
+                    }
+                },
+                "required": ["coins"],
+            },
+        }
+    ]
+
+    # *************
+    # NEWS CONFIG
+    # *************
+
     GOOGLE_NEWS_BASE_URL = "https://news.google.com/rss/search?q={}&hl=en-US&gl=US&ceid=US:en"
-
-    # Time window for news (in hours)
-    NEWS_TIME_WINDOW = 24
-
-    # Number of articles to show per token
-    ARTICLES_PER_TOKEN = 1
+    NEWS_TIME_WINDOW = 24  # Time window for news (in hours)
+    ARTICLES_PER_TOKEN = 1  # Number of articles to show per token
 
     # LLM configuration
     LLM_MAX_TOKENS = 150

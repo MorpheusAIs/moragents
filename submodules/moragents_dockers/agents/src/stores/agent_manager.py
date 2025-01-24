@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 
-from src.config import Config
+from src.config import load_agent_configs
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class AgentManager:
         self.embeddings: Optional[OllamaEmbeddings] = None
 
         # Select first 6 agents by default
-        self.set_selected_agents([agent["name"] for agent in config["agents"][:6]])
+        self.set_selected_agents([agent["name"] for agent in config])
         logger.info(f"AgentManager initialized with {len(self.selected_agents)} default agents")
 
     def _load_agent(self, agent_config: Dict) -> bool:
@@ -100,14 +100,14 @@ class AgentManager:
         """Clear the currently active agent."""
         self.active_agent = None
 
-    def get_available_agents(self) -> List[Dict]:
+    def get_available_agents(self):
         """
         Get list of all available agents from config.
 
         Returns:
             List[Dict]: List of agent configurations
         """
-        return self.config["agents"]
+        return self.config
 
     def get_selected_agents(self) -> List[str]:
         """
@@ -128,7 +128,7 @@ class AgentManager:
         Raises:
             ValueError: If any agent name is invalid
         """
-        valid_names = {agent["name"] for agent in self.config["agents"]}
+        valid_names = {agent["name"] for agent in self.config}
         invalid_names = [name for name in agent_names if name not in valid_names]
 
         if invalid_names:
@@ -149,7 +149,7 @@ class AgentManager:
         Returns:
             Optional[Dict]: Agent configuration if found, None otherwise
         """
-        return next((agent for agent in self.config["agents"] if agent["name"] == agent_name), None)
+        return next((agent for agent in self.config if agent["name"] == agent_name), None)
 
     def get_agent(self, agent_name: str) -> Optional[Any]:
         """
@@ -173,7 +173,7 @@ class AgentManager:
         Returns:
             Optional[str]: Agent name if found, None otherwise
         """
-        for agent in self.config["agents"]:
+        for agent in self.config:
             if agent["command"] == command:
                 return agent["name"]
         return None
@@ -200,4 +200,6 @@ class AgentManager:
 
 
 # Create an instance to act as a singleton store
-agent_manager_instance = AgentManager(Config.AGENTS_CONFIG)
+agent_configs = load_agent_configs()
+logger.info(f"Loaded {len(agent_configs)} agents")
+agent_manager_instance = AgentManager(agent_configs)

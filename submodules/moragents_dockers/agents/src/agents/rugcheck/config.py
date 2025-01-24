@@ -1,5 +1,8 @@
-from typing import Dict, Optional
 import re
+
+from typing import Optional
+
+from src.models.service.agent_config import AgentConfig
 
 
 class TokenRegistry:
@@ -79,7 +82,24 @@ class TokenRegistry:
 
 
 class Config:
-    """Configuration for RugcheckAgent tools."""
+    """Configuration for Rugcheck Agent."""
+
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.rugcheck.agent",
+        class_name="RugcheckAgent",
+        description="Analyzes tokens for potential risks and scams",
+        human_readable_name="Token Risk Analyzer",
+        command="rugcheck",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
 
     tools = [
         {
@@ -96,11 +116,17 @@ class Config:
         {
             "name": "get_most_viewed",
             "description": "Get most viewed tokens in past 24 hours",
-            "parameters": {"type": "object", "properties": {}},
+            "parameters": {
+                "type": "object",
+                "properties": {},
+            },
         },
         {
             "name": "get_most_voted",
             "description": "Get most voted tokens in past 24 hours",
-            "parameters": {"type": "object", "properties": {}},
+            "parameters": {
+                "type": "object",
+                "properties": {},
+            },
         },
     ]

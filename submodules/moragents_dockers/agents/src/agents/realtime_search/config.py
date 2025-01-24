@@ -1,4 +1,26 @@
+from src.models.service.agent_config import AgentConfig
+
+
 class Config:
+    """Configuration for Realtime Search Agent."""
+
+    # *************
+    # AGENT CONFIG
+    # *************
+
+    agent_config = AgentConfig(
+        path="src.agents.realtime_search.agent",
+        class_name="RealtimeSearchAgent",
+        description="Performs real-time web searches to find current information",
+        human_readable_name="Web Search Assistant",
+        command="search",
+        upload_required=False,
+    )
+
+    # *************
+    # TOOLS CONFIG
+    # *************
+
     tools = [
         {
             "name": "perform_web_search",
@@ -15,6 +37,10 @@ class Config:
             },
         }
     ]
+
+    # *************
+    # SEARCH CONFIG
+    # *************
 
     # Web scraping configuration
     USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"

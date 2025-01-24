@@ -4,7 +4,7 @@ services:
   agents:
     image: lachsbagel/moragents_dockers-agents:apple-0.2.2
     build:
-      dockerfile: Dockerfile-apple
+      dockerfile: build/Dockerfile-apple
       context: ./agents
     ports:
       - "8080:5000"
