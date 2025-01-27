@@ -1,6 +1,6 @@
-import logging
 import os
-import sys
+import uvicorn
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -47,11 +47,11 @@ ROUTERS = [
 ]
 
 # Dynamically load and add agent routers
+# Load and include all routers
 agent_routers = load_agent_routes()
-for router in agent_routers:
-    app.include_router(router)
+routers = agent_routers + ROUTERS
 
-for router in ROUTERS:
+for router in routers:
     app.include_router(router)
 
 
@@ -64,7 +64,5 @@ async def startup_event():
 
 
 if __name__ == "__main__":
-    import uvicorn
-
     logger.info("Starting FastAPI application")
     uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)
