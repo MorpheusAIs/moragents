@@ -18,8 +18,8 @@ def load_agent_routes() -> List[APIRouter]:
     Returns a list of FastAPI router objects.
     """
     routers = []
-    agents_dir = os.path.join(os.path.dirname(__file__), "agents")
-    logger = logging.getLogger(__name__)
+    agents_dir = os.path.join(os.path.dirname(__file__), "services/agents")
+    logger.info(f"Loading agents from {agents_dir}")
 
     for agent_dir in os.listdir(agents_dir):
         agent_path = os.path.join(agents_dir, agent_dir)
@@ -34,7 +34,7 @@ def load_agent_routes() -> List[APIRouter]:
             continue
 
         try:
-            module_name = f"src.agents.{agent_dir}.routes"
+            module_name = f"src.services.agents.{agent_dir}.routes"
             spec = importlib.util.spec_from_file_location(module_name, routes_file)
 
             if spec is None or spec.loader is None:
@@ -69,7 +69,8 @@ def load_agent_config(agent_name: str) -> Optional[Dict[str, Any]]:
     Returns:
         Optional[Dict[str, Any]]: Agent configuration if found and loaded successfully, None otherwise
     """
-    agents_dir = os.path.join(os.path.dirname(__file__), "agents")
+    agents_dir = os.path.join(os.path.dirname(__file__), "services/agents")
+    logger.info(f"Loading agents from {agents_dir}")
     agent_path = os.path.join(agents_dir, agent_name)
     config_file = os.path.join(agent_path, "config.py")
 
@@ -85,7 +86,7 @@ def load_agent_config(agent_name: str) -> Optional[Dict[str, Any]]:
 
     try:
         # Import the config module
-        module_name = f"src.agents.{agent_name}.config"
+        module_name = f"src.services.agents.{agent_name}.config"
         spec = importlib.util.spec_from_file_location(module_name, config_file)
 
         if spec is None or spec.loader is None:
@@ -116,7 +117,8 @@ def load_agent_configs() -> List[Dict[str, Any]]:
     Dynamically load configurations from all agent subdirectories.
     Returns a consolidated configuration dictionary.
     """
-    agents_dir = os.path.join(os.path.dirname(__file__), "agents")
+    agents_dir = os.path.join(os.path.dirname(__file__), "services/agents")
+    logger.info(f"Loading agents from {agents_dir}")
     configs = []
 
     for agent_dir in os.listdir(agents_dir):

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import Mock, patch
 from fastapi.testclient import TestClient
-from src.agents.crypto_data.routes import router
+from src.services.agents.crypto_data.routes import router
 from src.models.service.chat_models import AgentResponse
 
 client = TestClient(router)

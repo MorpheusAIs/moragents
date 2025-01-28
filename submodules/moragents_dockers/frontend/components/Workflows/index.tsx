@@ -96,7 +96,7 @@ export const Workflows: React.FC = () => {
 
   const fetchWorkflows = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/workflows/list");
+      const response = await fetch("http://localhost:8888/workflows/list");
       const data = await response.json();
       setWorkflows(data.workflows || []);
     } catch (error) {
@@ -144,7 +144,7 @@ export const Workflows: React.FC = () => {
         interval: FREQUENCIES[config.frequency as keyof typeof FREQUENCIES],
       };
 
-      const response = await fetch("http://localhost:8080/workflows/create", {
+      const response = await fetch("http://localhost:8888/workflows/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,7 +175,7 @@ export const Workflows: React.FC = () => {
 
   const handleDeleteWorkflow = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/workflows/${id}`, {
+      const response = await fetch(`http://localhost:8888/workflows/${id}`, {
         method: "DELETE",
       });
 

@@ -9,7 +9,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.imagen.agent",
+        path="src.services.agents.imagen.agent",
         class_name="ImagenAgent",
         description="Must only be used for image generation tasks. Use when the query explicitly mentions generating or creating an image.",
         human_readable_name="Image Generator",

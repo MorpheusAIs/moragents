@@ -9,7 +9,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.base_agent.agent",
+        path="src.services.agents.base_agent.agent",
         class_name="BaseAgent",
         description="Handles transactions on the Base crypto network. Use when the user makes any reference to Base, base, the base network, or Coinbase",
         human_readable_name="Base Transaction Manager",

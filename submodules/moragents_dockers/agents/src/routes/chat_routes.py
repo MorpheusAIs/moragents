@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, HTTPException
 from src.models.service.chat_models import ChatRequest
-from src.delegator import Delegator
+from src.services.delegator.delegator import Delegator
 from src.controllers.chat_controller import ChatController
 from src.config import LLM, EMBEDDINGS, setup_logging
 

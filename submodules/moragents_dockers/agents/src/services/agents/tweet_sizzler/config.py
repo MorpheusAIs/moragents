@@ -9,7 +9,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.tweet_sizzler.agent",
+        path="src.services.agents.tweet_sizzler.agent",
         class_name="TweetSizzlerAgent",
         description="Generates engaging tweets and manages Twitter interactions",
         human_readable_name="Tweet Generator",

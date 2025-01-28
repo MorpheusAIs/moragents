@@ -59,7 +59,7 @@ const BaseTransferWidget: React.FC = () => {
 
     // Attempt the transfer
     try {
-      const response = await fetch("http://localhost:8080/base/transfer", {
+      const response = await fetch("http://localhost:8888/base/transfer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

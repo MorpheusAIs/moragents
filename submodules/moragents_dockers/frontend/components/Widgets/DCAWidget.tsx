@@ -93,7 +93,7 @@ const DCAWidget: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/dca/create_strategy",
+        "http://localhost:8888/dca/create_strategy",
         {
           method: "POST",
           headers: {

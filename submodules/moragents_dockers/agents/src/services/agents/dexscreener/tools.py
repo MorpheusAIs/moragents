@@ -1,8 +1,8 @@
 import logging
 from typing import Dict, Any, List, Optional
 import aiohttp
-from src.agents.dexscreener.models import TokenProfile, BoostedToken
-from src.agents.dexscreener.config import Config
+from src.services.agents.dexscreener.models import TokenProfile, BoostedToken
+from src.services.agents.dexscreener.config import Config
 
 logger = logging.getLogger(__name__)
 

@@ -9,7 +9,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.token_swap.agent",
+        path="src.services.agents.token_swap.agent",
         class_name="TokenSwapAgent",
         description="Handles token swaps across multiple networks",
         human_readable_name="Token Swap Manager",

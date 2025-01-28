@@ -3,7 +3,7 @@ from decimal import Decimal
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from src.stores import workflow_manager_instance, wallet_manager_instance
-from src.agents.dca_agent.tools import DCAParams, create_dca_workflow
+from src.services.agents.dca_agent.tools import DCAParams, create_dca_workflow
 
 router = APIRouter(prefix="/dca", tags=["dca"])
 logger = logging.getLogger(__name__)
@@ -21,17 +21,11 @@ async def create_strategy(data: dict):
             destination_token=data["destinationToken"].lower(),
             step_size=Decimal(str(data["stepSize"])),
             total_investment_amount=(
-                Decimal(str(data["totalInvestmentAmount"]))
-                if data.get("totalInvestmentAmount")
-                else None
+                Decimal(str(data["totalInvestmentAmount"])) if data.get("totalInvestmentAmount") else None
             ),
             frequency=data["frequency"],
-            max_purchase_amount=(
-                Decimal(str(data["maxPurchaseAmount"])) if data.get("maxPurchaseAmount") else None
-            ),
-            price_threshold=(
-                Decimal(str(data["priceThreshold"])) if data.get("priceThreshold") else None
-            ),
+            max_purchase_amount=(Decimal(str(data["maxPurchaseAmount"])) if data.get("maxPurchaseAmount") else None),
+            price_threshold=(Decimal(str(data["priceThreshold"])) if data.get("priceThreshold") else None),
             pause_on_volatility=data.get("pauseOnVolatility", False),
             wallet_id=wallet_manager_instance.active_wallet_id,
         )

@@ -1,4 +1,4 @@
-from src.agents.mor_rewards.config import Config
+from src.services.agents.mor_rewards.config import Config
 from web3 import Web3
 
 

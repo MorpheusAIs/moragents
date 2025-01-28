@@ -51,7 +51,7 @@ export const ChatInput: FC<ChatInputProps> = ({
   const commandsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8080/agents/commands")
+    fetch("http://localhost:8888/agents/commands")
       .then((res) => res.json())
       .then((data) => setCommands(data.commands))
       .catch((error) => console.error("Error fetching commands:", error));

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from src.agents.base_agent.agent import BaseAgent
+from src.services.agents.base_agent.agent import BaseAgent
 from src.models.service.chat_models import AgentResponse
 from src.stores import wallet_manager_instance
 
@@ -20,7 +20,7 @@ async def test_get_balance_success(base_agent, mock_wallet, make_chat_request):
 
     request = make_chat_request(content="What's my ETH balance?")
 
-    with patch("src.agents.base_agent.tools.get_balance") as mock_get_balance:
+    with patch("src.services.agents.base_agent.tools.get_balance") as mock_get_balance:
         mock_get_balance.return_value = {"address": "0x123", "balance": "1.5", "asset": "ETH"}
 
         response = await base_agent._process_request(request)

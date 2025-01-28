@@ -2,7 +2,7 @@ import logging
 import time
 
 import requests
-from src.agents.token_swap.config import Config
+from src.services.agents.token_swap.config import Config
 from src.stores import key_manager_instance
 from web3 import Web3
 

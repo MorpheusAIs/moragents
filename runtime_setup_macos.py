@@ -176,7 +176,7 @@ def docker_setup():
             "--name",
             "agents",
             "-p",
-            "8080:5000",
+            "8888:5000",
             "--restart",
             "always",
             "-v",

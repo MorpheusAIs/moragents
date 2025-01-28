@@ -11,7 +11,7 @@ from selenium.webdriver.common.keys import Keys
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.models.service.agent_core import AgentCore
 from langchain.schema import HumanMessage, SystemMessage
-from src.agents.realtime_search.config import Config
+from src.services.agents.realtime_search.config import Config
 from src.config import LLM
 
 logger = logging.getLogger(__name__)

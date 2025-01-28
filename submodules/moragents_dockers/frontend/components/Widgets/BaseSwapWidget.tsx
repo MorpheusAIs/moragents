@@ -73,7 +73,7 @@ const BaseSwapWidget: React.FC = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/base/swap", {
+      const response = await fetch("http://localhost:8888/base/swap", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

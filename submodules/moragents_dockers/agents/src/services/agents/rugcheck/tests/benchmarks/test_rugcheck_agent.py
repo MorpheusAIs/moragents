@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, Mock
-from src.agents.rugcheck.agent import RugcheckAgent
+from src.services.agents.rugcheck.agent import RugcheckAgent
 from src.models.service.chat_models import AgentResponse, ChatRequest
 
 

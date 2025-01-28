@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import patch, Mock
-from src.agents.token_swap.agent import TokenSwapAgent
+from src.services.agents.token_swap.agent import TokenSwapAgent
 from src.models.service.chat_models import AgentResponse, ChatRequest
-from src.agents.token_swap.tools import InsufficientFundsError, TokenNotFoundError, SwapNotPossibleError
+from src.services.agents.token_swap.tools import InsufficientFundsError, TokenNotFoundError, SwapNotPossibleError
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ async def test_swap_success(token_swap_agent, make_chat_request):
         "toAmount": "1000000000000000000",
     }
 
-    with patch("src.agents.token_swap.tools.swap_coins") as mock_swap:
+    with patch("src.services.agents.token_swap.tools.swap_coins") as mock_swap:
         mock_swap.return_value = (mock_swap_result, None)
 
         response = await token_swap_agent._execute_tool(
@@ -44,7 +44,7 @@ async def test_swap_success(token_swap_agent, make_chat_request):
 @pytest.mark.benchmark
 @pytest.mark.asyncio
 async def test_swap_insufficient_funds(token_swap_agent):
-    with patch("src.agents.token_swap.tools.swap_coins") as mock_swap:
+    with patch("src.services.agents.token_swap.tools.swap_coins") as mock_swap:
         mock_swap.side_effect = InsufficientFundsError("Insufficient funds")
 
         response = await token_swap_agent._execute_tool(
@@ -59,7 +59,7 @@ async def test_swap_insufficient_funds(token_swap_agent):
 @pytest.mark.benchmark
 @pytest.mark.asyncio
 async def test_swap_token_not_found(token_swap_agent):
-    with patch("src.agents.token_swap.tools.swap_coins") as mock_swap:
+    with patch("src.services.agents.token_swap.tools.swap_coins") as mock_swap:
         mock_swap.side_effect = TokenNotFoundError("Token not found")
 
         response = await token_swap_agent._execute_tool(

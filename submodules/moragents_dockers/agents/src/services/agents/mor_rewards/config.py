@@ -9,7 +9,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.mor_rewards.agent",
+        path="src.services.agents.mor_rewards.agent",
         class_name="MORRewardsAgent",
         description="Handles MOR token rewards distribution and claiming",
         human_readable_name="MOR Rewards Manager",

@@ -30,8 +30,8 @@ export const useWallets = (): UseWalletsReturn => {
   const fetchWallets = useCallback(async () => {
     try {
       const [walletsResponse, activeWalletResponse] = await Promise.all([
-        fetch("http://localhost:8080/wallets/list"),
-        fetch("http://localhost:8080/wallets/active"),
+        fetch("http://localhost:8888/wallets/list"),
+        fetch("http://localhost:8888/wallets/active"),
       ]);
 
       const walletsData = await walletsResponse.json();
@@ -60,7 +60,7 @@ export const useWallets = (): UseWalletsReturn => {
 
   const handleSetActiveWallet = async (walletId: string) => {
     try {
-      const response = await fetch("http://localhost:8080/wallets/active", {
+      const response = await fetch("http://localhost:8888/wallets/active", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export const useWallets = (): UseWalletsReturn => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/wallets/create", {
+      const response = await fetch("http://localhost:8888/wallets/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,7 +144,7 @@ export const useWallets = (): UseWalletsReturn => {
       const fileContent = await walletFile.text();
       const walletData = JSON.parse(fileContent);
 
-      const response = await fetch("http://localhost:8080/wallets/restore", {
+      const response = await fetch("http://localhost:8888/wallets/restore", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -181,7 +181,7 @@ export const useWallets = (): UseWalletsReturn => {
   const handleDownloadWallet = async (walletId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/wallets/export/${walletId}`
+        `http://localhost:8888/wallets/export/${walletId}`
       );
 
       if (response.ok) {
@@ -237,7 +237,7 @@ export const useWallets = (): UseWalletsReturn => {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/wallets/${walletId}`,
+        `http://localhost:8888/wallets/${walletId}`,
         {
           method: "DELETE",
         }

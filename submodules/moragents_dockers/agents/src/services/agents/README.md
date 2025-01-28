@@ -32,7 +32,7 @@ After creating your agent, you'll need to make the following modifications to ge
 Add your agent's configuration to the main config file:
 
 ```python
-from src.agents.your_agent_name.config import Config as YourAgentConfig
+from src.services.agents.your_agent_name.config import Config as YourAgentConfig
 
 class Config:
     # ... existing config ...
@@ -208,7 +208,7 @@ Create tests for your agent in the `tests/agents/your_agent_name/` directory:
 ## Example Usage
 
 ```python
-from src.agents.your_agent_name.agent import YourAgentNameAgent
+from src.services.agents.your_agent_name.agent import YourAgentNameAgent
 from src.models.service.chat_models import ChatRequest
 
 # Initialize agent

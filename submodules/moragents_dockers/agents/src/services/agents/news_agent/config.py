@@ -9,7 +9,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.news_agent.agent",
+        path="src.services.agents.news_agent.agent",
         class_name="NewsAgent",
         description="Fetches and analyzes cryptocurrency news for potential price impacts",
         human_readable_name="Crypto News Analyst",

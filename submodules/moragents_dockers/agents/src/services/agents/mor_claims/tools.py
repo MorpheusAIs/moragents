@@ -1,4 +1,4 @@
-from src.agents.mor_claims.config import Config
+from src.services.agents.mor_claims.config import Config
 from web3 import Web3
 
 
@@ -29,13 +29,11 @@ def prepare_claim_transaction(pool_id, wallet_address):
             address=web3.to_checksum_address(Config.DISTRIBUTION_PROXY_ADDRESS),
             abi=Config.DISTRIBUTION_ABI,
         )
-        tx_data = contract.encode_abi(
-            fn_name="claim", args=[pool_id, web3.to_checksum_address(wallet_address)]
-        )
+        tx_data = contract.encode_abi(fn_name="claim", args=[pool_id, web3.to_checksum_address(wallet_address)])
         mint_fee = web3.to_wei(Config.MINT_FEE, "ether")
-        estimated_gas = contract.functions.claim(
-            pool_id, web3.to_checksum_address(wallet_address)
-        ).estimate_gas({"from": web3.to_checksum_address(wallet_address), "value": mint_fee})
+        estimated_gas = contract.functions.claim(pool_id, web3.to_checksum_address(wallet_address)).estimate_gas(
+            {"from": web3.to_checksum_address(wallet_address), "value": mint_fee}
+        )
         return {
             "to": Config.DISTRIBUTION_PROXY_ADDRESS,
             "data": tx_data,

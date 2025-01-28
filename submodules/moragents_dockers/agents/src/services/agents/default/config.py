@@ -12,7 +12,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.default.agent",
+        path="src.services.agents.default.agent",
         class_name="DefaultAgent",
         description="Must be used for meta-queries that ask about active Morpheus agents, and also for general, simple questions",
         human_readable_name="Default General Purpose",

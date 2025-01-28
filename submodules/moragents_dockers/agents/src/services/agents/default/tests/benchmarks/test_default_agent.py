@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from src.agents.default.agent import DefaultAgent
+from src.services.agents.default.agent import DefaultAgent
 from src.models.service.chat_models import AgentResponse
 
 

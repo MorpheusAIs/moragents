@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 
-from src.agents.dexscreener.agent import DexScreenerAgent
+from src.services.agents.dexscreener.agent import DexScreenerAgent
 from src.models.service.chat_models import AgentResponse
 
 
@@ -31,7 +31,7 @@ async def test_search_dex_pairs_success(dex_agent, make_chat_request):
         }
     ]
 
-    with patch("src.agents.dexscreener.tools.search_dex_pairs") as mock_search:
+    with patch("src.services.agents.dexscreener.tools.search_dex_pairs") as mock_search:
         mock_search.return_value = mock_pairs
 
         response = await dex_agent._process_request(request)
@@ -57,7 +57,7 @@ async def test_get_latest_token_profiles(dex_agent, make_chat_request):
         }
     ]
 
-    with patch("src.agents.dexscreener.tools.get_latest_token_profiles") as mock_profiles:
+    with patch("src.services.agents.dexscreener.tools.get_latest_token_profiles") as mock_profiles:
         mock_profiles.return_value = mock_tokens
 
         response = await dex_agent._process_request(request)
@@ -77,7 +77,7 @@ async def test_get_boosted_tokens(dex_agent, make_chat_request):
         {"tokenAddress": "0x456", "description": "Boosted Token", "url": "https://dexscreener.com/boosted", "links": []}
     ]
 
-    with patch("src.agents.dexscreener.tools.get_latest_boosted_tokens") as mock_boosted:
+    with patch("src.services.agents.dexscreener.tools.get_latest_boosted_tokens") as mock_boosted:
         mock_boosted.return_value = mock_tokens
 
         response = await dex_agent._process_request(request)
@@ -93,7 +93,7 @@ async def test_get_boosted_tokens(dex_agent, make_chat_request):
 async def test_error_handling(dex_agent, make_chat_request):
     request = make_chat_request(content="Search for tokens", agent_name="dexscreener")
 
-    with patch("src.agents.dexscreener.tools.search_dex_pairs") as mock_search:
+    with patch("src.services.agents.dexscreener.tools.search_dex_pairs") as mock_search:
         mock_search.side_effect = Exception("API Error")
 
         response = await dex_agent._process_request(request)
@@ -108,7 +108,7 @@ async def test_error_handling(dex_agent, make_chat_request):
 async def test_empty_results(dex_agent, make_chat_request):
     request = make_chat_request(content="Search for non-existent token", agent_name="dexscreener")
 
-    with patch("src.agents.dexscreener.tools.search_dex_pairs") as mock_search:
+    with patch("src.services.agents.dexscreener.tools.search_dex_pairs") as mock_search:
         mock_search.return_value = []
 
         response = await dex_agent._process_request(request)

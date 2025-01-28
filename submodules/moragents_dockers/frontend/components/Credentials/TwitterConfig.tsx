@@ -89,7 +89,7 @@ export const TwitterConfig: React.FC<TwitterConfigProps> = ({ onSave }) => {
 
     // Send to backend
     const backendClient = axios.create({
-      baseURL: "http://localhost:8080",
+      baseURL: "http://localhost:8888",
     });
 
     try {

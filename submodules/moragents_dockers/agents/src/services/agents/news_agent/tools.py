@@ -7,7 +7,7 @@ from html import unescape
 import feedparser
 import pytz
 from dateutil import parser
-from src.agents.news_agent.config import Config
+from src.services.agents.news_agent.config import Config
 
 logger = logging.getLogger(__name__)
 

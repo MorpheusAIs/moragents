@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch, Mock
 
-from src.agents.tweet_sizzler.agent import TweetSizzlerAgent
+from src.services.agents.tweet_sizzler.agent import TweetSizzlerAgent
 from src.models.service.chat_models import AgentResponse
 from src.stores import key_manager_instance
 

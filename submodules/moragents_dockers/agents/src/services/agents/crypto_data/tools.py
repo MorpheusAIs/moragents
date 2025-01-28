@@ -3,7 +3,7 @@ import logging
 import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from src.agents.crypto_data.config import Config
+from src.services.agents.crypto_data.config import Config
 
 
 def get_most_similar(text, data):

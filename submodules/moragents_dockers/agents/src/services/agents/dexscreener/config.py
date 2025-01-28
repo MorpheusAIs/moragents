@@ -12,7 +12,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.dexscreener.agent",
+        path="src.services.agents.dexscreener.agent",
         class_name="DexScreenerAgent",
         description="Fetches and analyzes cryptocurrency trading data from DexScreener.",
         human_readable_name="DexScreener Analyst",

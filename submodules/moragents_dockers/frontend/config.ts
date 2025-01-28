@@ -16,7 +16,7 @@ export const availableAgents: {
     name: "Morpheus",
     description:
       "performs multiple tasks crypto data agent,swap agent and rag agent",
-    endpoint: "http://127.0.0.1:8080",
+    endpoint: "http://127.0.0.1:8888",
     requirements: {
       connectedWallet: true,
     },

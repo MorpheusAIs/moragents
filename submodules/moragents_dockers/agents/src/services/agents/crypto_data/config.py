@@ -9,7 +9,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.crypto_data.agent",
+        path="src.services.agents.crypto_data.agent",
         class_name="CryptoDataAgent",
         description="Fetches cryptocurrency price and market data from various sources.",
         human_readable_name="Crypto Data Analyst",

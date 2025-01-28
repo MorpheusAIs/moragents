@@ -7,7 +7,7 @@ services:
       dockerfile: build/Dockerfile-apple
       context: ./agents
     ports:
-      - "8080:5000"
+      - "8888:5000"
     restart: always
     volumes:
       - agents_data:/var/lib/agents
@@ -16,6 +16,7 @@ services:
       - "host.docker.internal:host-gateway"
     environment:
       - BASE_URL=http://host.docker.internal:11434
+      - DATABASE_URL=postgresql://neo:trinity@postgres:5678/morpheus_db
 
   nginx:
     image: lachsbagel/moragents_dockers-nginx:apple-0.2.2
@@ -26,5 +27,19 @@ services:
     ports:
       - "3333:80"
 
+  postgres:
+    image: postgres:16-bullseye
+    command: -p 5678
+    environment:
+      - POSTGRES_USER=neo
+      - POSTGRES_PASSWORD=trinity
+      - POSTGRES_DB=morpheus_db
+    ports:
+      - "5678:5678"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
 volumes:
   agents_data:
+  postgres_data:

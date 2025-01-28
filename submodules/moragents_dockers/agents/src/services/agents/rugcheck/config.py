@@ -89,7 +89,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.rugcheck.agent",
+        path="src.services.agents.rugcheck.agent",
         class_name="RugcheckAgent",
         description="Analyzes tokens for potential risks and scams",
         human_readable_name="Token Risk Analyzer",

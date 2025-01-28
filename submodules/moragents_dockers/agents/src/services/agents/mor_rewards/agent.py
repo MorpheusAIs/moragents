@@ -1,7 +1,7 @@
 import logging
 
 from src.models.service.agent_core import AgentCore
-from src.agents.mor_rewards import tools
+from src.services.agents.mor_rewards import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
 
 logger = logging.getLogger(__name__)

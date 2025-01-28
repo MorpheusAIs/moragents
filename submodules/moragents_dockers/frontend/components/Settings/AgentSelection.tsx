@@ -34,7 +34,7 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch("http://localhost:8080/agents/available");
+        const response = await fetch("http://localhost:8888/agents/available");
         const data = await response.json();
         setAvailableAgents(data.available_agents);
         setSelectedAgents(data.selected_agents);
@@ -73,7 +73,7 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch("http://localhost:8080/agents/selected", {
+      const response = await fetch("http://localhost:8888/agents/selected", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

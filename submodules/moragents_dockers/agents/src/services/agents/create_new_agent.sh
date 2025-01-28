@@ -29,7 +29,7 @@ create_agent_files() {
 import logging
 from typing import Any, Dict
 
-from src.agents.agent_core.agent import AgentCore
+from src.services.agents.agent_core.agent import AgentCore
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from langchain.schema import HumanMessage, SystemMessage
 

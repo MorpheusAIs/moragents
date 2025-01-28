@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.stores import agent_manager_instance, chat_manager_instance
-from src.delegator import Delegator
+from src.services.delegator.delegator import Delegator
 from src.config import setup_logging
 
 logger = setup_logging()

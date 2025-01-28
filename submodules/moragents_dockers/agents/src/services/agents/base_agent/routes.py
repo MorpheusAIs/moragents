@@ -3,7 +3,7 @@ from decimal import Decimal
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from src.stores import wallet_manager_instance
-from src.agents.base_agent.tools import swap_assets, transfer_asset
+from src.services.agents.base_agent.tools import swap_assets, transfer_asset
 
 router = APIRouter(prefix="/base", tags=["base"])
 logger = logging.getLogger(__name__)
@@ -67,9 +67,7 @@ async def transfer(data: dict):
             )
 
         logger.info(f"Using wallet address: {wallet.default_address.address_id}")
-        logger.info(
-            f"Attempting transfer: {data['amount']} {data['asset']} -> {data['destinationAddress']}"
-        )
+        logger.info(f"Attempting transfer: {data['amount']} {data['asset']} -> {data['destinationAddress']}")
 
         # Execute transfer
         result = transfer_asset(

@@ -12,7 +12,7 @@ class Config:
     # *************
 
     agent_config = AgentConfig(
-        path="src.agents.rag.agent",
+        path="src.services.agents.rag.agent",
         class_name="RAGAgent",
         description="Processes and analyzes uploaded documents to answer questions about their contents",
         human_readable_name="Document Q&A",

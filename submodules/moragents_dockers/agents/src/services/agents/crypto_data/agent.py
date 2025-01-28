@@ -1,5 +1,5 @@
 import logging
-from src.agents.crypto_data import tools
+from src.services.agents.crypto_data import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.models.service.agent_core import AgentCore
 from langchain.schema import HumanMessage, SystemMessage

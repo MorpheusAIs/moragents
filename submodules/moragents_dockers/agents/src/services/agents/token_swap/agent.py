@@ -6,7 +6,7 @@ from fastapi import Request
 from langchain.schema import HumanMessage, SystemMessage
 from dataclasses import dataclass
 
-from src.agents.token_swap import tools
+from src.services.agents.token_swap import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.models.service.agent_core import AgentCore
 from src.stores.key_manager import key_manager_instance
