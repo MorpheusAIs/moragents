@@ -1,5 +1,4 @@
 # pylint: skip-file
 
-from models import Base
-from .core.chat import *
-from .core.user import *
+from src.models import Base
+from .core.core_models import *
