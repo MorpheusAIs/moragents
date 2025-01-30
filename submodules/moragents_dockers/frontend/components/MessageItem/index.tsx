@@ -10,7 +10,8 @@ import {
 } from "@/services/types";
 import { getHumanReadableAgentName } from "@/services/utils";
 import { Avatar } from "@/components/Avatar";
-import { Tweet } from "@/components/Agents/Tweet/TweetMessage";
+import { Tweet } from "@/components/Agents/Tweet/CustomMessages/TweetMessage";
+import { TopTokensMessage } from "@/components/Agents/Dexscreener/CustomMessages/TopTokensMessage";
 
 import styles from "./index.module.css";
 
@@ -25,6 +26,8 @@ export const MessageItem: FC<MessageItemProps> = ({ message }) => {
   console.log("Message:", message);
 
   const renderContent = () => {
+    console.log("Hello world, we got here");
+
     // First check for error message
     if (error_message) {
       return (
@@ -34,18 +37,10 @@ export const MessageItem: FC<MessageItemProps> = ({ message }) => {
       );
     }
 
-    if (typeof content === "string") {
-      if (message.agentName === "tweet sizzler") {
-        return <Tweet initialContent={content} />;
-      }
-      return (
-        <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
-      );
-    }
-
     // Type guard to ensure we're working with AssistantMessage
     if (message.role === "assistant") {
       const assistantMessage = message as AssistantMessage;
+      console.log("Hello world, assistant message", assistantMessage);
 
       if (message.agentName === "imagen") {
         const imageContent = assistantMessage.content as ImageMessageContent;
@@ -82,6 +77,10 @@ export const MessageItem: FC<MessageItemProps> = ({ message }) => {
         );
       }
 
+      if (message.agentName === "dexscreener") {
+        console.log("Hello world");
+        return <TopTokensMessage metadata={assistantMessage.metadata} />;
+      }
       // if (assistantMessage.action_type === "claim") {
       //   return (
       //     <ClaimMessage
@@ -91,6 +90,15 @@ export const MessageItem: FC<MessageItemProps> = ({ message }) => {
       //     />
       //   );
       // }
+    }
+
+    if (typeof content === "string") {
+      if (message.agentName === "tweet sizzler") {
+        return <Tweet initialContent={content} />;
+      }
+      return (
+        <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
+      );
     }
 
     return (

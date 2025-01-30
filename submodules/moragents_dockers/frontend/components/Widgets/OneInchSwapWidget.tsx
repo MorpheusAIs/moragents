@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { InfoIcon } from "@chakra-ui/icons";
 import { useAccount } from "wagmi";
-import { useSwapTransaction } from "@/components/Agents/Swaps/useSwapTransaction";
+import { useSwapTransaction } from "@/components/Agents/Swaps/CustomMessages/useSwapTransaction";
 
 interface OneInchSwapWidgetProps {
   metadata: {

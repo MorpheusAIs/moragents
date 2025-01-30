@@ -171,7 +171,7 @@ export const writeMessage = async (
   history.push(newMessage);
   let resp;
   try {
-    resp = await backendClient.post("/chat", {
+    resp = await backendClient.post("/api/v1/chat", {
       prompt: {
         role: "user",
         content: message,

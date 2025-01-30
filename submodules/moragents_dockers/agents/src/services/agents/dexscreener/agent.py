@@ -61,7 +61,10 @@ class DexScreenerAgent(AgentCore):
                 else:
                     return AgentResponse.error(error_message=f"Unknown tool: {func_name}")
 
-                return AgentResponse.success(content=self._format_token_response(result, chain_id))
+                return AgentResponse.success(
+                    content=self._format_token_response(result, chain_id),
+                    metadata={"chain_id": chain_id, "tokens": result},
+                )
 
         except Exception as e:
             logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)

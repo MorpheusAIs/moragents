@@ -9,12 +9,12 @@ from src.stores import workflow_manager_instance
 
 # Configure routes
 from src.routes import (
-    chat_routes,
     agent_manager_routes,
     key_manager_routes,
     wallet_manager_routes,
     workflow_manager_routes,
     conversation_routes,
+    delegation_routes,
 )
 
 # Configure logging
@@ -38,7 +38,7 @@ logger.info(f"Upload folder created at {UPLOAD_FOLDER}")
 
 # Include core routers
 ROUTERS = [
-    chat_routes.router,
+    delegation_routes.router,
     agent_manager_routes.router,
     key_manager_routes.router,
     conversation_routes.router,

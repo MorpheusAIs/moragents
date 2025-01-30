@@ -70,7 +70,6 @@ def load_agent_config(agent_name: str) -> Optional[Dict[str, Any]]:
         Optional[Dict[str, Any]]: Agent configuration if found and loaded successfully, None otherwise
     """
     agents_dir = os.path.join(os.path.dirname(__file__), "services/agents")
-    logger.info(f"Loading agents from {agents_dir}")
     agent_path = os.path.join(agents_dir, agent_name)
     config_file = os.path.join(agent_path, "config.py")
 
@@ -116,12 +115,17 @@ def load_agent_configs() -> List[Dict[str, Any]]:
     """
     Dynamically load configurations from all agent subdirectories.
     Returns a consolidated configuration dictionary.
+    Skips special directories like __init__.py, __pycache__, and README.md.
     """
     agents_dir = os.path.join(os.path.dirname(__file__), "services/agents")
     logger.info(f"Loading agents from {agents_dir}")
     configs = []
 
     for agent_dir in os.listdir(agents_dir):
+        # Skip special directories and files
+        if agent_dir.startswith("__") or agent_dir.startswith(".") or "." in agent_dir:
+            continue
+
         config = load_agent_config(agent_dir)
         if config:
             configs.append(config)

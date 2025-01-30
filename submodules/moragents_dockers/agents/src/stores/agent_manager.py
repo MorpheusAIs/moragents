@@ -40,7 +40,7 @@ class AgentManager:
         # Select first 6 agents by default
         self.set_selected_agents([agent["name"] for agent in config])
         # self.load_all_agents(LLM, EMBEDDINGS)
-        logger.info(f"AgentManager initialized with {len(self.selected_agents)} default agents")
+        logger.info(f"AgentManager initialized with {len(self.selected_agents)} agents")
 
     def _load_agent(self, agent_config: Dict) -> bool:
         """

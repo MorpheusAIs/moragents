@@ -4,7 +4,8 @@ version = "0.1.0"
 description = "Server for moragents"
 authors = ["Neo, Morpheus, and Trinity <neo@morpheus.com>"]
 readme = "README.md"
-include = ["src"]
+packages = [{ include = "src", from = "." }]
+include = ["src/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -51,6 +52,8 @@ line-length = 120
 
 [tool.mypy]
 python_version = "3.12"
+packages = ["src"]
+namespace_packages = true
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -62,10 +65,16 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
+explicit_package_bases = true
 
 [[tool.mypy.overrides]]
 module = "sqlalchemy.*"
 ignore_missing_imports = true
+
+# This tells mypy to treat the src directory as a package root
+[[tool.mypy.overrides]]
+module = "src.*"
+implicit_reexport = true
 
 [build-system]
 requires = ["poetry-core"]

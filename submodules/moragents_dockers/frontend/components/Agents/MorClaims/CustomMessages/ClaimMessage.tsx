@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { ClaimForm } from "./ClaimForm";
+import { ClaimForm } from "../ClaimForm";
 import { ClaimMessagePayload } from "@/services/types";
 
 type ClaimMessageProps = {

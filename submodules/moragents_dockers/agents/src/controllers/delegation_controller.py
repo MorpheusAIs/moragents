@@ -7,7 +7,7 @@ from src.config import setup_logging
 logger = setup_logging()
 
 
-class ChatController:
+class DelegationController:
     def __init__(self, delegator: Delegator):
         self.delegator = delegator
 

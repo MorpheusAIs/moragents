@@ -1,6 +1,5 @@
 import asyncio
 import sys
-from typing import Optional
 
 import pytest
 from langchain_ollama import ChatOllama
