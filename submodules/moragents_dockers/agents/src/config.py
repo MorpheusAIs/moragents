@@ -170,10 +170,28 @@ class AppConfig:
     OLLAMA_URL = "http://host.docker.internal:11434"
     MAX_UPLOAD_LENGTH = 16 * 1024 * 1024
 
+    # Together AI configuration
+    TOGETHER_API_KEY = "4d96d40ca55afa5a8867867e751b99aba12eb2a09bfad1c70235d084f637a053"
+    TOGETHER_MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo"  # Or your preferred model
+    TOGETHER_EMBEDDING_MODEL = "TogetherComputer/m2-bert-80M-8k-retrieval"
+
+
+from langchain_together import ChatTogether
+
+
+LLM = ChatTogether(
+    model=AppConfig.TOGETHER_MODEL,
+    together_api_key=AppConfig.TOGETHER_API_KEY,
+    temperature=0.7,
+)
+# EMBEDDINGS = Together(
+#     model=AppConfig.TOGETHER_EMBEDDING_MODEL,
+#     together_api_key=AppConfig.TOGETHER_API_KEY,
+# ).get_embeddings()
 
 # Initialize LLM and embeddings
-LLM = ChatOllama(
-    model=AppConfig.OLLAMA_MODEL,
-    base_url=AppConfig.OLLAMA_URL,
-)
+# LLM = ChatOllama(
+#     model=AppConfig.OLLAMA_MODEL,
+#     base_url=AppConfig.OLLAMA_URL,
+# )
 EMBEDDINGS = OllamaEmbeddings(model=AppConfig.OLLAMA_EMBEDDING_MODEL, base_url=AppConfig.OLLAMA_URL)

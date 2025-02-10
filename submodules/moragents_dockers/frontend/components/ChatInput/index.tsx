@@ -14,6 +14,7 @@ import { AttachmentIcon } from "@chakra-ui/icons";
 import { SendIcon } from "../CustomIcon/SendIcon";
 import PrefilledOptions from "./PrefilledOptions";
 import styles from "./index.module.css";
+import API_BASE_URL from "../../config";
 
 type Command = {
   command: string;
@@ -51,7 +52,7 @@ export const ChatInput: FC<ChatInputProps> = ({
   const commandsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8888/agents/commands")
+    fetch(`${API_BASE_URL}/agents/commands`)
       .then((res) => res.json())
       .then((data) => setCommands(data.commands))
       .catch((error) => console.error("Error fetching commands:", error));
@@ -221,7 +222,12 @@ export const ChatInput: FC<ChatInputProps> = ({
                 />
                 <IconButton
                   aria-label="Attach file"
-                  icon={<AttachmentIcon />}
+                  icon={
+                    <AttachmentIcon
+                      width={isMobile ? "16px" : "20px"}
+                      height={isMobile ? "16px" : "20px"}
+                    />
+                  }
                   className={disabled ? styles.disabledIcon : ""}
                   disabled={disabled}
                   onClick={() =>
@@ -239,11 +245,7 @@ export const ChatInput: FC<ChatInputProps> = ({
               disabled={disabled || file !== null}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder={
-                isMobile
-                  ? "Type / for commands or enter your message..."
-                  : "Type / for commands or enter your message..."
-              }
+              placeholder="Start typing or press / for commands..."
               rows={1}
               resize="none"
               overflow="hidden"

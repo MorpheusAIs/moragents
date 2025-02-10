@@ -168,7 +168,8 @@
   left: 300px; /* flush with the sidebar's right edge */
   width: 40px;
   height: 40px;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 1);
+  opacity: 1;
   color: white;
   border: none;
   border-radius: 0 8px 8px 0;

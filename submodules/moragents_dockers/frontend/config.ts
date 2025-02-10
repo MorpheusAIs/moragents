@@ -23,3 +23,10 @@ export const availableAgents: {
     supportsFiles: true,
   },
 };
+
+const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "http://52.8.32.222:8888"
+    : "http://localhost:8888";
+
+export default API_BASE_URL;

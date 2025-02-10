@@ -17,6 +17,7 @@ import { Workflows } from "@/components/Workflows";
 import styles from "./index.module.css";
 import { useRouter } from "next/router";
 import { ApiCredentialsButton } from "@/components/Credentials/Button";
+import { CDPWalletsButton } from "@/components/CDPWallets/Button";
 
 export type LeftSidebarProps = {
   /** Whether the sidebar is currently open (expanded) or collapsed */
@@ -267,6 +268,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             </Box>
 
             <Workflows />
+            <CDPWalletsButton />
             <ApiCredentialsButton />
             <SettingsButton />
           </VStack>

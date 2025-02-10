@@ -5,7 +5,6 @@ import { ChatMessage } from "@/services/types";
 import { MessageList } from "@/components/MessageList";
 import { ChatInput } from "@/components/ChatInput";
 import { LoadingIndicator } from "@/components/LoadingIndicator";
-import { Widgets, shouldOpenWidget } from "@/components/Widgets";
 import { ChatProps } from "@/components/Chat/types";
 
 export const Chat: FC<ChatProps> = ({
@@ -15,26 +14,15 @@ export const Chat: FC<ChatProps> = ({
   setIsSidebarOpen,
 }) => {
   const [messagesData, setMessagesData] = useState<ChatMessage[]>(messages);
-  const [activeWidget, setActiveWidget] = useState<ChatMessage | null>(null);
-  const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === "assistant" && shouldOpenWidget(lastMessage)) {
-        setActiveWidget(lastMessage);
-        setIsWidgetOpen(true);
-        setIsSidebarOpen(false);
-      } else {
-        setActiveWidget(null);
-        setIsWidgetOpen(false);
-      }
+      setMessagesData([...messages]);
     }
-    setMessagesData([...messages]);
-  }, [messages, setIsSidebarOpen]);
+  }, [messages]);
 
   const handleSubmit = async (message: string, file: File | null) => {
     setIsLoading(true);
@@ -49,13 +37,9 @@ export const Chat: FC<ChatProps> = ({
         height="100%"
         width="100%"
         transition="all 0.3s ease-in-out"
-        mt={4}
-        paddingLeft={
-          isMobile ? "5%" : isWidgetOpen ? "5%" : isSidebarOpen ? "5%" : "20%"
-        }
-        paddingRight={
-          isMobile ? "5%" : isWidgetOpen ? "35%" : isSidebarOpen ? "5%" : "20%"
-        }
+        mt={2}
+        paddingLeft={isMobile ? "5%" : isSidebarOpen ? "5%" : "20%"}
+        paddingRight={isMobile ? "5%" : isSidebarOpen ? "5%" : "20%"}
         ml="auto"
         mr="auto"
       >
@@ -69,7 +53,8 @@ export const Chat: FC<ChatProps> = ({
         />
       </Flex>
 
-      <Box
+      {/* For mobile compatibility purposes, we are disabling the widget for */}
+      {/* <Box
         position="fixed"
         right={0}
         top={0}
@@ -84,7 +69,7 @@ export const Chat: FC<ChatProps> = ({
           activeWidget={activeWidget}
           onClose={() => setIsWidgetOpen(false)}
         />
-      </Box>
+      </Box> */}
     </Box>
   );
 };

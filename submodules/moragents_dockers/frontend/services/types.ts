@@ -122,3 +122,59 @@ export interface CoinbaseCredentials {
 export interface OneInchCredentials {
   api_key: string;
 }
+
+/**
+ * Represents all available agent types in the system.
+ * Each agent type corresponds to a specific message renderer and functionality.
+ */
+export enum AgentType {
+  /**
+   * Handles image generation requests and responses
+   */
+  IMAGEN = "imagen",
+
+  /**
+   * Processes and displays cryptocurrency data and charts
+   */
+  CRYPTO_DATA = "crypto_data",
+
+  /**
+   * Manages Base blockchain operations (transfers and swaps)
+   */
+  BASE_AGENT = "base_agent",
+
+  /**
+   * Handles token swap operations across different protocols
+   */
+  TOKEN_SWAP = "token_swap",
+
+  /**
+   * Provides DEX screening and token analysis
+   */
+  DEXSCREENER = "dexscreener",
+
+  /**
+   * Manages Dollar Cost Averaging (DCA) strategies
+   */
+  DCA_AGENT = "dca_agent",
+
+  /**
+   * Processes and formats tweet content
+   */
+  TWEET_SIZZLER = "tweet sizzler",
+}
+
+/**
+ * Type representing the possible action types for the Base agent
+ */
+export enum BaseAgentActionType {
+  TRANSFER = "transfer",
+  SWAP = "swap",
+}
+
+/**
+ * Type guard to check if a string is a valid AgentType
+ */
+export const isValidAgentType = (type: string): type is AgentType => {
+  return Object.values(AgentType).includes(type as AgentType);
+};

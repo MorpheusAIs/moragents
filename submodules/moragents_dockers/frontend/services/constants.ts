@@ -1,7 +1,12 @@
 import axios from "axios";
 import { getAvailableAgents } from "@/services/apiHooks";
 
-export const BASE_URL = "http://localhost:8888";
+const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "http://52.8.32.222:8888"
+    : "http://localhost:8888";
+
+export default BASE_URL;
 
 export const getHttpClient = () => {
   return axios.create({

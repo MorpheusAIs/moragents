@@ -1,5 +1,6 @@
 import os
 import uvicorn
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -55,14 +56,30 @@ for router in routers:
     app.include_router(router)
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize workflow manager on startup"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan context manager for FastAPI application"""
+    # Startup
     logger.info("Starting workflow manager initialization")
     await workflow_manager_instance.initialize()
     logger.info("Workflow manager initialized successfully")
+    yield
+    # Shutdown
+    # Add any cleanup code here if needed
+
+
+app.router.lifespan_context = lifespan
 
 
 if __name__ == "__main__":
     logger.info("Starting FastAPI application")
-    uvicorn.run(app, host="0.0.0.0", port=5000, reload=True)
+    # Default to 'development' if no ENV variable is set.
+    environment = os.environ.get("ENV", "development")
+    if environment == "development":
+        host = "localhost"
+        reload = True  # Useful for hot-reloading during development.
+    else:
+        host = "52.8.32.222"
+        reload = False  # Typically disable reload in production.
+
+    uvicorn.run("app:app", host=host, port=8888, reload=reload)

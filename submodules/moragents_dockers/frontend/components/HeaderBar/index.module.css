@@ -11,8 +11,18 @@
   align-items: center;
 }
 
-.buttonContainer {
-  display: flex;
-  gap: 16px;
-  align-items: center;
+.connectButtonWrapper {
+  flex-shrink: 0;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 480px) {
+  .headerBar {
+    padding: 4px 0;
+  }
+
+  .logo {
+    /* Smaller logo on mobile */
+    transform: scale(0.9);
+  }
 }

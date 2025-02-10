@@ -6,7 +6,7 @@ from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
 
 from src.models.service.chat_models import ChatRequest, ChatMessage
-from src.config import Config
+from src.config import AppConfig
 
 
 def pytest_addoption(parser):
@@ -49,7 +49,7 @@ def event_loop():
 def llm():
     try:
         return ChatOllama(
-            model=Config.OLLAMA_MODEL,
+            model=AppConfig.OLLAMA_MODEL,
             base_url="http://localhost:11434",
             seed=42,
         )
@@ -60,7 +60,7 @@ def llm():
 @pytest.fixture(scope="session")
 def embeddings():
     """Shared fixture for Ollama embeddings"""
-    return OllamaEmbeddings(model=Config.OLLAMA_EMBEDDING_MODEL, base_url=Config.OLLAMA_URL)
+    return OllamaEmbeddings(model=AppConfig.OLLAMA_EMBEDDING_MODEL, base_url=AppConfig.OLLAMA_URL)
 
 
 @pytest.fixture

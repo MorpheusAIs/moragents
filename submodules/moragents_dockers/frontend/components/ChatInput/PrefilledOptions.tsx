@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box } from "@chakra-ui/react";
 import { prefilledOptionsMap } from "./PrefilledOptions.constants";
 import styles from "./PrefilledOptions.module.css";
+import API_BASE_URL from "../../config";
 
 const PrefilledOptions = ({
   onSelect,
@@ -29,7 +30,7 @@ const PrefilledOptions = ({
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch("http://localhost:8888/agents/available");
+        const response = await fetch(`${API_BASE_URL}/agents/available`);
         const data = await response.json();
         setSelectedAgents(data.selected_agents);
       } catch (error) {

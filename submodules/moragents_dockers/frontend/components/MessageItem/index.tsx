@@ -1,18 +1,8 @@
 import React, { FC } from "react";
-import { Grid, GridItem, Text } from "@chakra-ui/react";
-import ReactMarkdown from "react-markdown";
-import {
-  ChatMessage,
-  ImageMessageContent,
-  CryptoDataMessageContent,
-  BaseMessageContent,
-  AssistantMessage,
-} from "@/services/types";
+import { Box, Text } from "@chakra-ui/react";
+import { ChatMessage } from "@/services/types";
 import { getHumanReadableAgentName } from "@/services/utils";
-import { Avatar } from "@/components/Avatar";
-import { Tweet } from "@/components/Agents/Tweet/CustomMessages/TweetMessage";
-import { TopTokensMessage } from "@/components/Agents/Dexscreener/CustomMessages/TopTokensMessage";
-
+import { renderMessage } from "./CustomMessageRenderers";
 import styles from "./index.module.css";
 
 type MessageItemProps = {
@@ -21,109 +11,27 @@ type MessageItemProps = {
 
 export const MessageItem: FC<MessageItemProps> = ({ message }) => {
   const isUser = message.role === "user";
-  const { content, error_message } = message;
-
-  console.log("Message:", message);
-
-  const renderContent = () => {
-    console.log("Hello world, we got here");
-
-    // First check for error message
-    if (error_message) {
-      return (
-        <Text color="red.500" className={styles.messageText}>
-          {error_message}
-        </Text>
-      );
-    }
-
-    // Type guard to ensure we're working with AssistantMessage
-    if (message.role === "assistant") {
-      const assistantMessage = message as AssistantMessage;
-      console.log("Hello world, assistant message", assistantMessage);
-
-      if (message.agentName === "imagen") {
-        const imageContent = assistantMessage.content as ImageMessageContent;
-        if (!imageContent.success) {
-          return (
-            <Text color="red.500" className={styles.messageText}>
-              {imageContent.error || "Failed to generate image"}
-            </Text>
-          );
-        }
-        return (
-          <ReactMarkdown className={styles.messageText}>
-            {`Successfully generated image with ${imageContent.service}`}
-          </ReactMarkdown>
-        );
-      }
-
-      if (message.agentName === "crypto data") {
-        const cryptoDataContent =
-          assistantMessage.content as CryptoDataMessageContent;
-        return (
-          <ReactMarkdown className={styles.messageText}>
-            {cryptoDataContent.data}
-          </ReactMarkdown>
-        );
-      }
-
-      if (message.agentName === "base") {
-        const baseContent = assistantMessage.content as BaseMessageContent;
-        return (
-          <ReactMarkdown className={styles.messageText}>
-            {baseContent.message}
-          </ReactMarkdown>
-        );
-      }
-
-      if (message.agentName === "dexscreener") {
-        console.log("Hello world");
-        return <TopTokensMessage metadata={assistantMessage.metadata} />;
-      }
-      // if (assistantMessage.action_type === "claim") {
-      //   return (
-      //     <ClaimMessage
-      //       isActive={isLastClaimMessage}
-      //       fromMessage={assistantMessage.content as ClaimMessagePayload}
-      //       onSubmitClaim={onClaimSubmit}
-      //     />
-      //   );
-      // }
-    }
-
-    if (typeof content === "string") {
-      if (message.agentName === "tweet sizzler") {
-        return <Tweet initialContent={content} />;
-      }
-      return (
-        <ReactMarkdown className={styles.messageText}>{content}</ReactMarkdown>
-      );
-    }
-
-    return (
-      <Text className={styles.messageText}>{JSON.stringify(content)}</Text>
-    );
-  };
 
   return (
-    <Grid
-      templateAreas={`"avatar name" "avatar message"`}
-      templateColumns="0fr 3fr"
-      className={styles.messageGrid}
+    <Box
+      className={`${styles.messageContainer} ${
+        isUser ? styles.userMessage : ""
+      }`}
     >
-      <GridItem area="avatar">
-        <Avatar
-          isAgent={!isUser}
-          agentName={getHumanReadableAgentName(message.agentName || "")}
-        />
-      </GridItem>
-      <GridItem area="name">
-        <Text className={styles.nameText}>
-          {isUser ? "Me" : getHumanReadableAgentName(message.agentName || "")}
-        </Text>
-      </GridItem>
-      <GridItem area="message">{renderContent()}</GridItem>
-    </Grid>
+      <div className={styles.messageWrapper}>
+        {isUser ? (
+          <div className={styles.userBubble}>{renderMessage(message)}</div>
+        ) : (
+          <div className={styles.assistantContent}>
+            {message.agentName && (
+              <Text className={styles.agentName}>
+                {getHumanReadableAgentName(message.agentName)}
+              </Text>
+            )}
+            {renderMessage(message)}
+          </div>
+        )}
+      </div>
+    </Box>
   );
 };
