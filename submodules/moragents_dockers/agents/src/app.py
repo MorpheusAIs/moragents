@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.models.config import Config
 from src.config import load_agent_routes, setup_logging
 from src.stores import workflow_manager_instance
 
@@ -21,6 +22,8 @@ from src.routes import (
 # Configure logging
 logger = setup_logging()
 logger.info("Logging configured successfully")
+
+CONF = Config.get_instance()
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -73,13 +76,10 @@ app.router.lifespan_context = lifespan
 
 if __name__ == "__main__":
     logger.info("Starting FastAPI application")
-    # Default to 'development' if no ENV variable is set.
-    environment = os.environ.get("ENV", "development")
-    if environment == "development":
-        host = "localhost"
-        reload = True  # Useful for hot-reloading during development.
-    else:
-        host = "52.8.32.222"
-        reload = False  # Typically disable reload in production.
-
-    uvicorn.run("app:app", host=host, port=8888, reload=reload)
+    uvicorn.run(
+        "app:app",
+        host=CONF.get("host", "default"),
+        port=CONF.get_int("port", "default"),
+        workers=CONF.get_int("workers", "default"),
+        reload=CONF.get_bool("reload", "default"),
+    )

@@ -125,7 +125,7 @@ Your job:
                     logger.info(f"Successfully used agent: {agent_name}")
                     return agent_name, result
 
-            return None, AgentResponse.error(error_message="All selected agents have been attempted without success")
+            return None, AgentResponse.error(error_message="All agents have been attempted without success")
 
         except ValueError as ve:
             logger.error(f"No available agents: {str(ve)}")

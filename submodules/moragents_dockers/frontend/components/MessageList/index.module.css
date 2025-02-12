@@ -3,7 +3,7 @@
   overflow-y: scroll;
   overflow-x: hidden;
   height: 100%;
-  background-color: #020804;
+  background-color: #000;
 }
 
 .messageList::-webkit-scrollbar {

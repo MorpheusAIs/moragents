@@ -7,23 +7,23 @@
 
 .flexContainer {
   margin-top: 0.5rem;
-  padding-left: 0.75rem;
-  padding-right: 0.75rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
   background-color: transparent;
   width: 100%;
 }
 
-@media (min-width: 640px) {
+/* @media (min-width: 640px) {
   .flexContainer {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
   }
-}
+} */
 
 .inputGroup {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
   border-radius: 8px;
-  background-color: #353936;
+  background-color: #333;
   width: 100%;
   max-width: 100%;
 }
@@ -55,7 +55,7 @@
 
 .messageInput {
   border: none !important;
-  color: white !important;
+  color: white;
   width: 100%;
   font-size: 12px;
 }

@@ -154,6 +154,11 @@ export enum AgentType {
   DEXSCREENER = "dexscreener",
 
   /**
+   * Provides DEX screening and token analysis
+   */
+  ELFA = "elfa",
+
+  /**
    * Manages Dollar Cost Averaging (DCA) strategies
    */
   DCA_AGENT = "dca_agent",
@@ -161,7 +166,47 @@ export enum AgentType {
   /**
    * Processes and formats tweet content
    */
-  TWEET_SIZZLER = "tweet sizzler",
+  TWEET_SIZZLER = "tweet_sizzler",
+
+  /**
+   * Manages MOR claims and rewards tracking
+   */
+  MOR_CLAIMS = "mor_claims",
+
+  /**
+   * Manages MOR rewards tracking
+   */
+  MOR_REWARDS = "mor_rewards",
+
+  /**
+   * Manages real-time search operations
+   */
+  REALTIME_SEARCH = "realtime_search",
+
+  /**
+   * Manages crypto news analysis
+   */
+  CRYPTO_NEWS = "crypto_news",
+
+  /**
+   * Manages crypto news analysis
+   */
+  NEWS_AGENT = "news_agent",
+
+  /**
+   * Manages document analysis / RAG
+   */
+  RAG = "rag",
+
+  /**
+   * Manages Rugcheck XYZ
+   */
+  RUGCHECK = "rugcheck",
+
+  /**
+   * The DEFAULT agent
+   */
+  DEFAULT = "default",
 }
 
 /**

@@ -9,7 +9,7 @@ router = APIRouter(prefix="/crypto_data", tags=["crypto_data"])
 
 
 @router.post("/process_data")
-async def process_data(data: dict):
+async def process_data(data: dict) -> JSONResponse:
     """Process crypto data"""
     logger.info("Data Agent: Received process_data request")
     try:

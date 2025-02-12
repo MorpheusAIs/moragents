@@ -28,9 +28,10 @@ target_metadata = [Base.metadata]
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-DB_URL = os.getenv("db_url")
+# DB_URL = os.getenv("db_url")
+DB_URL = "postgresql+psycopg2://neo:trinity@localhost:5678/morpheus_db"
 if DB_URL:
-    config.set_main_option("sqlalchemy.url", os.getenv("db_url"))  # type: ignore
+    config.set_main_option("sqlalchemy.url", "postgresql+psycopg2://neo:trinity@localhost:5678/morpheus_db")  # type: ignore
 
 
 def run_migrations_offline() -> None:

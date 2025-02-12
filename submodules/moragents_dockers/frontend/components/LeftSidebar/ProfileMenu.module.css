@@ -1,0 +1,88 @@
+.profileContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-top: 16px;
+  transition: background-color 0.2s ease;
+}
+
+.profileContainer:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.connectButtonWrapper {
+  width: 100%;
+}
+
+.accountInfo {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.menuIcon {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.profileMenu {
+  width: var(--chakra-sizes-full) !important;
+  min-width: 388px !important;
+  background-color: #080808 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
+  margin-top: 4px !important;
+  transform: translateY(0) !important;
+}
+
+.menuItem {
+  width: 100% !important;
+  padding: 8px !important;
+  background: transparent !important;
+  color: white !important;
+  font-size: 18px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.menuItem:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.menuItem > button {
+  width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  background: none !important;
+  color: white !important;
+  font-size: 14px !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+
+.externalMenuItem {
+  width: 100% !important;
+  padding: 8px 12px !important;
+  background: transparent !important;
+  color: white !important;
+  font-size: 14px !important;
+  transition: background-color 0.2s ease !important;
+  border-radius: 8px !important;
+}
+
+.externalMenuItem:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.externalMenuItem svg {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.externalMenuItem:hover svg {
+  color: white;
+}

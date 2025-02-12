@@ -58,6 +58,7 @@ class DexScreenerAgent(AgentCore):
                     result = await tools.get_latest_boosted_tokens(chain_id)
                 elif func_name == "get_top_boosted_tokens":
                     result = await tools.get_top_boosted_tokens(chain_id)
+                    logger.info(f"Top boosted tokens: {result}")
                 else:
                     return AgentResponse.error(error_message=f"Unknown tool: {func_name}")
 

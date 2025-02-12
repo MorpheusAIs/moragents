@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models import Base
 
 if TYPE_CHECKING:
-    from submodules.moragents_dockers.agents.src.models.core.user_setting_models import UserSetting
+    from src.models.core.user_setting_models import UserSetting
     from src.models.core.conversation_models import Conversation
 
 

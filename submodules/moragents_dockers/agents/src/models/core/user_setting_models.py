@@ -18,7 +18,7 @@ class UserSetting(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     settings_key: Mapped[str] = mapped_column(String(255), nullable=False)
-    settings_value: Mapped[dict] = mapped_column(JSON, nullable=False)
+    settings_value: Mapped[JSON] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 

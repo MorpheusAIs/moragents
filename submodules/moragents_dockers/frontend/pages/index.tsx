@@ -121,7 +121,7 @@ const Home: NextPage = () => {
   return (
     <Box
       sx={{
-        backgroundColor: "#020804",
+        backgroundColor: "#000",
         height: "100vh",
         display: "flex",
         flexDirection: "column",

@@ -1,18 +1,28 @@
-export const getHumanReadableAgentName = (agentName: string): string => {
-  const agentNameMap: Record<string, string> = {
-    default: "Morpheus AI",
-    imagen: "Image Generator Agent",
-    rag: "Document Analysis Agent",
-    "crypto data": "Crypto Data Agent",
-    "token swap": "Metamask Swaps Agent",
-    "tweet sizzler": "Tweet Generator Agent",
-    dca: "DCA Strategy Planning Agent",
-    base: "Base Transactions Agent",
-    "mor claims": "MOR Claims Agent",
-    "mor rewards": "MOR Rewards Tracking Agent",
-    "realtime search": "Real-Time Search Agent",
-    "crypto news": "Crypto News Analysis Agent",
+import { AgentType } from "@/services/types";
+
+export const getHumanReadableAgentName = (agentName?: string): string => {
+  const agentNameMap: Record<AgentType | string, string> = {
+    [AgentType.DEFAULT]: "Morpheus AI",
+    [AgentType.IMAGEN]: "Image Generator Agent",
+    [AgentType.CRYPTO_DATA]: "Crypto Data Agent",
+    [AgentType.TOKEN_SWAP]: "Metamask Swaps Agent",
+    [AgentType.TWEET_SIZZLER]: "Tweet Generator Agent",
+    [AgentType.DCA_AGENT]: "DCA Strategy Planning Agent",
+    [AgentType.BASE_AGENT]: "Base Transactions Agent",
+    [AgentType.DEXSCREENER]: "DEX Screening Agent",
+    [AgentType.ELFA]: "Elfa Social Search Agent",
+    [AgentType.RAG]: "Document Analysis Agent",
+    [AgentType.MOR_CLAIMS]: "MOR Claims Agent",
+    [AgentType.MOR_REWARDS]: "MOR Rewards Tracking Agent",
+    [AgentType.REALTIME_SEARCH]: "Real-Time Search Agent",
+    [AgentType.CRYPTO_NEWS]: "Crypto News Analysis Agent",
+    [AgentType.RUGCHECK]: "Rugcheck Agent",
+    [AgentType.NEWS_AGENT]: "Current News Agent",
   };
+
+  if (!agentName) {
+    return "Morpheus AI";
+  }
 
   return agentNameMap[agentName] || agentName;
 };

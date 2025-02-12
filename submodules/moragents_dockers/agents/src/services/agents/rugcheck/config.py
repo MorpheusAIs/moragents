@@ -1,6 +1,5 @@
 import re
-
-from typing import Optional
+from typing import List, Optional
 
 from src.models.service.agent_config import AgentConfig
 
@@ -79,6 +78,10 @@ class TokenRegistry:
     def is_valid_mint_address(self, address: str) -> bool:
         """Check if a string matches the pattern of a Solana mint address."""
         return bool(self._mint_pattern.match(address))
+
+    def get_all_tokens(self) -> List[str]:
+        """Get all tokens in the registry."""
+        return list(self._name_to_mint.keys())
 
 
 class Config:

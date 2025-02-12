@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { FaCog } from "react-icons/fa";
+import { Flex, Text } from "@chakra-ui/react";
+import { IconSettings } from "@tabler/icons-react";
 import {
   Modal,
   ModalOverlay,
@@ -7,7 +8,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  Button,
   Tabs,
   TabList,
   TabPanels,
@@ -24,16 +24,18 @@ export const SettingsButton: React.FC = () => {
 
   return (
     <>
-      <Button
-        leftIcon={<FaCog />}
+      <Flex
+        as="button"
+        align="center"
+        gap={3}
+        width="100%"
         onClick={() => setIsOpen(true)}
-        size="md"
-        colorScheme="gray"
-        variant="solid"
-        mr={2}
       >
-        Settings
-      </Button>
+        <IconSettings size={20} stroke={1.5} />
+        <Text fontSize="14px" color="white">
+          Agent Configurations
+        </Text>
+      </Flex>
 
       <Modal
         isOpen={isOpen}

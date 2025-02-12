@@ -19,6 +19,8 @@ import DCAMessage from "@/components/Agents/DCA/DCAMessage";
 import BaseTransferMessage from "@/components/Agents/Base/TransferMessage";
 import BaseSwapMessage from "@/components/Agents/Base/SwapMessage";
 import OneInchSwapMessage from "@/components/Agents/Swaps/SwapMessage";
+import { ElfaTopMentionsMessage } from "@/components/Agents/Elfa/TopMentionsMessage";
+import { ElfaTrendingTokensMessage } from "@/components/Agents/Elfa/TrendingTokensMessage";
 
 type MessageRenderer = {
   check: (message: ChatMessage) => boolean;
@@ -100,8 +102,22 @@ const messageRenderers: MessageRenderer[] = [
   // Dexscreener agent renderer
   {
     check: (message) => message.agentName === AgentType.DEXSCREENER,
+    render: (message) => <TopTokensMessage metadata={message.metadata} />,
+  },
+
+  // Elfa agent renderers
+  {
+    check: (message) =>
+      message.agentName === AgentType.ELFA &&
+      message.action_type == "get_top_mentions",
+    render: (message) => <ElfaTopMentionsMessage metadata={message.metadata} />,
+  },
+  {
+    check: (message) =>
+      message.agentName === AgentType.ELFA &&
+      message.action_type == "get_trending_tokens",
     render: (message) => (
-      <TopTokensMessage metadata={(message as AssistantMessage).metadata} />
+      <ElfaTrendingTokensMessage metadata={message.metadata} />
     ),
   },
 

@@ -78,9 +78,13 @@ class AgentResponse(BaseModel):
         )
 
     @classmethod
-    def success(cls, content: str, metadata: Optional[Dict[str, Any]] = None) -> "AgentResponse":
+    def success(
+        cls, content: str, metadata: Optional[Dict[str, Any]] = None, action_type: Optional[str] = None
+    ) -> "AgentResponse":
         """Create a successful response"""
-        return cls(response_type=ResponseType.SUCCESS, content=content, metadata=metadata or {})
+        return cls(
+            response_type=ResponseType.SUCCESS, content=content, metadata=metadata or {}, action_type=action_type
+        )
 
     @classmethod
     def error(cls, error_message: str) -> "AgentResponse":

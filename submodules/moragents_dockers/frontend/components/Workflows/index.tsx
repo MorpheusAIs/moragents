@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   VStack,
   Box,
+  Flex,
   Text,
   Select,
   NumberInput,
@@ -32,7 +33,7 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
-import { FaRobot } from "react-icons/fa";
+import { IconRobot } from "@tabler/icons-react";
 
 interface Workflow {
   id: string;
@@ -389,15 +390,18 @@ export const Workflows: React.FC = () => {
 
   return (
     <>
-      <Button
-        leftIcon={<FaRobot />}
+      <Flex
+        as="button"
+        align="center"
+        gap={3}
+        width="100%"
         onClick={() => setIsOpen(true)}
-        size="md"
-        colorScheme="gray"
-        variant="solid"
       >
-        Workflows
-      </Button>
+        <IconRobot size={20} stroke={1.5} />
+        <Text fontSize="14px" color="white">
+          Workflows
+        </Text>
+      </Flex>
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="xl">
         <ModalOverlay />

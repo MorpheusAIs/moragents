@@ -1,3 +1,5 @@
+# pylint: disable=not-callable
+
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
@@ -21,7 +23,7 @@ class ChatMessage(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     agent_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    message_metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default=dict)
+    message_metadata: Mapped[Optional[JSON]] = mapped_column(JSON, nullable=True, default=dict)
     requires_action: Mapped[bool] = mapped_column(Boolean, default=False)
     action_type: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     timestamp: Mapped[float] = mapped_column(Float, nullable=False)

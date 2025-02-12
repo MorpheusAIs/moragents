@@ -14,29 +14,40 @@ import {
   Shield,
   Gift,
 } from "lucide-react";
-import { AGENT_TYPES } from "@/services/constants";
+import { AgentType } from "@/services/types";
+import { IconSocial } from "@tabler/icons-react";
 
-type PrefilledOption = {
-  title: string;
-  icon: React.ReactNode;
-  examples: Array<{
-    text: string;
-    agent: string;
-  }>;
+// Icon color mapping
+const ICON_COLORS = {
+  [AgentType.IMAGEN]: "#8B5CF6", // Purple
+  [AgentType.RAG]: "#8B5CF6", // Purple
+  [AgentType.CRYPTO_DATA]: "#3B82F6", // Blue
+  [AgentType.TOKEN_SWAP]: "#10B981", // Green
+  [AgentType.TWEET_SIZZLER]: "#F59E0B", // Amber
+  [AgentType.REALTIME_SEARCH]: "#EC4899", // Pink
+  [AgentType.DEXSCREENER]: "#6366F1", // Indigo
+  [AgentType.MOR_CLAIMS]: "#14B8A6", // Teal
+  [AgentType.MOR_REWARDS]: "#F472B6", // Pink
+  [AgentType.CRYPTO_NEWS]: "#2DD4BF", // Teal
+  [AgentType.BASE_AGENT]: "#818CF8", // Indigo
+  [AgentType.DCA_AGENT]: "#4ADE80", // Green
+  [AgentType.RUGCHECK]: "#EF4444", // Red
+  [AgentType.DEFAULT]: "#6B7280", // Gray
+  [AgentType.ELFA]: "#6366F1", // Indigo
 };
 
-export const prefilledOptionsMap: Record<string, PrefilledOption> = {
-  [AGENT_TYPES.DEFAULT]: {
+export const prefilledOptionsMap = {
+  [AgentType.DEFAULT]: {
     title: "Default Agent",
-    icon: <Globe2 size={20} />,
+    icon: <Globe2 size={20} color={ICON_COLORS[AgentType.DEFAULT]} />,
     examples: [
       { text: "Who is Elon Musk?", agent: "default" },
       { text: "What Morpheus agents are currently active?", agent: "default" },
     ],
   },
-  [AGENT_TYPES.IMAGEN]: {
+  [AgentType.IMAGEN]: {
     title: "Generate Images",
-    icon: <Sparkles size={20} />,
+    icon: <Sparkles size={20} color={ICON_COLORS[AgentType.IMAGEN]} />,
     examples: [
       { text: "Generate an image of Donald Trump", agent: "imagen" },
       {
@@ -45,9 +56,9 @@ export const prefilledOptionsMap: Record<string, PrefilledOption> = {
       },
     ],
   },
-  [AGENT_TYPES.RAG]: {
+  [AgentType.RAG]: {
     title: "Document Analysis",
-    icon: <FileText size={20} />,
+    icon: <FileText size={20} color={ICON_COLORS[AgentType.RAG]} />,
     examples: [
       { text: "Summarize the uploaded document", agent: "rag" },
       {
@@ -56,108 +67,132 @@ export const prefilledOptionsMap: Record<string, PrefilledOption> = {
       },
     ],
   },
-  [AGENT_TYPES.CRYPTO_DATA]: {
+  [AgentType.CRYPTO_DATA]: {
     title: "Crypto Market Data",
-    icon: <LineChart size={20} />,
+    icon: <LineChart size={20} color={ICON_COLORS[AgentType.CRYPTO_DATA]} />,
     examples: [
-      { text: "What's the current price of ETH?", agent: "crypto" },
-      { text: "Show me BTC's market cap", agent: "crypto" },
-      { text: "What's the FDV of USDC?", agent: "crypto" },
+      { text: "What's the current price of ETH?", agent: "crypto_data" },
+      { text: "Show me BTC's market cap", agent: "crypto_data" },
+      { text: "What's the FDV of USDC?", agent: "crypto_data" },
     ],
   },
-  [AGENT_TYPES.TOKEN_SWAP]: {
+  [AgentType.TOKEN_SWAP]: {
     title: "Token Swaps",
-    icon: <ArrowLeftRight size={20} />,
+    icon: (
+      <ArrowLeftRight size={20} color={ICON_COLORS[AgentType.TOKEN_SWAP]} />
+    ),
     examples: [
-      { text: "Swap 0.2 ETH for USDC", agent: "swap" },
-      { text: "Exchange my BTC for ETH", agent: "swap" },
+      { text: "Swap 0.2 ETH for USDC", agent: "token_swap" },
+      { text: "Exchange my BTC for ETH", agent: "token_swap" },
     ],
   },
-  [AGENT_TYPES.TWEET_SIZZLER]: {
+  [AgentType.TWEET_SIZZLER]: {
     title: "Tweet Generator",
-    icon: <Flame size={20} />,
+    icon: <Flame size={20} color={ICON_COLORS[AgentType.TWEET_SIZZLER]} />,
     examples: [
-      { text: "Create a viral tweet about Web3", agent: "tweet" },
+      { text: "Create a viral tweet about Web3", agent: "tweet_sizzler" },
       {
         text: "Create a spicy crypto market tweet about Gary Gensler",
-        agent: "tweet",
+        agent: "tweet_sizzler",
       },
     ],
   },
-  [AGENT_TYPES.DCA]: {
+  [AgentType.DCA_AGENT]: {
     title: "DCA Strategy Planning",
-    icon: <DollarSign size={20} />,
+    icon: <DollarSign size={20} color={ICON_COLORS[AgentType.DCA_AGENT]} />,
     examples: [
-      { text: "Set up a weekly DCA plan for ETH", agent: "dca" },
-      { text: "Help me create a monthly BTC buying strategy", agent: "dca" },
+      { text: "DCA into ETH weekly", agent: "dca_agent" },
+      {
+        text: "Help me create a monthly BTC buying strategy",
+        agent: "dca_agent",
+      },
     ],
   },
-  [AGENT_TYPES.BASE]: {
+  [AgentType.BASE_AGENT]: {
     title: "Base Transactions",
-    icon: <Send size={20} />,
+    icon: <Send size={20} color={ICON_COLORS[AgentType.BASE_AGENT]} />,
     examples: [
-      { text: "Send USDC on Base", agent: "base" },
-      { text: "Swap USDC for ETH on Base", agent: "base" },
+      { text: "Send USDC on Base", agent: "base_agent" },
+      { text: "Swap USDC for ETH on Base", agent: "base_agent" },
     ],
   },
-  [AGENT_TYPES.MOR_CLAIMS]: {
-    title: "MOR Claims",
-    icon: <Gift size={20} />,
+  [AgentType.MOR_CLAIMS]: {
+    title: "MOR Claims Manager",
+    icon: <Gift size={20} color={ICON_COLORS[AgentType.MOR_CLAIMS]} />,
     examples: [
-      { text: "Claim my MOR rewards", agent: "claims" },
-      { text: "Help me claim my pending MOR tokens", agent: "claims" },
+      { text: "Claim my MOR rewards", agent: "mor_claims" },
+      { text: "Help me claim my pending MOR tokens", agent: "mor_claims" },
     ],
   },
-  [AGENT_TYPES.MOR_REWARDS]: {
+  [AgentType.MOR_REWARDS]: {
     title: "MOR Rewards Tracking",
-    icon: <Trophy size={20} />,
+    icon: <Trophy size={20} color={ICON_COLORS[AgentType.MOR_REWARDS]} />,
     examples: [
-      { text: "Show my MOR rewards balance", agent: "rewards" },
-      { text: "Calculate my pending MOR rewards", agent: "rewards" },
+      { text: "Show my MOR rewards balance", agent: "mor_rewards" },
+      { text: "Calculate my pending MOR rewards", agent: "mor_rewards" },
     ],
   },
-  [AGENT_TYPES.REALTIME_SEARCH]: {
+  [AgentType.REALTIME_SEARCH]: {
     title: "Real-Time Search",
-    icon: <Search size={20} />,
+    icon: <Search size={20} color={ICON_COLORS[AgentType.REALTIME_SEARCH]} />,
     examples: [
       {
         text: "Search the web for latest news about Ethereum",
-        agent: "realtime",
+        agent: "realtime_search",
       },
-      { text: "What did Donald Trump say about Bitcoin?", agent: "realtime" },
+      {
+        text: "What did Donald Trump say about Bitcoin?",
+        agent: "realtime_search",
+      },
     ],
   },
-  [AGENT_TYPES.CRYPTO_NEWS]: {
+  [AgentType.CRYPTO_NEWS]: {
     title: "Crypto News Analysis",
-    icon: <Newspaper size={20} />,
+    icon: <Newspaper size={20} color={ICON_COLORS[AgentType.CRYPTO_NEWS]} />,
     examples: [
-      { text: "Analyze recent crypto market news for ETH", agent: "news" },
-      { text: "What's the latest news impact on BTC?", agent: "news" },
+      {
+        text: "Analyze recent crypto market news for ETH",
+        agent: "crypto_news",
+      },
+      { text: "What's the latest news impact on BTC?", agent: "crypto_news" },
     ],
   },
-  [AGENT_TYPES.DEXSCREENER]: {
+  [AgentType.DEXSCREENER]: {
     title: "DexScreener",
-    icon: <BarChart2 size={20} />,
+    icon: <BarChart2 size={20} color={ICON_COLORS[AgentType.DEXSCREENER]} />,
     examples: [
       {
         text: "What are the most active tokens on solana?",
         agent: "dexscreener",
       },
-      {
-        text: "Show me DEX activity for ETH",
-        agent: "dexscreener",
-      },
+      { text: "Show me DEX activity for ETH", agent: "dexscreener" },
     ],
   },
-  [AGENT_TYPES.RUGCHECK]: {
-    title: "Solana Token Safety",
-    icon: <Shield size={20} />,
+  [AgentType.ELFA]: {
+    title: "Elfa Social Search",
+    icon: <IconSocial size={20} color={ICON_COLORS[AgentType.ELFA]} />,
     examples: [
       {
-        text: "Check token safety for SAMO",
-        agent: "rugcheck",
+        text: "What are they saying about MOR on social?",
+        agent: "elfa",
       },
+      { text: "What are the top trending tokens on social", agent: "elfa" },
+    ],
+  },
+  [AgentType.RUGCHECK]: {
+    title: "Solana Token Safety",
+    icon: <Shield size={20} color={ICON_COLORS[AgentType.RUGCHECK]} />,
+    examples: [
+      { text: "Check token safety for SAMO", agent: "rugcheck" },
       { text: "Show me the most voted tokens on rugcheck", agent: "rugcheck" },
     ],
   },
+};
+
+export const OPTION_GROUPS = {
+  Data: [AgentType.CRYPTO_DATA, AgentType.DEXSCREENER],
+  Trade: [AgentType.TOKEN_SWAP, AgentType.BASE_AGENT, AgentType.DCA_AGENT],
+  Social: [AgentType.TWEET_SIZZLER, AgentType.REALTIME_SEARCH, AgentType.ELFA],
+  Morpheus: [AgentType.MOR_CLAIMS, AgentType.MOR_REWARDS],
+  Analysis: [AgentType.RAG, AgentType.CRYPTO_NEWS, AgentType.RUGCHECK],
 };

@@ -23,11 +23,9 @@ export const MessageItem: FC<MessageItemProps> = ({ message }) => {
           <div className={styles.userBubble}>{renderMessage(message)}</div>
         ) : (
           <div className={styles.assistantContent}>
-            {message.agentName && (
-              <Text className={styles.agentName}>
-                {getHumanReadableAgentName(message.agentName)}
-              </Text>
-            )}
+            <Text className={styles.agentName}>
+              {getHumanReadableAgentName(message.agentName)}
+            </Text>
             {renderMessage(message)}
           </div>
         )}

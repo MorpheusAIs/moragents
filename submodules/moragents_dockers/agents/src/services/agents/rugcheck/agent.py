@@ -2,6 +2,7 @@ from typing import Dict, Any, Optional, Union
 import logging
 from src.models.service.agent_core import AgentCore
 from src.models.service.chat_models import ChatRequest, AgentResponse
+from src.stores import chat_manager_instance
 from langchain.schema import HumanMessage, SystemMessage
 from .config import Config, TokenRegistry
 from .client import RugcheckClient
@@ -43,11 +44,20 @@ class RugcheckAgent(AgentCore):
                     content=(
                         "You are an agent that can analyze tokens for safety and view trending tokens. "
                         "You can handle both token names (like 'BONK' or 'RAY') and mint addresses. "
-                        "When you need to perform an analysis, use the appropriate function call."
+                        "When you need to perform an analysis, use the appropriate function call. "
+                        "For token names, you must verify they exist in the supported token list. "
+                        "The supported tokens are: " + ", ".join(self.token_registry.get_all_tokens()) + ". "
+                        "If a token name is not in this list, you must find its mint address in the "
+                        "current chat message or in the conversation history. "
+                        "Do not make up or hallucinate mint addresses - if you cannot find a valid mint address, "
+                        "inform the user that the token is not supported."
                     )
                 ),
                 HumanMessage(content=request.prompt.content),
             ]
+            chat_history = chat_manager_instance.get_chat_history(request.conversation_id)
+            if chat_history:
+                messages.append(HumanMessage(content=f"Here is the chat history: {chat_history}"))
 
             result = self.tool_bound_llm.invoke(messages)
             return await self._handle_llm_response(result)
@@ -87,7 +97,15 @@ class RugcheckAgent(AgentCore):
                         f"{risks}\n\n"
                     )
 
-                    return AgentResponse.success(content=content)
+                    return AgentResponse.success(
+                        content=content,
+                        metadata={
+                            "report": report,
+                            "mint_address": mint_address,
+                            "token_name": token_name,
+                            "identifier": identifier,
+                        },
+                    )
 
                 except Exception as e:
                     return AgentResponse.error(error_message=f"Failed to get token report: {str(e)}")

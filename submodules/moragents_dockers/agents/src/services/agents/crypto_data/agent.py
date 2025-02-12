@@ -1,4 +1,6 @@
 import logging
+from typing import Dict, Any
+
 from src.services.agents.crypto_data import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.models.service.agent_core import AgentCore
@@ -10,7 +12,7 @@ logger = logging.getLogger(__name__)
 class CryptoDataAgent(AgentCore):
     """Agent for handling cryptocurrency-related queries and data retrieval."""
 
-    def __init__(self, config, llm, embeddings):
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any) -> None:
         super().__init__(config, llm, embeddings)
         self.tools_provided = tools.get_tools()
         self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)

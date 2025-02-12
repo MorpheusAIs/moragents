@@ -42,7 +42,7 @@ const TradingViewWidget = memo(({ symbol }: TradingViewWidgetProps) => {
   }, [symbol]);
 
   return (
-    <div style={{ height: "90%", width: "100%" }} ref={container}>
+    <div style={{ height: "100%", width: "100%" }} ref={container}>
       <div className="tradingview-widget-copyright">
         <a
           href="https://www.tradingview.com/"

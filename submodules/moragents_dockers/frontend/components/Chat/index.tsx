@@ -38,8 +38,8 @@ export const Chat: FC<ChatProps> = ({
         width="100%"
         transition="all 0.3s ease-in-out"
         mt={2}
-        paddingLeft={isMobile ? "5%" : isSidebarOpen ? "5%" : "20%"}
-        paddingRight={isMobile ? "5%" : isSidebarOpen ? "5%" : "20%"}
+        paddingLeft={isMobile ? "5%" : isSidebarOpen ? "30%" : "20%"}
+        paddingRight={isMobile ? "5%" : isSidebarOpen ? "20%" : "20%"}
         ml="auto"
         mr="auto"
       >
@@ -52,24 +52,6 @@ export const Chat: FC<ChatProps> = ({
           isSidebarOpen={isSidebarOpen}
         />
       </Flex>
-
-      {/* For mobile compatibility purposes, we are disabling the widget for */}
-      {/* <Box
-        position="fixed"
-        right={0}
-        top={0}
-        width={isMobile ? "100%" : "30%"}
-        height="100%"
-        transition="transform 0.3s ease-in-out"
-        transform={isWidgetOpen ? "translateX(0)" : "translateX(100%)"}
-        borderLeft="1px solid gray"
-        zIndex={1}
-      >
-        <Widgets
-          activeWidget={activeWidget}
-          onClose={() => setIsWidgetOpen(false)}
-        />
-      </Box> */}
     </Box>
   );
 };

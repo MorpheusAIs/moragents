@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Button } from "@chakra-ui/react";
-import { FaLock } from "react-icons/fa";
+import { Flex, Text } from "@chakra-ui/react";
+import { IconLock } from "@tabler/icons-react";
 import { ApiCredentialsModal } from "./Modal";
 
 export const ApiCredentialsButton: React.FC = () => {
@@ -8,16 +8,18 @@ export const ApiCredentialsButton: React.FC = () => {
 
   return (
     <>
-      <Button
-        leftIcon={<FaLock />}
+      <Flex
+        as="button"
+        align="center"
+        gap={3}
+        width="100%"
         onClick={() => setIsOpen(true)}
-        size="md"
-        colorScheme="gray"
-        variant="solid"
-        mr={2}
       >
-        API Keys
-      </Button>
+        <IconLock size={20} stroke={1.5} />
+        <Text fontSize="14px" color="white">
+          API Keys
+        </Text>
+      </Flex>
 
       <ApiCredentialsModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
