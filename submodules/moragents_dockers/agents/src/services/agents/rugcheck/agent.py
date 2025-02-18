@@ -53,11 +53,8 @@ class RugcheckAgent(AgentCore):
                         "inform the user that the token is not supported."
                     )
                 ),
-                HumanMessage(content=request.prompt.content),
+                *request.messages_for_llm,
             ]
-            chat_history = chat_manager_instance.get_chat_history(request.conversation_id)
-            if chat_history:
-                messages.append(HumanMessage(content=f"Here is the chat history: {chat_history}"))
 
             result = self.tool_bound_llm.invoke(messages)
             return await self._handle_llm_response(result)

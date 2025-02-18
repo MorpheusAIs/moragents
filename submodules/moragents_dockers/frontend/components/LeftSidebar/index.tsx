@@ -1,11 +1,6 @@
 import React, { FC, useEffect, useState } from "react";
 import {
   Box,
-  Button,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Input,
   InputGroup,
   InputLeftElement,
@@ -26,11 +21,11 @@ import {
   IconRefresh,
   IconTrash,
 } from "@tabler/icons-react";
-import { getHttpClient } from "@/services/constants";
 import {
+  getAllConversations,
   createNewConversation,
   clearMessagesHistory,
-} from "@/services/apiHooks";
+} from "@/services/chat_management/sessions";
 import { ProfileMenu } from "./ProfileMenu";
 import styles from "./index.module.css";
 import { useRouter } from "next/router";
@@ -57,20 +52,14 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama3.2:3b");
   const router = useRouter();
-  const backendClient = getHttpClient();
-
-  const modelOptions = [{ value: "llama3.2:3b", label: "Llama 3.2 (3B)" }];
   const ToggleIcon = isSidebarOpen ? IconChevronLeft : IconChevronRight;
 
-  const fetchConversations = async () => {
+  const modelOptions = [{ value: "llama3.2:3b", label: "Llama 3.2 (3B)" }];
+
+  const fetchConversations = () => {
     try {
-      const response = await getHttpClient().get("/chat/conversations");
-      const conversationIds: string[] = response.data.conversation_ids;
-      conversationIds.sort((a, b) => {
-        if (a === "default") return -1;
-        if (b === "default") return 1;
-        return a.localeCompare(b);
-      });
+      // Get conversations from local storage
+      const conversationIds = getAllConversations();
       setConversations(conversationIds);
     } catch (error) {
       console.error("Failed to fetch conversations:", error);
@@ -80,10 +69,11 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   const handleCreateNewConversation = async () => {
     setIsLoading(true);
     try {
-      const response = await createNewConversation(getHttpClient());
-      await fetchConversations();
-      onConversationSelect(response);
-      setCurrentConversationId(response);
+      // Create new conversation in local storage
+      const newConversationId = createNewConversation();
+      fetchConversations();
+      onConversationSelect(newConversationId);
+      setCurrentConversationId(newConversationId);
     } catch (error) {
       console.error("Failed to create new conversation:", error);
     } finally {
@@ -94,7 +84,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
   const handleDeleteConversation = async (conversationId: string) => {
     try {
       await onDeleteConversation(conversationId);
-      await fetchConversations();
+      fetchConversations();
       if (conversationId === currentConversationId) {
         onConversationSelect("default");
         setCurrentConversationId("default");
@@ -106,7 +96,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
 
   const handleClearChatHistory = async () => {
     try {
-      await clearMessagesHistory(backendClient);
+      clearMessagesHistory(currentConversationId);
       router.reload();
     } catch (error) {
       console.error("Failed to clear chat history:", error);
@@ -115,7 +105,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
 
   useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [currentConversationId]);
 
   const formatConversationName = (id: string) => {
     if (id === "default") return "Default Chat";
@@ -228,7 +218,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                   alignItems="center"
                   justifyContent="center"
                 >
-                  Tokenized Agents
+                  Create or Trade Tokenized Agents
                 </Box>
               </PopoverTrigger>
               <PopoverContent

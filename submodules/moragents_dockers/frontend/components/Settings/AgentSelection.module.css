@@ -1,0 +1,69 @@
+.description {
+  font-size: 14px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.agentList {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.agentList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.agentList::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.agentList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.agentItem {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  transition: background-color 0.2s ease;
+}
+
+.agentItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.checkbox {
+  color: white !important;
+}
+
+.checkbox [class*="chakra-checkbox__control"] {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.checkbox [class*="chakra-checkbox__control"][data-checked] {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.agentName {
+  color: white !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.agentDescription {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 12px !important;
+}
+
+.saveButton {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  width: 100% !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.saveButton:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}

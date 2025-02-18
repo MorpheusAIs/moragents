@@ -21,6 +21,8 @@ import BaseSwapMessage from "@/components/Agents/Base/SwapMessage";
 import OneInchSwapMessage from "@/components/Agents/Swaps/SwapMessage";
 import { ElfaTopMentionsMessage } from "@/components/Agents/Elfa/TopMentionsMessage";
 import { ElfaTrendingTokensMessage } from "@/components/Agents/Elfa/TrendingTokensMessage";
+import { RugcheckReportMessage } from "@/components/Agents/Rugcheck/RugcheckReportMessage";
+import { CodexTopTokensMessage } from "@/components/Agents/Codex/CodexTopTokensMessage";
 
 type MessageRenderer = {
   check: (message: ChatMessage) => boolean;
@@ -127,6 +129,26 @@ const messageRenderers: MessageRenderer[] = [
     render: (message) => (
       <DCAMessage
         content={message.content}
+        metadata={(message as AssistantMessage).metadata}
+      />
+    ),
+  },
+
+  // Rugcheck agent renderer
+  {
+    check: (message) => message.agentName === AgentType.RUGCHECK,
+    render: (message) => (
+      <RugcheckReportMessage
+        metadata={(message as AssistantMessage).metadata}
+      />
+    ),
+  },
+
+  // Codex agent renderer
+  {
+    check: (message) => message.agentName === AgentType.CODEX,
+    render: (message) => (
+      <CodexTopTokensMessage
         metadata={(message as AssistantMessage).metadata}
       />
     ),

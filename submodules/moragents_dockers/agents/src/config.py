@@ -17,7 +17,7 @@ def load_agent_routes() -> List[APIRouter]:
     Dynamically load all route modules from agent subdirectories.
     Returns a list of FastAPI router objects.
     """
-    routers = []
+    routers: List[APIRouter] = []
     agents_dir = os.path.join(os.path.dirname(__file__), "services/agents")
     logger.info(f"Loading agents from {agents_dir}")
 
@@ -41,17 +41,14 @@ def load_agent_routes() -> List[APIRouter]:
                 logger.error(f"Failed to load module spec for {routes_file}")
                 continue
 
-            if isinstance(spec, importlib.machinery.ModuleSpec):
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
 
-                if hasattr(module, "router"):
-                    routers.append(module.router)
-                    logger.info(f"Successfully loaded routes from {agent_dir}")
-                else:
-                    logger.warning(f"No router found in {agent_dir}/routes.py")
+            if hasattr(module, "router"):
+                routers.append(module.router)
+                logger.info(f"Successfully loaded routes from {agent_dir}")
             else:
-                logger.error(f"Invalid module spec type for {routes_file}")
+                logger.warning(f"No router found in {agent_dir}/routes.py")
 
         except Exception as e:
             logger.error(f"Error loading routes from {agent_dir}: {str(e)}")
@@ -92,19 +89,18 @@ def load_agent_config(agent_name: str) -> Optional[Dict[str, Any]]:
             logger.error(f"Failed to load module spec for {config_file}")
             return None
 
-        if isinstance(spec, importlib.machinery.ModuleSpec):
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
 
-            # Check for Config class and agent_config
-            if hasattr(module, "Config") and hasattr(module.Config, "agent_config"):
-                config_dict = module.Config.agent_config.model_dump()
-                config_dict["name"] = agent_name
-                logger.info(f"Successfully loaded config for {agent_name}")
-                return config_dict
-            else:
-                logger.warning(f"No Config class or agent_config found in {agent_name}/config.py")
-                return None
+        # Check for Config class and agent_config
+        if hasattr(module, "Config") and hasattr(module.Config, "agent_config"):
+            config_dict: Dict[str, Any] = module.Config.agent_config.model_dump()
+            config_dict["name"] = agent_name
+            logger.info(f"Successfully loaded config for {agent_name}")
+            return config_dict
+        else:
+            logger.warning(f"No Config class or agent_config found in {agent_name}/config.py")
+            return None
 
     except Exception as e:
         logger.error(f"Error loading config for {agent_name}: {str(e)}")
@@ -119,7 +115,7 @@ def load_agent_configs() -> List[Dict[str, Any]]:
     """
     agents_dir = os.path.join(os.path.dirname(__file__), "services/agents")
     logger.info(f"Loading agents from {agents_dir}")
-    configs = []
+    configs: List[Dict[str, Any]] = []
 
     for agent_dir in os.listdir(agents_dir):
         # Skip special directories and files
@@ -133,7 +129,7 @@ def load_agent_configs() -> List[Dict[str, Any]]:
     return configs
 
 
-def setup_logging():
+def setup_logging() -> logging.Logger:
     # Create formatter
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
@@ -181,7 +177,7 @@ from langchain_together import ChatTogether
 
 LLM = ChatTogether(
     model=AppConfig.TOGETHER_MODEL,
-    together_api_key=AppConfig.TOGETHER_API_KEY,
+    api_key=AppConfig.TOGETHER_API_KEY,
     temperature=0.7,
 )
 # EMBEDDINGS = Together(

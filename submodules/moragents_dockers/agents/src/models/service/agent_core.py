@@ -1,18 +1,18 @@
 import logging
-
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Callable, TypeVar, Awaitable
 from functools import wraps
 
 from src.models.service.chat_models import ChatRequest, AgentResponse
 
+T = TypeVar("T")
 
-def handle_exceptions(func):
+
+def handle_exceptions(func: Callable[..., Awaitable[AgentResponse]]) -> Callable[..., Awaitable[AgentResponse]]:
     """Decorator to handle exceptions uniformly across agent methods"""
 
     @wraps(func)
-    async def wrapper(self, *args, **kwargs):
+    async def wrapper(self: Any, *args: Any, **kwargs: Any) -> AgentResponse:
         try:
             return await func(self, *args, **kwargs)
         except ValueError as e:
@@ -36,7 +36,7 @@ class AgentCore(ABC):
         self.embeddings = embeddings
         self._setup_logging()
 
-    def _setup_logging(self):
+    def _setup_logging(self) -> None:
         """Set up logging for the agent"""
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 

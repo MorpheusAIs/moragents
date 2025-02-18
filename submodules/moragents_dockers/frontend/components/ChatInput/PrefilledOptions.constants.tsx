@@ -13,6 +13,7 @@ import {
   BarChart2,
   Shield,
   Gift,
+  Database,
 } from "lucide-react";
 import { AgentType } from "@/services/types";
 import { IconSocial } from "@tabler/icons-react";
@@ -34,6 +35,7 @@ const ICON_COLORS = {
   [AgentType.RUGCHECK]: "#EF4444", // Red
   [AgentType.DEFAULT]: "#6B7280", // Gray
   [AgentType.ELFA]: "#6366F1", // Indigo
+  [AgentType.CODEX]: "#3B82F6", // Blue
 };
 
 export const prefilledOptionsMap = {
@@ -71,7 +73,7 @@ export const prefilledOptionsMap = {
     title: "Crypto Market Data",
     icon: <LineChart size={20} color={ICON_COLORS[AgentType.CRYPTO_DATA]} />,
     examples: [
-      { text: "What's the current price of ETH?", agent: "crypto_data" },
+      { text: "What's the price of ETH?", agent: "crypto_data" },
       { text: "Show me BTC's market cap", agent: "crypto_data" },
       { text: "What's the FDV of USDC?", agent: "crypto_data" },
     ],
@@ -176,7 +178,10 @@ export const prefilledOptionsMap = {
         text: "What are they saying about MOR on social?",
         agent: "elfa",
       },
-      { text: "What are the top trending tokens on social", agent: "elfa" },
+      {
+        text: "What are the top trending tokens on social media",
+        agent: "elfa",
+      },
     ],
   },
   [AgentType.RUGCHECK]: {
@@ -187,10 +192,24 @@ export const prefilledOptionsMap = {
       { text: "Show me the most voted tokens on rugcheck", agent: "rugcheck" },
     ],
   },
+  [AgentType.CODEX]: {
+    title: "Codex Agent",
+    icon: <Database size={20} color={ICON_COLORS[AgentType.CODEX]} />,
+    examples: [
+      {
+        text: "What are the top trending tokens on Ethereum?",
+        agent: "codex",
+      },
+      {
+        text: "Who are the top holders of $TRUMP?",
+        agent: "codex",
+      },
+    ],
+  },
 };
 
 export const OPTION_GROUPS = {
-  Data: [AgentType.CRYPTO_DATA, AgentType.DEXSCREENER],
+  Data: [AgentType.CRYPTO_DATA, AgentType.DEXSCREENER, AgentType.CODEX],
   Trade: [AgentType.TOKEN_SWAP, AgentType.BASE_AGENT, AgentType.DCA_AGENT],
   Social: [AgentType.TWEET_SIZZLER, AgentType.REALTIME_SEARCH, AgentType.ELFA],
   Morpheus: [AgentType.MOR_CLAIMS, AgentType.MOR_REWARDS],

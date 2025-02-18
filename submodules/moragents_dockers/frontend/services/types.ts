@@ -159,6 +159,11 @@ export enum AgentType {
   ELFA = "elfa",
 
   /**
+   * Provides crypto data via Codex.io
+   */
+  CODEX = "codex",
+
+  /**
    * Manages Dollar Cost Averaging (DCA) strategies
    */
   DCA_AGENT = "dca_agent",

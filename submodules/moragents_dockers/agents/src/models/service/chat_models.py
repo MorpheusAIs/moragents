@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Optional, Dict, Any
 from fastapi import Query
 from pydantic import BaseModel, Field
+from langchain.schema import BaseMessage, HumanMessage, AIMessage
 
 
 class ResponseType(Enum):
@@ -44,6 +45,24 @@ class ChatRequest(BaseModel):
     chain_id: str
     wallet_address: str
     conversation_id: str = Query(default="default")
+    chat_history: List[ChatMessage] = Field(default_factory=list)
+
+    @property
+    def messages_for_llm(self) -> List[BaseMessage]:
+        """Get formatted message history for LLM, including current prompt"""
+        messages: List[BaseMessage] = []
+
+        # Add chat history messages up to the past 10 messages
+        for msg in self.chat_history[:10]:
+            if msg.role == "user":
+                messages.append(HumanMessage(content=msg.content))
+            elif msg.role == "assistant":
+                messages.append(AIMessage(content=msg.content))
+
+        # Add current prompt
+        messages.append(HumanMessage(content=self.prompt.content))
+
+        return messages
 
 
 class Conversation(BaseModel):

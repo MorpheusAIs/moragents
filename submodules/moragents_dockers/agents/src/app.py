@@ -1,7 +1,7 @@
 import os
 import uvicorn
 from contextlib import asynccontextmanager
-
+from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,7 +15,6 @@ from src.routes import (
     key_manager_routes,
     wallet_manager_routes,
     workflow_manager_routes,
-    conversation_routes,
     delegation_routes,
 )
 
@@ -45,7 +44,6 @@ ROUTERS = [
     delegation_routes.router,
     agent_manager_routes.router,
     key_manager_routes.router,
-    conversation_routes.router,
     wallet_manager_routes.router,
     workflow_manager_routes.router,
 ]
@@ -60,7 +58,7 @@ for router in routers:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager for FastAPI application"""
     # Startup
     logger.info("Starting workflow manager initialization")

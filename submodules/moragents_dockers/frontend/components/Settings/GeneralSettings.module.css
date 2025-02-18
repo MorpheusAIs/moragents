@@ -1,0 +1,35 @@
+.label {
+  color: white !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.textarea {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transition: all 0.2s ease !important;
+}
+
+.textarea:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.textarea:focus {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.saveButton {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.saveButton:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}

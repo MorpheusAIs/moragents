@@ -1,7 +1,8 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Flex, Text } from "@chakra-ui/react";
-import { IconWallet } from "@tabler/icons-react";
+import { Wallet } from "lucide-react";
 import { CDPWalletsModal } from "./Modal";
+import styles from "./CDPWallets.module.css";
 
 export const CDPWalletsButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,10 +15,11 @@ export const CDPWalletsButton: React.FC = () => {
         gap={3}
         width="100%"
         onClick={() => setIsOpen(true)}
+        className={styles.menuButton}
       >
-        <IconWallet size={20} stroke={1.5} />
+        <Wallet className={styles.icon} size={20} />
         <Text fontSize="14px" color="white">
-          CDP Wallets
+          Coinbase Developer Wallets
         </Text>
       </Flex>
 

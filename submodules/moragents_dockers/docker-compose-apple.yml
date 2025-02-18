@@ -18,14 +18,14 @@ services:
       - BASE_URL=http://host.docker.internal:11434
       - DATABASE_URL=postgresql://neo:trinity@postgres:5678/morpheus_db
 
-  nginx:
-    image: lachsbagel/moragents_dockers-nginx:apple-0.2.2
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      target: nginx
-    ports:
-      - "3333:80"
+  # nginx:
+  #   image: lachsbagel/moragents_dockers-nginx:apple-0.2.2
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: build/Dockerfile
+  #     target: nginx
+  #   ports:
+  #     - "3333:80"
 
   postgres:
     image: postgres:16-bullseye

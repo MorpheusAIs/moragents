@@ -41,8 +41,16 @@
   border: none !important;
   color: #59f886 !important;
   cursor: pointer;
-  height: 20px;
-  width: 20px;
+  padding: 8px !important;
+  display: flex;
+  align-items: center;
+}
+
+.fileAddon button {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
 }
 
 .hiddenInput {

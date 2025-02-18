@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from src.models.service.chat_models import ChatRequest
 from src.services.delegator.delegator import Delegator
 from src.controllers.delegation_controller import DelegationController
@@ -10,7 +11,7 @@ router = APIRouter(prefix="/api/v1", tags=["chat"])
 
 
 @router.post("/chat")
-async def chat(chat_request: ChatRequest):
+async def chat(chat_request: ChatRequest) -> JSONResponse:
     """Handle chat requests and delegate to appropriate agent"""
     logger.info(f"Received chat request for conversation {chat_request.conversation_id}")
 

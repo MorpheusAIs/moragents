@@ -31,7 +31,7 @@ class DexScreenerAgent(AgentCore):
                         "'solana', 'ethereum', or 'bsc'."
                     )
                 ),
-                HumanMessage(content=request.prompt.content),
+                *request.messages_for_llm,
             ]
 
             result = self.tool_bound_llm.invoke(messages)

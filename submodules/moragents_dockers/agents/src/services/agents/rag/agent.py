@@ -1,7 +1,8 @@
 import logging
 import os
+from typing import Any, Dict
 
-from fastapi import Request
+from fastapi import Request, UploadFile
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
@@ -20,7 +21,7 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 class RagAgent(AgentCore):
     """Agent for handling document Q&A using RAG."""
 
-    def __init__(self, config, llm, embeddings):
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any) -> None:
         super().__init__(config, llm, embeddings)
         self.prompt = ChatPromptTemplate.from_template(
             """
@@ -34,9 +35,9 @@ class RagAgent(AgentCore):
             """
         )
         self.max_size = 5 * 1024 * 1024
-        self.retriever = None
+        self.retriever: Any = None
 
-    async def handle_file_upload(self, file):
+    async def handle_file_upload(self, file: UploadFile) -> None:
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
         filename = secure_filename(file.filename)
@@ -60,7 +61,7 @@ class RagAgent(AgentCore):
         vector_store = FAISS.from_documents(split_documents, self.embeddings)
         self.retriever = vector_store.as_retriever(search_kwargs={"k": 7})
 
-    async def upload_file(self, request: Request):
+    async def upload_file(self, request: Request) -> AgentResponse:
         self.logger.info(f"Received upload request: {request}")
         file = request["file"]
         if file.filename == "":
@@ -99,6 +100,9 @@ class RagAgent(AgentCore):
             )
 
     async def _get_rag_response(self, prompt: str) -> str:
+        if self.retriever is None:
+            raise ValueError("Retriever not initialized. Please upload a file first.")
+
         retrieved_docs = self.retriever.invoke(prompt)
         formatted_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
         formatted_prompt = f"Question: {prompt}\n\nContext: {formatted_context}"
@@ -112,7 +116,9 @@ class RagAgent(AgentCore):
             {"role": "user", "content": formatted_prompt},
         ]
         result = self.llm.invoke(messages)
-        return result.content.strip()
+        if not hasattr(result, "content"):
+            raise ValueError("LLM response missing content attribute")
+        return str(result.content).strip()
 
     async def _execute_tool(self, func_name: str, args: dict) -> AgentResponse:
         """Not used in RAG agent but required by AgentCore."""

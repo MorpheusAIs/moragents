@@ -1,21 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
-  VStack,
-  Box,
   Flex,
   Text,
+  Box,
+  VStack,
+  HStack,
+  IconButton,
+  Button,
   Select,
+  Input,
+  FormControl,
+  FormLabel,
+  Checkbox,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Button,
-  useColorModeValue,
-  FormControl,
-  FormLabel,
-  Checkbox,
-  Container,
   useToast,
   Modal,
   ModalOverlay,
@@ -23,17 +24,15 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  HStack,
-  IconButton,
   Tabs,
   TabList,
   TabPanels,
   Tab,
   TabPanel,
-  Input,
 } from "@chakra-ui/react";
-import { DeleteIcon } from "@chakra-ui/icons";
-import { IconRobot } from "@tabler/icons-react";
+import { Trash2 } from "lucide-react";
+import { Bot } from "lucide-react";
+import styles from "./index.module.css";
 
 interface Workflow {
   id: string;
@@ -84,7 +83,6 @@ export const Workflows: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const toast = useToast();
-  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   const [config, setConfig] = useState({
     originToken: "USDC",
@@ -97,7 +95,7 @@ export const Workflows: React.FC = () => {
 
   const fetchWorkflows = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8888/workflows/list");
+      const response = await fetch("/api/workflows/list");
       const data = await response.json();
       setWorkflows(data.workflows || []);
     } catch (error) {
@@ -106,6 +104,8 @@ export const Workflows: React.FC = () => {
         title: "Error fetching workflows",
         status: "error",
         duration: 3000,
+        bg: "#080808",
+        color: "white",
       });
     }
   }, [toast]);
@@ -123,6 +123,8 @@ export const Workflows: React.FC = () => {
         description: "Origin and destination tokens must be different",
         status: "error",
         duration: 3000,
+        bg: "#080808",
+        color: "white",
       });
       return;
     }
@@ -145,7 +147,7 @@ export const Workflows: React.FC = () => {
         interval: FREQUENCIES[config.frequency as keyof typeof FREQUENCIES],
       };
 
-      const response = await fetch("http://localhost:8888/workflows/create", {
+      const response = await fetch("/api/workflows/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -158,6 +160,8 @@ export const Workflows: React.FC = () => {
           title: "Workflow created successfully",
           status: "success",
           duration: 3000,
+          bg: "#080808",
+          color: "white",
         });
         fetchWorkflows();
         setIsOpen(false);
@@ -170,13 +174,15 @@ export const Workflows: React.FC = () => {
         title: "Failed to create workflow",
         status: "error",
         duration: 3000,
+        bg: "#080808",
+        color: "white",
       });
     }
   };
 
   const handleDeleteWorkflow = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8888/workflows/${id}`, {
+      const response = await fetch(`/api/workflows/${id}`, {
         method: "DELETE",
       });
 
@@ -185,6 +191,8 @@ export const Workflows: React.FC = () => {
           title: "Workflow deleted successfully",
           status: "success",
           duration: 3000,
+          bg: "#080808",
+          color: "white",
         });
         fetchWorkflows();
       } else {
@@ -196,6 +204,8 @@ export const Workflows: React.FC = () => {
         title: "Failed to delete workflow",
         status: "error",
         duration: 3000,
+        bg: "#080808",
+        color: "white",
       });
     }
   };
@@ -207,37 +217,47 @@ export const Workflows: React.FC = () => {
           <Box
             key={workflow.id}
             p={4}
-            borderWidth="1px"
-            borderColor={borderColor}
-            borderRadius="md"
+            border="1px solid rgba(255, 255, 255, 0.1)"
+            borderRadius="8px"
+            bg="rgba(255, 255, 255, 0.02)"
+            _hover={{
+              bg: "rgba(255, 255, 255, 0.05)",
+            }}
           >
             <HStack justify="space-between">
               <VStack align="start" spacing={1}>
-                <Text color="white" fontWeight="semibold">
+                <Text color="white" fontWeight="500" fontSize="14px">
                   {workflow.name}
                 </Text>
-                <Text color="gray.400" fontSize="sm">
+                <Text color="rgba(255, 255, 255, 0.6)" fontSize="12px">
                   Status: {workflow.status}
                 </Text>
                 {workflow.next_run && (
-                  <Text color="gray.500" fontSize="xs">
+                  <Text color="rgba(255, 255, 255, 0.4)" fontSize="12px">
                     Next run: {new Date(workflow.next_run).toLocaleString()} UTC
                   </Text>
                 )}
               </VStack>
               <IconButton
                 aria-label="Delete workflow"
-                icon={<DeleteIcon />}
+                icon={<Trash2 size={16} />}
                 onClick={() => handleDeleteWorkflow(workflow.id)}
                 variant="ghost"
-                colorScheme="red"
                 size="sm"
+                color="white"
+                _hover={{
+                  bg: "rgba(255, 255, 255, 0.1)",
+                }}
               />
             </HStack>
           </Box>
         ))
       ) : (
-        <Text color="gray.500" textAlign="center">
+        <Text
+          color="rgba(255, 255, 255, 0.6)"
+          textAlign="center"
+          fontSize="14px"
+        >
           No workflows created yet
         </Text>
       )}
@@ -248,18 +268,15 @@ export const Workflows: React.FC = () => {
     <VStack spacing={4}>
       <HStack spacing={4} width="100%">
         <FormControl>
-          <FormLabel color="white">From (Origin)</FormLabel>
+          <FormLabel color="white" fontSize="14px" fontWeight="500">
+            From (Origin)
+          </FormLabel>
           <Select
             value={config.originToken}
             onChange={(e) =>
               setConfig({ ...config, originToken: e.target.value })
             }
-            color="white"
-            sx={{
-              "& > option": {
-                color: "black",
-              },
-            }}
+            className={styles.select}
           >
             {tokens
               .filter((t) => t.symbol !== config.destinationToken)
@@ -272,18 +289,15 @@ export const Workflows: React.FC = () => {
         </FormControl>
 
         <FormControl>
-          <FormLabel color="white">To (Destination)</FormLabel>
+          <FormLabel color="white" fontSize="14px" fontWeight="500">
+            To (Destination)
+          </FormLabel>
           <Select
             value={config.destinationToken}
             onChange={(e) =>
               setConfig({ ...config, destinationToken: e.target.value })
             }
-            color="white"
-            sx={{
-              "& > option": {
-                color: "black",
-              },
-            }}
+            className={styles.select}
           >
             {tokens
               .filter((t) => t.symbol !== config.originToken)
@@ -297,12 +311,13 @@ export const Workflows: React.FC = () => {
       </HStack>
 
       <FormControl>
-        <FormLabel color="white">Investment Step Size</FormLabel>
+        <FormLabel color="white" fontSize="14px" fontWeight="500">
+          Investment Step Size
+        </FormLabel>
         <Input
           type="number"
           step="any"
           min="0"
-          color="white"
           value={config.stepSize}
           onChange={(e) =>
             setConfig({
@@ -310,23 +325,21 @@ export const Workflows: React.FC = () => {
               stepSize: e.target.value,
             })
           }
+          className={styles.input}
         />
-        <Text fontSize="sm" color="gray.400" mt={1}>
+        <Text fontSize="12px" color="rgba(255, 255, 255, 0.6)" mt={1}>
           Amount to invest at each interval
         </Text>
       </FormControl>
 
       <FormControl>
-        <FormLabel color="white">Frequency</FormLabel>
+        <FormLabel color="white" fontSize="14px" fontWeight="500">
+          Frequency
+        </FormLabel>
         <Select
           value={config.frequency}
           onChange={(e) => setConfig({ ...config, frequency: e.target.value })}
-          color="white"
-          sx={{
-            "& > option": {
-              color: "black",
-            },
-          }}
+          className={styles.select}
         >
           {frequencies.map((freq) => (
             <option key={freq.value} value={freq.value}>
@@ -337,20 +350,23 @@ export const Workflows: React.FC = () => {
       </FormControl>
 
       <FormControl>
-        <FormLabel color="white">Price Threshold (Optional)</FormLabel>
+        <FormLabel color="white" fontSize="14px" fontWeight="500">
+          Price Threshold (Optional)
+        </FormLabel>
         <NumberInput
           value={config.priceThreshold}
           onChange={(_, valueAsNumber) =>
             setConfig({ ...config, priceThreshold: valueAsNumber.toString() })
           }
+          className={styles.numberInput}
         >
           <NumberInputField
             placeholder="Only buy below this price"
-            color="white"
+            className={styles.input}
           />
           <NumberInputStepper>
-            <NumberIncrementStepper color="white" />
-            <NumberDecrementStepper color="white" />
+            <NumberIncrementStepper className={styles.stepperButton} />
+            <NumberDecrementStepper className={styles.stepperButton} />
           </NumberInputStepper>
         </NumberInput>
       </FormControl>
@@ -363,25 +379,18 @@ export const Workflows: React.FC = () => {
             pauseOnVolatility: e.target.checked,
           })
         }
-        color="white"
-        sx={{
-          "[data-checked]": {
-            backgroundColor: "white !important",
-            borderColor: "white !important",
-          },
-          "& .chakra-checkbox__control": {
-            borderColor: "white",
-          },
-        }}
+        className={styles.checkbox}
       >
-        Pause strategy during high volatility
+        <Text color="white" fontSize="14px">
+          Pause strategy during high volatility
+        </Text>
       </Checkbox>
 
       <Button
         onClick={handleCreateWorkflow}
         width="100%"
         mt={6}
-        colorScheme="green"
+        className={styles.button}
       >
         Create Workflow
       </Button>
@@ -396,52 +405,93 @@ export const Workflows: React.FC = () => {
         gap={3}
         width="100%"
         onClick={() => setIsOpen(true)}
+        className={styles.menuButton}
       >
-        <IconRobot size={20} stroke={1.5} />
+        <Bot size={20} className={styles.icon} />
         <Text fontSize="14px" color="white">
           Workflows
         </Text>
       </Flex>
 
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size="xl">
-        <ModalOverlay />
-        <ModalContent bg="gray.900">
-          <ModalHeader color="white" textAlign="center">
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        motionPreset="none"
+      >
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+        <ModalContent
+          position="fixed"
+          left="16px"
+          top="70px"
+          margin={0}
+          width="388px"
+          maxHeight="calc(100vh - 86px)"
+          bg="#080808"
+          borderRadius="12px"
+          border="1px solid rgba(255, 255, 255, 0.1)"
+          boxShadow="0 8px 32px rgba(0, 0, 0, 0.4)"
+        >
+          <ModalHeader
+            color="white"
+            borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+            padding="16px"
+            fontSize="16px"
+            fontWeight="500"
+          >
             Workflows
           </ModalHeader>
-          <ModalCloseButton color="white" />
-          <ModalBody pb={6}>
-            <Container maxW="container.md">
-              <Tabs variant="enclosed" colorScheme="blue" isFitted>
-                <TabList mb={4}>
-                  <Tab
-                    color="white"
-                    _selected={{ color: "white", bg: "blue.500" }}
-                  >
-                    Active Workflows
-                  </Tab>
-                  <Tab
-                    color="white"
-                    _selected={{ color: "white", bg: "blue.500" }}
-                  >
-                    Create New
-                  </Tab>
-                </TabList>
-                <TabPanels>
-                  <TabPanel>
-                    <WorkflowsList />
-                  </TabPanel>
-                  <TabPanel>
-                    <CreateWorkflowForm />
-                  </TabPanel>
-                </TabPanels>
-              </Tabs>
-            </Container>
+          <ModalCloseButton
+            color="white"
+            _hover={{ bg: "rgba(255, 255, 255, 0.1)" }}
+          />
+
+          <ModalBody padding="16px">
+            <Tabs>
+              <TabList mb={4} gap={2} borderBottom="none">
+                <Tab
+                  color="white"
+                  bg="transparent"
+                  _selected={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                  }}
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  borderRadius="6px"
+                  fontSize="14px"
+                >
+                  Active Workflows
+                </Tab>
+                <Tab
+                  color="white"
+                  bg="transparent"
+                  _selected={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                  }}
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  borderRadius="6px"
+                  fontSize="14px"
+                >
+                  Create New
+                </Tab>
+              </TabList>
+
+              <TabPanels>
+                <TabPanel p={0}>
+                  <WorkflowsList />
+                </TabPanel>
+                <TabPanel p={0}>
+                  <CreateWorkflowForm />
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </ModalBody>
         </ModalContent>
       </Modal>
     </>
   );
 };
-
-export default Workflows;

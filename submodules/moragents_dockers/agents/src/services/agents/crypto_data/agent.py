@@ -4,7 +4,7 @@ from typing import Dict, Any
 from src.services.agents.crypto_data import tools
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.models.service.agent_core import AgentCore
-from langchain.schema import HumanMessage, SystemMessage
+from langchain.schema import SystemMessage
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ class CryptoDataAgent(AgentCore):
                         "Ask for clarification if a request is ambiguous."
                     )
                 ),
-                HumanMessage(content=request.prompt.content),
+                *request.messages_for_llm,
             ]
 
             result = self.tool_bound_llm.invoke(messages)

@@ -5,10 +5,10 @@ import { Chat } from "@/components/Chat";
 import {
   writeMessage,
   getMessagesHistory,
-  sendSwapStatus,
-  uploadFile,
   deleteConversation,
-} from "@/services/apiHooks";
+  addMessageToHistory,
+} from "@/services/chat_management/sessions";
+import { sendSwapStatus, uploadFile } from "@/services/apiHooks";
 import { getHttpClient, SWAP_STATUS } from "@/services/constants";
 import { ChatMessage } from "@/services/types";
 import { useEffect, useState } from "react";
@@ -22,56 +22,43 @@ const Home: NextPage = () => {
   const chainId = useChainId();
   const { address } = useAccount();
   const [showBackendError, setShowBackendError] = useState<boolean>(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  // Set sidebar open by default on desktop
   useEffect(() => {
     if (!isMobile) {
       setIsSidebarOpen(true);
     }
   }, [isMobile]);
 
+  // Load messages whenever the conversation ID changes
   useEffect(() => {
-    getMessagesHistory(getHttpClient(), currentConversationId)
-      .then((messages: ChatMessage[]) => {
-        setChatHistory([...messages]);
-      })
-      .catch((e) => {
-        console.error(`Failed to get initial messages history. Error: ${e}`);
-        setShowBackendError(true);
-      });
+    const messages = getMessagesHistory(currentConversationId);
+    setChatHistory(messages);
   }, [currentConversationId]);
 
   const handleSubmitMessage = async (message: string, file: File | null) => {
-    setChatHistory([
-      ...chatHistory,
-      {
-        role: "user",
-        content: message,
-      } as ChatMessage,
-    ]);
-
     try {
       if (!file) {
+        // Handle text message
         const newHistory = await writeMessage(
-          chatHistory,
           message,
           getHttpClient(),
           chainId,
           address || "",
           currentConversationId
         );
-        setChatHistory([...newHistory]);
+        setChatHistory(newHistory);
       } else {
-        // File upload
-        await uploadFile(getHttpClient(), file);
-        const updatedHistory = await getMessagesHistory(
-          getHttpClient(),
-          currentConversationId
-        );
-        setChatHistory([...updatedHistory]);
+        // Handle file upload
+        const response = await uploadFile(getHttpClient(), file);
+
+        // Add file upload message to local storage
+        if (response.data.message) {
+          addMessageToHistory(response.data.message, currentConversationId);
+          setChatHistory(getMessagesHistory(currentConversationId));
+        }
       }
     } catch (e) {
       console.error(`Failed to send message. Error: ${e}`);
@@ -83,7 +70,7 @@ const Home: NextPage = () => {
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      await deleteConversation(getHttpClient(), conversationId);
+      deleteConversation(conversationId);
       if (conversationId === currentConversationId) {
         setCurrentConversationId("default");
       }
@@ -97,7 +84,7 @@ const Home: NextPage = () => {
     if (!address) return;
 
     try {
-      await sendSwapStatus(
+      const response = await sendSwapStatus(
         getHttpClient(),
         chainId,
         address,
@@ -105,17 +92,16 @@ const Home: NextPage = () => {
         "",
         fromAction
       );
-      const updatedMessages = await getMessagesHistory(getHttpClient());
-      setChatHistory([...updatedMessages]);
+
+      // Add cancel message to local storage
+      if (response) {
+        addMessageToHistory(response, currentConversationId);
+        setChatHistory(getMessagesHistory(currentConversationId));
+      }
     } catch (e) {
       console.error(`Failed to cancel swap or update messages. Error: ${e}`);
       setShowBackendError(true);
     }
-  };
-
-  const handleBackendError = () => {
-    return;
-    setShowBackendError(true);
   };
 
   return (
@@ -148,10 +134,7 @@ const Home: NextPage = () => {
             onToggleSidebar={setIsSidebarOpen}
             currentConversationId={currentConversationId}
             setCurrentConversationId={setCurrentConversationId}
-            onConversationSelect={(id) => {
-              setCurrentConversationId(id);
-              if (isMobile) setIsSidebarOpen(false);
-            }}
+            onConversationSelect={setCurrentConversationId}
             onDeleteConversation={handleDeleteConversation}
           />
         </Box>
@@ -159,21 +142,19 @@ const Home: NextPage = () => {
         <Box
           flex="1"
           overflow="hidden"
-          ml={isMobile ? 0 : isSidebarOpen ? "240px" : 0} // Adjust based on your sidebar width
+          ml={isMobile ? 0 : isSidebarOpen ? "240px" : 0}
           transition="margin 0.3s ease"
         >
           <Chat
             messages={chatHistory}
             onCancelSwap={handleCancelSwap}
             onSubmitMessage={handleSubmitMessage}
-            onBackendError={handleBackendError}
+            onBackendError={() => setShowBackendError(true)}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />
         </Box>
       </Flex>
-
-      {/* <ErrorBackendModal show={showBackendError} /> */}
     </Box>
   );
 };

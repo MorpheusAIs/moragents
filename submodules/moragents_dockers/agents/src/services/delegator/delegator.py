@@ -1,11 +1,11 @@
 import logging
 import json
 import importlib
-from typing import Dict, List, Optional, Tuple
-from langchain.schema import HumanMessage, SystemMessage
+from typing import Dict, List, Optional, Tuple, Any
+from langchain.schema import BaseMessage, SystemMessage
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
-from src.stores import chat_manager_instance, agent_manager_instance
+from src.stores import agent_manager_instance
 from src.models.service.chat_models import ChatRequest, AgentResponse, ResponseType
 from src.config import load_agent_config, LLM, EMBEDDINGS
 
@@ -19,14 +19,11 @@ class RankAgentsOutput(BaseModel):
 
 
 class Delegator:
-    def __init__(self, llm, embeddings):
+    def __init__(self, llm: Any, embeddings: Any):
         self.llm = llm
-        self.attempted_agents = set()
-        self.selected_agents_for_request = []
+        self.attempted_agents: set[str] = set()
+        self.selected_agents_for_request: list[str] = []
         self.parser = PydanticOutputParser(pydantic_object=RankAgentsOutput)
-
-        agent_manager_instance.load_all_agents(llm, embeddings)
-        logger.info(f"Delegator initialized with {len(agent_manager_instance.agents)} agents")
 
     def _build_system_prompt(self, available_agents: List[Dict]) -> str:
         """Build the system prompt for agent selection"""
@@ -59,7 +56,7 @@ Your job:
             agent_class = getattr(module, agent_config["class_name"])
             agent = agent_class(agent_config, LLM, EMBEDDINGS)
 
-            result = await agent.chat(chat_request)
+            result: AgentResponse = await agent.chat(chat_request)
             if result.response_type == ResponseType.ERROR:
                 logger.warning(f"Agent {agent_name} returned error response")
                 return None
@@ -70,7 +67,7 @@ Your job:
             logger.error(f"Error using agent {agent_name}: {str(e)}")
             return None
 
-    def get_delegator_response(self, prompt: Dict, max_retries: int = 3) -> List[str]:
+    def get_delegator_response(self, prompt: ChatRequest, max_retries: int = 3) -> List[str]:
         """Get ranked list of appropriate agents with retry logic"""
         available_agents = agent_manager_instance.get_available_agents()
         logger.info(f"Available agents: {available_agents}")
@@ -81,7 +78,10 @@ Your job:
             raise ValueError("No remaining agents available")
 
         system_prompt = self._build_system_prompt(available_agents)
-        messages = [SystemMessage(content=system_prompt), HumanMessage(content=prompt["content"])]
+
+        # Build message history from chat history
+        messages: List[BaseMessage] = [SystemMessage(content=system_prompt)]
+        messages.extend(prompt.messages_for_llm)
 
         for attempt in range(max_retries):
             try:
@@ -114,7 +114,7 @@ Your job:
     async def delegate_chat(self, chat_request: ChatRequest) -> Tuple[Optional[str], AgentResponse]:
         """Delegate chat to ranked agents with fallback"""
         try:
-            ranked_agents = self.get_delegator_response(chat_request.prompt.dict())
+            ranked_agents = self.get_delegator_response(chat_request)
 
             for agent_name in ranked_agents:
                 self.attempted_agents.add(agent_name)

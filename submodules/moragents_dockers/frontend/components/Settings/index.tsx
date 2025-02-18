@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React from "react";
 import { Flex, Text } from "@chakra-ui/react";
-import { IconSettings } from "@tabler/icons-react";
+import { Settings } from "lucide-react";
 import {
   Modal,
   ModalOverlay,
@@ -13,14 +13,13 @@ import {
   TabPanels,
   Tab,
   TabPanel,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { GeneralSettings } from "./GeneralSettings";
 import { AgentSelection } from "./AgentSelection";
+import styles from "./index.module.css";
 
 export const SettingsButton: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const bgColor = useColorModeValue("white", "gray.800");
+  const [isOpen, setIsOpen] = React.useState(false);
 
   return (
     <>
@@ -30,8 +29,9 @@ export const SettingsButton: React.FC = () => {
         gap={3}
         width="100%"
         onClick={() => setIsOpen(true)}
+        className={styles.button}
       >
-        <IconSettings size={20} stroke={1.5} />
+        <Settings className={styles.icon} size={20} />
         <Text fontSize="14px" color="white">
           Agent Configurations
         </Text>
@@ -40,25 +40,75 @@ export const SettingsButton: React.FC = () => {
       <Modal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        size="xl"
-        scrollBehavior="inside"
-        isCentered
+        motionPreset="none"
       >
-        <ModalOverlay />
-        <ModalContent bg={bgColor}>
-          <ModalHeader>Settings</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Tabs variant="enclosed" isFitted>
-              <TabList mb={4}>
-                <Tab>General</Tab>
-                <Tab>Agents</Tab>
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+        <ModalContent
+          position="fixed"
+          left="16px"
+          top="70px"
+          margin={0}
+          width="388px"
+          maxHeight="calc(100vh - 86px)"
+          bg="#080808"
+          borderRadius="12px"
+          border="1px solid rgba(255, 255, 255, 0.1)"
+          boxShadow="0 8px 32px rgba(0, 0, 0, 0.4)"
+          color="white"
+        >
+          <ModalHeader
+            borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+            padding="16px"
+            fontSize="16px"
+            fontWeight="500"
+          >
+            Settings
+          </ModalHeader>
+          <ModalCloseButton
+            color="white"
+            _hover={{ bg: "rgba(255, 255, 255, 0.1)" }}
+          />
+
+          <ModalBody padding="16px">
+            <Tabs>
+              <TabList mb={4} gap={2} borderBottom="none">
+                <Tab
+                  color="white"
+                  bg="transparent"
+                  _selected={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                  }}
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  borderRadius="6px"
+                  fontSize="14px"
+                >
+                  General
+                </Tab>
+                <Tab
+                  color="white"
+                  bg="transparent"
+                  _selected={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                  }}
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  borderRadius="6px"
+                  fontSize="14px"
+                >
+                  Agents
+                </Tab>
               </TabList>
+
               <TabPanels>
-                <TabPanel>
+                <TabPanel p={0}>
                   <GeneralSettings onSave={() => setIsOpen(false)} />
                 </TabPanel>
-                <TabPanel>
+                <TabPanel p={0}>
                   <AgentSelection onSave={() => setIsOpen(false)} />
                 </TabPanel>
               </TabPanels>

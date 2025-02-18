@@ -21,9 +21,16 @@ import { Workflows } from "@/components/Workflows";
 import { ApiCredentialsButton } from "@/components/Credentials/Button";
 import { CDPWalletsButton } from "@/components/CDPWallets/Button";
 import { SettingsButton } from "@/components/Settings";
+import { SyncButton } from "@/components/Sync/Button";
 import styles from "./ProfileMenu.module.css";
 
-const MenuSection = ({ title, children }) => (
+const MenuSection = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
   <Box mb={4}>
     <Text
       color="gray.400"
@@ -38,7 +45,15 @@ const MenuSection = ({ title, children }) => (
   </Box>
 );
 
-const ExternalLinkMenuItem = ({ icon: Icon, title, href }) => (
+const ExternalLinkMenuItem = ({
+  icon: Icon,
+  title,
+  href,
+}: {
+  icon: React.ElementType;
+  title: string;
+  href: string;
+}) => (
   <MenuItem
     className={styles.externalMenuItem}
     onClick={() => window.open(href, "_blank", "noopener,noreferrer")}
@@ -110,6 +125,9 @@ export const ProfileMenu = () => {
           </MenuItem>
           <MenuItem className={styles.menuItem}>
             <ApiCredentialsButton />
+          </MenuItem>
+          <MenuItem className={styles.menuItem}>
+            <SyncButton />
           </MenuItem>
           <MenuItem className={styles.menuItem}>
             <CDPWalletsButton />

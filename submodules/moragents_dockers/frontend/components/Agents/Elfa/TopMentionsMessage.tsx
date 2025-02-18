@@ -57,7 +57,9 @@ export const ElfaTopMentionsMessage: React.FC<ElfaTopMentionsMessageProps> = ({
     <div className={styles.container}>
       <div className={styles.header}>
         <span className={styles.title}>Top Social Mentions</span>
-        <span className={styles.total}>Total: {total}</span>
+        <span className={styles.total}>
+          Total: {total} mentions over the last 1D
+        </span>
       </div>
 
       {displayMentions.map((mention: Mention) => (

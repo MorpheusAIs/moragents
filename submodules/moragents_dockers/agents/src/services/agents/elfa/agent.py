@@ -30,7 +30,7 @@ class ElfaAgent(AgentCore):
                         "related social media activity."
                     )
                 ),
-                HumanMessage(content=request.prompt.content),
+                *request.messages_for_llm,
             ]
 
             result = self.tool_bound_llm.invoke(messages)

@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.stores import agent_manager_instance, chat_manager_instance
 from src.services.delegator.delegator import Delegator
@@ -11,7 +12,7 @@ class DelegationController:
     def __init__(self, delegator: Delegator):
         self.delegator = delegator
 
-    async def handle_chat(self, chat_request: ChatRequest):
+    async def handle_chat(self, chat_request: ChatRequest) -> JSONResponse:
         """Handle chat requests and delegate to appropriate agent"""
         logger.info(f"Received chat request for conversation {chat_request.conversation_id}")
 

@@ -1,13 +1,11 @@
 import logging
-from typing import Optional
-
+from typing import Dict, Any, Optional
 import tweepy
 from langchain.schema import HumanMessage, SystemMessage
-
-from src.services.agents.tweet_sizzler.config import Config
 from src.models.service.chat_models import ChatRequest, AgentResponse
 from src.models.service.agent_core import AgentCore
-from src.stores import key_manager_instance
+from src.stores import key_manager_instance, chat_manager_instance
+from .config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +13,10 @@ logger = logging.getLogger(__name__)
 class TweetSizzlerAgent(AgentCore):
     """Agent for generating and posting tweets."""
 
-    def __init__(self, config, llm, embeddings):
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any):
         super().__init__(config, llm, embeddings)
-        self.last_prompt_content = None
+        self.tools_provided = Config.tools
+        self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
 
     async def _process_request(self, request: ChatRequest) -> AgentResponse:
         """Process the validated chat request for tweet generation and posting."""
@@ -27,63 +26,72 @@ class TweetSizzlerAgent(AgentCore):
                 HumanMessage(content=request.prompt.content),
             ]
 
-            # Extract action from prompt content
-            action = "generate"  # Default action
-            if isinstance(request.prompt.content, dict):
-                action = request.prompt.content.get("action", "generate")
-                content = request.prompt.content.get("content", request.prompt.content)
-            else:
-                content = request.prompt.content
+            # Add chat history if available
+            chat_history = chat_manager_instance.get_chat_history(request.conversation_id)
+            if chat_history:
+                messages.append(HumanMessage(content=f"Previous conversation context: {chat_history}"))
 
-            if action == "generate":
-                tweet = self.generate_tweet(content)
-                return AgentResponse.success(content=tweet)
-            elif action == "post":
+            result = self.tool_bound_llm.invoke(messages)
+            return await self._handle_llm_response(result)
+
+        except Exception as e:
+            logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            return AgentResponse.error(error_message=str(e))
+
+    async def _execute_tool(self, func_name: str, args: Dict[str, Any]) -> AgentResponse:
+        """Execute the appropriate tool based on function name."""
+        try:
+            if func_name == "generate_tweet":
+                content = args.get("content")
+                if not content:
+                    return AgentResponse.error(error_message="Please provide content for tweet generation")
+
+                result = await self._generate_tweet(content)
+                return AgentResponse.success(content=result)
+
+            elif func_name == "post_tweet":
                 if not key_manager_instance.has_x_keys():
                     return AgentResponse.error(error_message=Config.ERROR_MISSING_API_CREDENTIALS)
 
-                result = await self.post_tweet(content)
+                tweet_content = args.get("tweet_content")
+                if not tweet_content:
+                    return AgentResponse.error(error_message="Please provide content for posting the tweet")
+
+                result = await self._post_tweet(tweet_content)
                 if "error" in result:
                     return AgentResponse.error(error_message=result["error"])
 
                 return AgentResponse.success(
                     content=f"Tweet posted successfully: {result['tweet']}", metadata={"tweet_id": result["tweet_id"]}
                 )
+
             else:
-                return AgentResponse.error(error_message=Config.ERROR_INVALID_ACTION)
+                return AgentResponse.error(error_message=f"Unknown tool function: {func_name}")
 
         except Exception as e:
-            self.logger.error(f"Error processing request: {str(e)}", exc_info=True)
+            logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
             return AgentResponse.error(error_message=str(e))
 
-    def generate_tweet(self, prompt_content: Optional[str] = None) -> str:
-        """Generate tweet content based on prompt."""
-        if not prompt_content:
-            if not self.last_prompt_content:
-                raise ValueError("Tweet generation failed. Please provide a prompt.")
-            prompt_content = self.last_prompt_content
-
-        self.last_prompt_content = prompt_content
-        self.logger.info(f"Generating tweet for prompt_content: {prompt_content}")
-
+    async def _generate_tweet(self, content: str) -> str:
+        """Generate tweet content based on prompt and context."""
         result = self.llm.invoke(
             [
                 SystemMessage(content=Config.TWEET_GENERATION_PROMPT),
-                HumanMessage(content=f"Generate a tweet for: {prompt_content}"),
+                HumanMessage(content=f"Generate a tweet for: {content}"),
             ]
         )
 
         tweet = result.content.strip()
-        tweet = " ".join(tweet.split())
+        tweet = " ".join(tweet.split())  # Normalize whitespace
 
         # Remove any dictionary-like formatting
         if tweet.startswith("{") and tweet.endswith("}"):
             tweet = tweet.strip("{}").split(":", 1)[-1].strip().strip('"')
 
-        self.logger.info(f"Tweet generated successfully: {tweet}")
+        logger.info(f"Tweet generated successfully: {tweet}")
         return tweet
 
-    async def post_tweet(self, tweet_content: str) -> dict:
+    async def _post_tweet(self, tweet_content: str) -> Dict[str, Any]:
         """Post tweet using stored X API credentials."""
         try:
             x_keys = key_manager_instance.get_x_keys()
@@ -96,13 +104,9 @@ class TweetSizzlerAgent(AgentCore):
             )
 
             response = client.create_tweet(text=tweet_content)
-            self.logger.info(f"Tweet posted successfully: {response}")
+            logger.info(f"Tweet posted successfully: {response}")
 
             return {"tweet": response.data["text"], "tweet_id": response.data["id"]}
         except Exception as e:
-            self.logger.error(f"Error posting tweet: {str(e)}")
+            logger.error(f"Error posting tweet: {str(e)}")
             return {"error": f"Failed to post tweet: {str(e)}"}
-
-    async def _execute_tool(self, func_name: str, args: dict) -> AgentResponse:
-        """Not implemented as this agent doesn't use tools."""
-        return AgentResponse.error(error_message="This agent does not support tool execution")

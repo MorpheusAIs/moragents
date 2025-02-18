@@ -1,5 +1,6 @@
 import logging
-import re
+from typing import Any, Dict, List
+
 import pyshorteners
 
 from src.services.agents.news_agent.config import Config
@@ -14,33 +15,11 @@ logger = logging.getLogger(__name__)
 class NewsAgent(AgentCore):
     """Agent for fetching and analyzing cryptocurrency news."""
 
-    def __init__(self, config, llm, embeddings):
+    def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any) -> None:
         super().__init__(config, llm, embeddings)
-        self.tools_provided = self.get_tools()
+        self.tools_provided = Config.tools
         self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
         self.url_shortener = pyshorteners.Shortener()
-
-    def get_tools(self):
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": "fetch_crypto_news",
-                    "description": "Fetch and analyze cryptocurrency news for potential price impacts",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "coins": {
-                                "type": "array",
-                                "items": {"type": "string"},
-                                "description": "List of cryptocurrency symbols to fetch news for",
-                            }
-                        },
-                        "required": ["coins"],
-                    },
-                },
-            }
-        ]
 
     async def _process_request(self, request: ChatRequest) -> AgentResponse:
         """Process the validated chat request for news-related queries."""
@@ -99,7 +78,7 @@ class NewsAgent(AgentCore):
             logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
             return AgentResponse.needs_info(content="I encountered an issue fetching the news. Could you try again?")
 
-    def _check_relevance_and_summarize(self, title, content, coin):
+    def _check_relevance_and_summarize(self, title: str, content: str, coin: str) -> str:
         """Check if news is relevant and generate summary."""
         logger.info(f"Checking relevance for {coin}: {title}")
         prompt = Config.RELEVANCE_PROMPT.format(coin=coin, title=title, content=content)
@@ -108,9 +87,11 @@ class NewsAgent(AgentCore):
             max_tokens=Config.LLM_MAX_TOKENS,
             temperature=Config.LLM_TEMPERATURE,
         )
+        if not isinstance(result.content, str):
+            return str(result.content).strip()
         return result.content.strip()
 
-    def _process_rss_feed(self, feed_url, coin):
+    def _process_rss_feed(self, feed_url: str, coin: str) -> List[Dict[str, str]]:
         """Process RSS feed and filter relevant articles."""
         logger.info(f"Processing RSS feed for {coin}: {feed_url}")
         feed = fetch_rss_feed(feed_url)
@@ -131,7 +112,7 @@ class NewsAgent(AgentCore):
         logger.info(f"Found {len(results)} relevant articles for {coin}")
         return results
 
-    def _fetch_crypto_news(self, coins):
+    def _fetch_crypto_news(self, coins: List[str]) -> List[Dict[str, str]]:
         """Fetch and process news for specified coins."""
         logger.info(f"Fetching news for coins: {coins}")
         all_news = []

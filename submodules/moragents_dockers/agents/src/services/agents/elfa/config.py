@@ -18,7 +18,6 @@ class Config:
         human_readable_name="Elfa Social Analyst",
         command="elfa",
         upload_required=False,
-        required_env_vars=["ELFA_API_KEY"],  # Add API key requirement
     )
 
     # *************

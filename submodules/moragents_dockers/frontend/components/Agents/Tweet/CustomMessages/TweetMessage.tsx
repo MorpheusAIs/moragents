@@ -130,7 +130,7 @@ export const Tweet: FC<TweetProps> = ({ initialContent }) => {
                 charactersLeft < 0 || !tweetContent || tweetContent.length === 0
               }
             >
-              Tweet
+              Post on X
             </Button>
           </Flex>
         </Flex>

@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -28,9 +27,9 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-  useDisclosure,
 } from "@chakra-ui/react";
-import { CopyIcon, DeleteIcon, DownloadIcon, StarIcon } from "@chakra-ui/icons";
+import { Copy, Download, Star, Trash2 } from "lucide-react";
+import styles from "./CDPWallets.module.css";
 
 const NETWORKS = [
   "base-mainnet",
@@ -63,19 +62,15 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
   const [walletFile, setWalletFile] = useState<File | null>(null);
   const [walletToDelete, setWalletToDelete] = useState("");
   const [confirmWalletId, setConfirmWalletId] = useState("");
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const toast = useToast();
-  const {
-    isOpen: isDeleteOpen,
-    onOpen: onDeleteOpen,
-    onClose: onDeleteClose,
-  } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const fetchWallets = useCallback(async () => {
     try {
       const [walletsResponse, activeWalletResponse] = await Promise.all([
-        fetch("http://localhost:8888/wallets/list"),
-        fetch("http://localhost:8888/wallets/active"),
+        fetch("/api/wallets/list"),
+        fetch("/api/wallets/active"),
       ]);
 
       const walletsData = await walletsResponse.json();
@@ -85,13 +80,8 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
       setActiveWallet(activeData.active_wallet_id);
     } catch (error) {
       console.error("Failed to fetch wallets:", error);
-      toast({
-        title: "Error fetching wallets",
-        status: "error",
-        duration: 3000,
-      });
     }
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -102,15 +92,16 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
   const handleCopyAddress = (address: string) => {
     navigator.clipboard.writeText(address);
     toast({
-      title: "Address copied to clipboard",
+      title: "Address copied",
       status: "success",
       duration: 2000,
+      position: "top-right",
     });
   };
 
   const handleSetActiveWallet = async (walletId: string) => {
     try {
-      const response = await fetch("http://localhost:8888/wallets/active", {
+      const response = await fetch("/api/wallets/active", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wallet_id: walletId }),
@@ -119,20 +110,14 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
       if (response.ok) {
         setActiveWallet(walletId);
         toast({
-          title: "Active wallet set successfully",
+          title: "Active wallet set",
           status: "success",
-          duration: 3000,
+          duration: 2000,
+          position: "top-right",
         });
-      } else {
-        throw new Error("Failed to set active wallet");
       }
     } catch (error) {
       console.error("Error setting active wallet:", error);
-      toast({
-        title: "Failed to set active wallet",
-        status: "error",
-        duration: 3000,
-      });
     }
   };
 
@@ -141,13 +126,14 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
       toast({
         title: "Please enter a wallet name",
         status: "warning",
-        duration: 3000,
+        duration: 2000,
+        position: "top-right",
       });
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:8888/wallets/create", {
+      const response = await fetch("/api/wallets/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -159,22 +145,16 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
 
       if (response.ok) {
         toast({
-          title: "Wallet created successfully",
+          title: "Wallet created",
           status: "success",
-          duration: 3000,
+          duration: 2000,
+          position: "top-right",
         });
         setNewWalletName("");
         fetchWallets();
-      } else {
-        throw new Error("Failed to create wallet");
       }
     } catch (error) {
       console.error("Error creating wallet:", error);
-      toast({
-        title: "Failed to create wallet",
-        status: "error",
-        duration: 3000,
-      });
     }
   };
 
@@ -183,7 +163,8 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
       toast({
         title: "Please select a wallet file",
         status: "warning",
-        duration: 3000,
+        duration: 2000,
+        position: "top-right",
       });
       return;
     }
@@ -192,7 +173,7 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
       const fileContent = await walletFile.text();
       const walletData = JSON.parse(fileContent);
 
-      const response = await fetch("http://localhost:8888/wallets/restore", {
+      const response = await fetch("/api/wallets/restore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -204,31 +185,22 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
 
       if (response.ok) {
         toast({
-          title: "Wallet restored successfully",
+          title: "Wallet restored",
           status: "success",
-          duration: 3000,
+          duration: 2000,
+          position: "top-right",
         });
         setWalletFile(null);
         fetchWallets();
-      } else {
-        throw new Error("Failed to restore wallet");
       }
     } catch (error) {
       console.error("Error restoring wallet:", error);
-      toast({
-        title: "Failed to restore wallet",
-        status: "error",
-        duration: 3000,
-      });
     }
   };
 
   const handleDownloadWallet = async (walletId: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:8888/wallets/export/${walletId}`
-      );
-
+      const response = await fetch(`/api/wallets/export/${walletId}`);
       if (response.ok) {
         const data = await response.json();
         const blob = new Blob([JSON.stringify(data.data, null, 2)], {
@@ -244,161 +216,214 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
         window.URL.revokeObjectURL(url);
 
         toast({
-          title: "Wallet exported successfully",
+          title: "Wallet exported",
           status: "success",
-          duration: 3000,
+          duration: 2000,
+          position: "top-right",
         });
-      } else {
-        throw new Error("Failed to export wallet");
       }
     } catch (error) {
       console.error("Error exporting wallet:", error);
-      toast({
-        title: "Failed to export wallet",
-        status: "error",
-        duration: 3000,
-      });
     }
   };
 
   const handleDeleteWallet = async () => {
     if (confirmWalletId !== walletToDelete) {
       toast({
-        title: "Wallet ID does not match",
+        title: "Wallet ID doesn't match",
         status: "error",
-        duration: 3000,
+        duration: 2000,
+        position: "top-right",
       });
       return;
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8888/wallets/${walletToDelete}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const response = await fetch(`/api/wallets/${walletToDelete}`, {
+        method: "DELETE",
+      });
 
       if (response.ok) {
         toast({
-          title: "Wallet deleted successfully",
+          title: "Wallet deleted",
           status: "success",
-          duration: 3000,
+          duration: 2000,
+          position: "top-right",
         });
-        onDeleteClose();
+        setIsDeleteOpen(false);
         setConfirmWalletId("");
         setWalletToDelete("");
         fetchWallets();
-      } else {
-        throw new Error("Failed to delete wallet");
       }
     } catch (error) {
       console.error("Error deleting wallet:", error);
-      toast({
-        title: "Failed to delete wallet",
-        status: "error",
-        duration: 3000,
-      });
     }
   };
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
-        <ModalOverlay />
-        <ModalContent bg="#1f1f1f" color="white">
-          <ModalHeader>CDP Wallet Management</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <Tabs isFitted variant="enclosed">
-              <TabList mb="1em">
-                <Tab>Wallets</Tab>
-                <Tab>Create New</Tab>
-                <Tab>Restore</Tab>
+      <Modal isOpen={isOpen} onClose={onClose} motionPreset="none">
+        <ModalOverlay bg="rgba(0, 0, 0, 0.8)" />
+        <ModalContent
+          position="fixed"
+          left="16px"
+          top="70px"
+          margin={0}
+          width="388px"
+          maxHeight="calc(100vh - 86px)"
+          bg="#080808"
+          borderRadius="12px"
+          border="1px solid rgba(255, 255, 255, 0.1)"
+          boxShadow="0 8px 32px rgba(0, 0, 0, 0.4)"
+        >
+          <ModalHeader
+            borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+            padding="16px"
+            color="white"
+            fontSize="16px"
+            fontWeight="500"
+          >
+            CDP Wallet Management
+          </ModalHeader>
+
+          <ModalCloseButton
+            color="white"
+            _hover={{ bg: "rgba(255, 255, 255, 0.1)" }}
+          />
+
+          <ModalBody padding="16px">
+            <Tabs>
+              <TabList mb={4} gap={2} borderBottom="none">
+                <Tab
+                  color="white"
+                  bg="transparent"
+                  _selected={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                  }}
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  borderRadius="6px"
+                  fontSize="14px"
+                >
+                  Wallets
+                </Tab>
+                <Tab
+                  color="white"
+                  bg="transparent"
+                  _selected={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                  }}
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  borderRadius="6px"
+                  fontSize="14px"
+                >
+                  Create
+                </Tab>
+                <Tab
+                  color="white"
+                  bg="transparent"
+                  _selected={{
+                    bg: "rgba(255, 255, 255, 0.1)",
+                    color: "white",
+                  }}
+                  _hover={{
+                    bg: "rgba(255, 255, 255, 0.05)",
+                  }}
+                  borderRadius="6px"
+                  fontSize="14px"
+                >
+                  Restore
+                </Tab>
               </TabList>
+
               <TabPanels>
-                <TabPanel>
-                  <VStack spacing={4} align="stretch">
+                <TabPanel p={0}>
+                  <VStack spacing={3} align="stretch">
                     {wallets.map((wallet) => (
-                      <Box
-                        key={wallet.wallet_id}
-                        p={4}
-                        borderRadius="md"
-                        bg="#2d2d2d"
-                      >
-                        <HStack justify="space-between">
-                          <VStack align="start" spacing={1}>
-                            <Text fontWeight="bold">{wallet.wallet_id}</Text>
-                            <Text fontSize="sm" color="gray.400">
-                              {wallet.network_id}
-                            </Text>
-                            <Text fontSize="xs" color="gray.500">
-                              {wallet.address}
-                            </Text>
-                          </VStack>
-                          <HStack>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleCopyAddress(wallet.address)}
-                            >
-                              <CopyIcon />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              colorScheme={
-                                activeWallet === wallet.wallet_id
-                                  ? "yellow"
-                                  : "gray"
-                              }
-                              onClick={() =>
-                                handleSetActiveWallet(wallet.wallet_id)
-                              }
-                            >
-                              <StarIcon />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() =>
-                                handleDownloadWallet(wallet.wallet_id)
-                              }
-                            >
-                              <DownloadIcon />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              colorScheme="red"
-                              onClick={() => {
-                                setWalletToDelete(wallet.wallet_id);
-                                onDeleteOpen();
-                              }}
-                            >
-                              <DeleteIcon />
-                            </Button>
-                          </HStack>
+                      <Box key={wallet.wallet_id} className={styles.walletItem}>
+                        <VStack align="start" spacing={1}>
+                          <Text className={styles.walletName}>
+                            {wallet.wallet_id}
+                          </Text>
+                          <Text className={styles.networkId}>
+                            {wallet.network_id}
+                          </Text>
+                          <Text className={styles.address}>
+                            {wallet.address}
+                          </Text>
+                        </VStack>
+                        <HStack className={styles.actions}>
+                          <Button
+                            onClick={() => handleCopyAddress(wallet.address)}
+                            className={`${styles.actionButton} ${styles.copyButton}`}
+                          >
+                            <Copy size={16} />
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              handleSetActiveWallet(wallet.wallet_id)
+                            }
+                            className={`${styles.actionButton} ${
+                              styles.starButton
+                            } ${
+                              activeWallet === wallet.wallet_id
+                                ? styles.active
+                                : ""
+                            }`}
+                          >
+                            <Star size={16} />
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              handleDownloadWallet(wallet.wallet_id)
+                            }
+                            className={`${styles.actionButton} ${styles.downloadButton}`}
+                          >
+                            <Download size={16} />
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setWalletToDelete(wallet.wallet_id);
+                              setIsDeleteOpen(true);
+                            }}
+                            className={`${styles.actionButton} ${styles.deleteButton}`}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
                         </HStack>
                       </Box>
                     ))}
+                    {wallets.length === 0 && (
+                      <Text className={styles.emptyState}>
+                        No wallets created yet
+                      </Text>
+                    )}
                   </VStack>
                 </TabPanel>
-                <TabPanel>
+                <TabPanel p={0}>
                   <VStack spacing={4}>
                     <FormControl>
-                      <FormLabel>Wallet Name</FormLabel>
+                      <FormLabel className={styles.label}>
+                        Wallet Name
+                      </FormLabel>
                       <Input
-                        placeholder="Enter wallet name"
                         value={newWalletName}
                         onChange={(e) => setNewWalletName(e.target.value)}
+                        placeholder="Enter wallet name"
+                        className={styles.input}
                       />
                     </FormControl>
                     <FormControl>
-                      <FormLabel>Network</FormLabel>
+                      <FormLabel className={styles.label}>Network</FormLabel>
                       <Select
                         value={selectedNetwork}
                         onChange={(e) => setSelectedNetwork(e.target.value)}
+                        className={styles.select}
                       >
                         {NETWORKS.map((network) => (
                           <option key={network} value={network}>
@@ -408,24 +433,23 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
                       </Select>
                     </FormControl>
                     <Button
-                      colorScheme="blue"
-                      width="full"
                       onClick={handleCreateWallet}
+                      className={styles.submitButton}
                     >
                       Create Wallet
                     </Button>
                   </VStack>
                 </TabPanel>
-                <TabPanel>
+                <TabPanel p={0}>
                   <VStack spacing={4}>
                     <FormControl>
-                      <FormLabel>Upload Wallet File</FormLabel>
+                      <FormLabel className={styles.label}>
+                        Upload Wallet File
+                      </FormLabel>
                       <Button
                         as="label"
                         htmlFor="file-upload"
-                        variant="outline"
-                        width="full"
-                        cursor="pointer"
+                        className={styles.fileUploadButton}
                       >
                         {walletFile ? walletFile.name : "Choose wallet file"}
                         <input
@@ -442,9 +466,8 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
                       </Button>
                     </FormControl>
                     <Button
-                      colorScheme="blue"
-                      width="full"
                       onClick={handleRestoreWallet}
+                      className={styles.submitButton}
                     >
                       Restore Wallet
                     </Button>
@@ -460,19 +483,19 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
         isOpen={isDeleteOpen}
         leastDestructiveRef={cancelRef}
         onClose={() => {
-          onDeleteClose();
+          setIsDeleteOpen(false);
           setConfirmWalletId("");
           setWalletToDelete("");
         }}
       >
         <AlertDialogOverlay>
-          <AlertDialogContent bg="#1f1f1f" color="white">
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+          <AlertDialogContent className={styles.deleteDialog}>
+            <AlertDialogHeader className={styles.deleteDialogHeader}>
               Delete Wallet
             </AlertDialogHeader>
 
-            <AlertDialogBody>
-              <Text mb={4}>
+            <AlertDialogBody className={styles.deleteDialogBody}>
+              <Text className={styles.deleteConfirmText}>
                 To confirm deletion, please type the wallet ID:{" "}
                 <Text as="span" fontWeight="bold">
                   {walletToDelete}
@@ -482,14 +505,22 @@ export const CDPWalletsModal: React.FC<CDPWalletsModalProps> = ({
                 value={confirmWalletId}
                 onChange={(e) => setConfirmWalletId(e.target.value)}
                 placeholder="Enter wallet ID to confirm"
+                className={styles.deleteConfirmInput}
               />
             </AlertDialogBody>
 
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onDeleteClose}>
+            <AlertDialogFooter className={styles.deleteDialogFooter}>
+              <Button
+                ref={cancelRef}
+                onClick={() => setIsDeleteOpen(false)}
+                className={styles.cancelButton}
+              >
                 Cancel
               </Button>
-              <Button colorScheme="red" onClick={handleDeleteWallet} ml={3}>
+              <Button
+                onClick={handleDeleteWallet}
+                className={styles.confirmDeleteButton}
+              >
                 Delete
               </Button>
             </AlertDialogFooter>

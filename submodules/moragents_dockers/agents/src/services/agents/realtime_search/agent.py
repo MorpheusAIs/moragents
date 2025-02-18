@@ -22,7 +22,6 @@ class RealtimeSearchAgent(AgentCore):
 
     def __init__(self, config: Dict[str, Any], llm: Any, embeddings: Any):
         super().__init__(config, llm, embeddings)
-        self.last_search_term = None
         self.tools_provided = Config.tools
         self.tool_bound_llm = self.llm.bind_tools(self.tools_provided)
 
@@ -36,7 +35,7 @@ class RealtimeSearchAgent(AgentCore):
                         "Ask for clarification if a request is ambiguous."
                     )
                 ),
-                HumanMessage(content=request.prompt.content),
+                *request.messages_for_llm,
             ]
 
             result = self.tool_bound_llm.invoke(messages)
@@ -68,7 +67,7 @@ class RealtimeSearchAgent(AgentCore):
             logger.error(f"Error executing tool {func_name}: {str(e)}", exc_info=True)
             return AgentResponse.error(error_message=str(e))
 
-    def _perform_search_with_web_scraping(self, search_term: str) -> str:
+    def _perform_search_with_web_scraping(self, search_term: str) -> AgentResponse:
         """Perform web search using requests and BeautifulSoup."""
         logger.info(f"Performing web search for: {search_term}")
 
