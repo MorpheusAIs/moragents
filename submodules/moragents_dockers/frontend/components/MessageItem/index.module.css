@@ -1,23 +1,48 @@
-.messageGrid {
-  background-color: #020804;
+.messageContainer {
+  width: 100%;
+  display: flex;
+  padding: 16px;
+  justify-content: center;
   color: white;
-  border-radius: 4px;
+}
+
+.messageWrapper {
+  width: 100%;
+  max-width: 48rem;
+  display: flex;
+}
+
+.userMessage .messageWrapper {
+  justify-content: flex-end;
+}
+
+.userBubble {
+  background-color: #111613;
+  padding: 16px;
+  border-radius: 12px;
+  max-width: 80%;
+}
+
+.assistantContent {
+  width: 100%;
+  background-color: #000;
+}
+
+.agentName {
+  font-size: 14px;
+  color: #666;
   margin-bottom: 8px;
-  gap: 8px;
 }
 
-.nameText {
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 125%;
-  margin-top: 4px;
-  margin-left: 8px;
+/* Style markdown content to ensure proper contrast */
+.messageContainer :global(pre),
+.messageContainer :global(code) {
+  background-color: #111613;
+  border-radius: 4px;
+  padding: 2px 4px;
 }
 
-.messageText {
-  font-size: 16px;
-  line-height: 125%;
-  margin-top: 16px;
-  margin-bottom: 20px;
-  margin-left: 8px;
+.messageContainer :global(a) {
+  color: #2b95d6;
+  text-decoration: underline;
 }

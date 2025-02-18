@@ -1,0 +1,234 @@
+.menuButton {
+  transition: background-color 0.2s ease;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.menuButton:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.icon {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Wallet Item */
+.walletItem {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: all 0.2s ease;
+}
+
+.walletItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.walletName {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.networkId {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+.address {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+  font-family: monospace;
+}
+
+/* Action Buttons */
+.actions {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  gap: 4px;
+}
+
+.walletItem:hover .actions {
+  opacity: 1;
+}
+
+.actionButton {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  padding: 6px !important;
+  height: auto !important;
+  min-width: 0 !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.copyButton:hover {
+  background-color: rgba(66, 153, 225, 0.1) !important;
+  color: #4299e1 !important;
+}
+
+.starButton:hover {
+  background-color: rgba(236, 201, 75, 0.1) !important;
+  color: #ecc94b !important;
+}
+
+.starButton.active {
+  color: #ecc94b !important;
+}
+
+.downloadButton:hover {
+  background-color: rgba(72, 187, 120, 0.1) !important;
+  color: #48bb78 !important;
+}
+
+.deleteButton:hover {
+  background-color: rgba(245, 101, 101, 0.1) !important;
+  color: #f56565 !important;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14px;
+  padding: 24px;
+}
+
+/* Form Controls */
+.label {
+  color: white !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  margin-bottom: 8px !important;
+}
+
+.input,
+.select {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+}
+
+.input:hover,
+.select:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.input:focus,
+.select:focus {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.select option {
+  background-color: #080808;
+  color: white;
+}
+
+.fileUploadButton {
+  width: 100% !important;
+  height: auto !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  padding: 24px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.fileUploadButton:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.submitButton {
+  width: 100% !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  font-size: 14px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.submitButton:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.submitButton:active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Delete Dialog */
+.deleteDialog {
+  background: #080808 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  max-width: 400px !important;
+  margin: 16px !important;
+}
+
+.deleteDialogHeader {
+  color: white !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 16px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+}
+
+.deleteDialogBody {
+  padding: 16px !important;
+}
+
+.deleteConfirmText {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 14px !important;
+  margin-bottom: 16px !important;
+}
+
+.deleteConfirmInput {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border-radius: 8px !important;
+}
+
+.deleteDialogFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 16px !important;
+}
+
+.cancelButton {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+}
+
+.cancelButton:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.confirmDeleteButton {
+  background-color: rgba(245, 101, 101, 0.1) !important;
+  color: #f56565 !important;
+  margin-left: 8px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+}
+
+.confirmDeleteButton:hover {
+  background-color: rgba(245, 101, 101, 0.2) !important;
+}

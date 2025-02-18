@@ -25,7 +25,15 @@
     "react-markdown": "^9.0.0",
     "viem": "^2.8.12",
     "wagmi": "^2.5.11",
-    "lucide-react": "^0.454.0"
+    "lucide-react": "^0.454.0",
+    "@irys/web-upload": "^0.0.14",
+    "@irys/web-upload-ethereum": "^0.0.14",
+    "@irys/web-upload-ethereum-ethers-v6": "^0.0.14",
+    "ethers": "^6.13.5",
+    "@lit-protocol/lit-node-client": "^7.0.6",
+    "@lit-protocol/auth-helpers": "^7.0.6",
+    "@lit-protocol/core": "^7.0.6",
+    "@lit-protocol/encryption": "^7.0.6"
   },
   "devDependencies": {
     "@swc/cli": "^0.3.12",

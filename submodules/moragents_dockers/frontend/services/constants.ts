@@ -1,7 +1,12 @@
 import axios from "axios";
 import { getAvailableAgents } from "@/services/apiHooks";
 
-export const BASE_URL = "http://localhost:8080";
+const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "http://52.8.32.222:8888"
+    : "http://localhost:8888";
+
+export default BASE_URL;
 
 export const getHttpClient = () => {
   return axios.create({
@@ -51,19 +56,20 @@ export const DCA_AVAILABLE_FREQUENCIES = [
   { value: "monthly", label: "Monthly" },
 ];
 
-export enum AGENT_TYPES {
-  DEFAULT = "default",
-  IMAGEN = "imagen",
-  RAG = "rag",
-  CRYPTO_DATA = "crypto data",
-  TOKEN_SWAP = "token swap",
-  TWEET_SIZZLER = "tweet sizzler",
-  DCA = "dca",
-  BASE = "base",
-  MOR_CLAIMS = "mor claims",
-  MOR_REWARDS = "mor rewards",
-  REALTIME_SEARCH = "realtime search",
-  CRYPTO_NEWS = "crypto news",
-  DEXSCREENER = "dexscreener",
-  RUGCHECK = "rugcheck",
-}
+// export enum AGENT_TYPES {
+//   DEFAULT = "default",
+//   IMAGEN = "imagen",
+//   RAG = "rag",
+//   CRYPTO_DATA = "crypto data",
+//   TOKEN_SWAP = "token swap",
+//   TWEET_SIZZLER = "tweet sizzler",
+//   DCA = "dca",
+//   BASE = "base",
+//   MOR_CLAIMS = "mor claims",
+//   MOR_REWARDS = "mor rewards",
+//   REALTIME_SEARCH = "realtime search",
+//   CRYPTO_NEWS = "crypto news",
+//   DEXSCREENER = "dexscreener",
+//   ELFA = "elfa",
+//   RUGCHECK = "rugcheck",
+// }

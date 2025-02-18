@@ -5,12 +5,9 @@ import {
   Checkbox,
   Button,
   Text,
-  Heading,
-  useColorModeValue,
-  Container,
   useToast,
 } from "@chakra-ui/react";
-import { WalletRequiredModal } from "@/components/WalletRequiredModal";
+import styles from "./AgentSelection.module.css";
 
 interface Agent {
   name: string;
@@ -25,16 +22,12 @@ interface AgentSelectionProps {
 export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([]);
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
-  const [showWalletModal, setShowWalletModal] = useState(false);
   const toast = useToast();
-
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const textColor = useColorModeValue("gray.600", "gray.300");
 
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch("http://localhost:8080/agents/available");
+        const response = await fetch("http://localhost:8888/agents/available");
         const data = await response.json();
         setAvailableAgents(data.available_agents);
         setSelectedAgents(data.selected_agents);
@@ -47,11 +40,6 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   }, []);
 
   const handleAgentToggle = (agentName: string) => {
-    if (agentName === "swap" && !selectedAgents.includes(agentName)) {
-      setShowWalletModal(true);
-      return;
-    }
-
     setSelectedAgents((prev) => {
       if (prev.includes(agentName)) {
         return prev.filter((name) => name !== agentName);
@@ -63,6 +51,10 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
             status: "warning",
             duration: 3000,
             isClosable: true,
+            position: "top-right",
+            variant: "subtle",
+            bg: "#080808",
+            color: "white",
           });
           return prev;
         }
@@ -73,7 +65,7 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch("http://localhost:8080/agents/selected", {
+      const response = await fetch("http://localhost:8888/agents/selected", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,75 +83,39 @@ export const AgentSelection: React.FC<AgentSelectionProps> = ({ onSave }) => {
   };
 
   return (
-    <Container maxW="container.md" py={4}>
-      <Box display="flex" flexDirection="column" gap={4}>
-        <Box>
-          <Heading size="md" mb={2}>
-            Agent Configuration
-          </Heading>
-          <Text fontSize="sm" color={textColor}>
-            Select which agents you want to be available in the system. For
-            performance reasons, only 6 agents can be selected at a time.
-          </Text>
-        </Box>
+    <VStack spacing={4} align="stretch">
+      <Text className={styles.description}>
+        Select which agents you want to be available in the system. For
+        performance reasons, only 6 agents can be selected at a time.
+      </Text>
 
-        <Box
-          overflowY="auto"
-          maxH="40vh"
-          sx={{
-            "&::-webkit-scrollbar": {
-              width: "8px",
-            },
-            "&::-webkit-scrollbar-track": {
-              background: useColorModeValue("gray.100", "gray.800"),
-            },
-            "&::-webkit-scrollbar-thumb": {
-              background: useColorModeValue("gray.300", "gray.600"),
-              borderRadius: "4px",
-            },
-          }}
-        >
-          <VStack align="stretch" spacing={2}>
-            {availableAgents.map((agent) => (
-              <Box
-                key={agent.name}
-                p={4}
-                borderWidth="1px"
-                borderColor={borderColor}
-                borderRadius="md"
+      <Box className={styles.agentList}>
+        <VStack spacing={2} align="stretch">
+          {availableAgents.map((agent) => (
+            <Box key={agent.name} className={styles.agentItem}>
+              <Checkbox
+                isChecked={selectedAgents.includes(agent.name)}
+                onChange={() => handleAgentToggle(agent.name)}
                 width="100%"
+                className={styles.checkbox}
               >
-                <Checkbox
-                  isChecked={selectedAgents.includes(agent.name)}
-                  onChange={() => handleAgentToggle(agent.name)}
-                  width="100%"
-                  isDisabled={
-                    !selectedAgents.includes(agent.name) &&
-                    selectedAgents.length >= 6
-                  }
-                >
-                  <Box ml={4}>
-                    <VStack align="start" width="100%">
-                      <Text fontWeight="medium" textAlign="left">
-                        {agent.human_readable_name}
-                      </Text>
-                      <Text fontSize="sm" color={textColor} textAlign="left">
-                        {agent.description}
-                      </Text>
-                    </VStack>
-                  </Box>
-                </Checkbox>
-              </Box>
-            ))}
-          </VStack>
-        </Box>
-
-        <Button colorScheme="green" onClick={handleSave} size="md" width="100%">
-          Save Configuration
-        </Button>
+                <VStack align="start" spacing={1} ml={3}>
+                  <Text className={styles.agentName}>
+                    {agent.human_readable_name}
+                  </Text>
+                  <Text className={styles.agentDescription}>
+                    {agent.description}
+                  </Text>
+                </VStack>
+              </Checkbox>
+            </Box>
+          ))}
+        </VStack>
       </Box>
 
-      <WalletRequiredModal agentRequiresWallet={showWalletModal} />
-    </Container>
+      <Button onClick={handleSave} className={styles.saveButton}>
+        Save Configuration
+      </Button>
+    </VStack>
   );
 };

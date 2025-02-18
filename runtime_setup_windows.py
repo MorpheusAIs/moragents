@@ -11,9 +11,7 @@ docker_path = "docker"
 
 def check_docker_installed():
     try:
-        subprocess.run(
-            [docker_path, "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        subprocess.run([docker_path, "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
@@ -172,7 +170,7 @@ def docker_setup():
             "--name",
             "agents",
             "-p",
-            "8080:5000",
+            "8888:5000",
             "--restart",
             "always",
             "-v",

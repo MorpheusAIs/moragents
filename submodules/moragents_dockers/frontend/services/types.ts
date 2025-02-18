@@ -26,6 +26,18 @@ export type AssistantMessage = ChatMessageBase & {
     | ClaimMessagePayload;
 };
 
+export interface Conversation {
+  id: string;
+  messages: ChatMessage[];
+  createdAt: number;
+  hasUploadedFile: boolean;
+}
+
+export interface LocalStorageData {
+  conversations: { [key: string]: Conversation };
+  lastConversationId: number;
+}
+
 export type SwapTxPayloadType = {
   dstAmount: string;
   tx: {
@@ -122,3 +134,109 @@ export interface CoinbaseCredentials {
 export interface OneInchCredentials {
   api_key: string;
 }
+
+/**
+ * Represents all available agent types in the system.
+ * Each agent type corresponds to a specific message renderer and functionality.
+ */
+export enum AgentType {
+  /**
+   * Handles image generation requests and responses
+   */
+  IMAGEN = "imagen",
+
+  /**
+   * Processes and displays cryptocurrency data and charts
+   */
+  CRYPTO_DATA = "crypto_data",
+
+  /**
+   * Manages Base blockchain operations (transfers and swaps)
+   */
+  BASE_AGENT = "base_agent",
+
+  /**
+   * Handles token swap operations across different protocols
+   */
+  TOKEN_SWAP = "token_swap",
+
+  /**
+   * Provides DEX screening and token analysis
+   */
+  DEXSCREENER = "dexscreener",
+
+  /**
+   * Provides DEX screening and token analysis
+   */
+  ELFA = "elfa",
+
+  /**
+   * Provides crypto data via Codex.io
+   */
+  CODEX = "codex",
+
+  /**
+   * Manages Dollar Cost Averaging (DCA) strategies
+   */
+  DCA_AGENT = "dca_agent",
+
+  /**
+   * Processes and formats tweet content
+   */
+  TWEET_SIZZLER = "tweet_sizzler",
+
+  /**
+   * Manages MOR claims and rewards tracking
+   */
+  MOR_CLAIMS = "mor_claims",
+
+  /**
+   * Manages MOR rewards tracking
+   */
+  MOR_REWARDS = "mor_rewards",
+
+  /**
+   * Manages real-time search operations
+   */
+  REALTIME_SEARCH = "realtime_search",
+
+  /**
+   * Manages crypto news analysis
+   */
+  CRYPTO_NEWS = "crypto_news",
+
+  /**
+   * Manages crypto news analysis
+   */
+  NEWS_AGENT = "news_agent",
+
+  /**
+   * Manages document analysis / RAG
+   */
+  RAG = "rag",
+
+  /**
+   * Manages Rugcheck XYZ
+   */
+  RUGCHECK = "rugcheck",
+
+  /**
+   * The DEFAULT agent
+   */
+  DEFAULT = "default",
+}
+
+/**
+ * Type representing the possible action types for the Base agent
+ */
+export enum BaseAgentActionType {
+  TRANSFER = "transfer",
+  SWAP = "swap",
+}
+
+/**
+ * Type guard to check if a string is a valid AgentType
+ */
+export const isValidAgentType = (type: string): type is AgentType => {
+  return Object.values(AgentType).includes(type as AgentType);
+};

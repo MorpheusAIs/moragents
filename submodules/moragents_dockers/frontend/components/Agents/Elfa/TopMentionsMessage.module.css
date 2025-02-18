@@ -1,0 +1,92 @@
+/* ElfaTopMentionsMessage.module.css */
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mentionCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content {
+  color: #e4e4e4;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.metricsList {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #888;
+  font-size: 13px;
+}
+
+.timestamp {
+  color: #666;
+  font-size: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #e4e4e4;
+}
+
+.total {
+  color: #888;
+  font-size: 14px;
+}
+
+.showMoreButton {
+  width: 100%;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.showMoreButton:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #aaa;
+}
+
+@media (max-width: 640px) {
+  .mentionCard {
+    padding: 12px;
+  }
+
+  .metricsList {
+    gap: 12px;
+  }
+}

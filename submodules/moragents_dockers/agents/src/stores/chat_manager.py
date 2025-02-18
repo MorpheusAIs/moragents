@@ -1,7 +1,7 @@
 import logging
 import time
 from typing import Dict, List, Optional
-from src.models.core import ChatMessage, Conversation, AgentResponse
+from src.models.service.chat_models import ChatMessage, Conversation, AgentResponse
 
 logger = logging.getLogger(__name__)
 

@@ -140,9 +140,7 @@ def start_ollama_server():
     try:
         # Start Ollama server
         logger.info("Starting Ollama server...")
-        subprocess.Popen(
-            [ollama_path, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        subprocess.Popen([ollama_path, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         logger.info("Ollama server started successfully.")
     except Exception as e:
         logger.info("Failed to start Ollama server.")
@@ -179,7 +177,7 @@ def docker_setup():
             "--name",
             "agents",
             "-p",
-            "8080:5000",
+            "8888:5000",
             "--restart",
             "always",
             "-v",

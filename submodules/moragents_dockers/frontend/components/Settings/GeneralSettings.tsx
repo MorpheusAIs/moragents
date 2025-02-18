@@ -6,6 +6,7 @@ import {
   Textarea,
   Button,
 } from "@chakra-ui/react";
+import styles from "./GeneralSettings.module.css";
 
 interface GeneralSettingsProps {
   onSave: () => void;
@@ -18,7 +19,6 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ onSave }) => {
   });
 
   const handleSave = () => {
-    // TODO: Save to backend and incorporate into agent
     console.log("Saving general settings:", settings);
     onSave();
   };
@@ -26,7 +26,9 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ onSave }) => {
   return (
     <VStack spacing={6} align="stretch">
       <FormControl>
-        <FormLabel>Give your AI a personality</FormLabel>
+        <FormLabel className={styles.label}>
+          Give your AI a personality
+        </FormLabel>
         <Textarea
           value={settings.aiPersonality}
           onChange={(e) =>
@@ -34,11 +36,12 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ onSave }) => {
           }
           placeholder="Describe how you want your AI assistant to behave"
           rows={4}
+          className={styles.textarea}
         />
       </FormControl>
 
       <FormControl>
-        <FormLabel>Tell us about yourself</FormLabel>
+        <FormLabel className={styles.label}>Tell us about yourself</FormLabel>
         <Textarea
           value={settings.bio}
           onChange={(e) =>
@@ -46,10 +49,11 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({ onSave }) => {
           }
           placeholder="Share a bit about yourself"
           rows={4}
+          className={styles.textarea}
         />
       </FormControl>
 
-      <Button colorScheme="green" onClick={handleSave}>
+      <Button onClick={handleSave} className={styles.saveButton}>
         Save Settings
       </Button>
     </VStack>

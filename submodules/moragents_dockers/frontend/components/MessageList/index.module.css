@@ -1,0 +1,17 @@
+.messageList {
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 100%;
+  background-color: #000;
+}
+
+.messageList::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.messageList::-webkit-scrollbar-thumb {
+  background-color: #111613;
+  border-radius: 4px;
+}

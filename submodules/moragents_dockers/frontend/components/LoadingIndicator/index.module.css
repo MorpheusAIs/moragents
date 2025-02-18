@@ -1,24 +1,26 @@
-.messageGrid {
-  background-color: #020804;
+.messageContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
   color: white;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  gap: 8px;
-  padding: 16px;
+  min-height: 30px;
+  padding-bottom: 2px;
 }
 
-.nameText {
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 125%;
-  margin-top: 4px;
-  margin-left: 8px;
+.assistantContent {
+  background-color: #000;
+  border-radius: 12px;
+  text-align: center;
 }
 
-.messageText {
-  font-size: 16px;
-  line-height: 125%;
-  margin-top: 16px;
-  margin-bottom: 20px;
-  margin-left: 8px;
+.agentName {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 0px;
+}
+
+.loaderWrapper {
+  display: flex;
+  justify-content: center;
 }

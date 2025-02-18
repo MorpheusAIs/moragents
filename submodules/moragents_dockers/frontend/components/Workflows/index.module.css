@@ -1,0 +1,118 @@
+.menuButton {
+  transition: background-color 0.2s ease;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.menuButton:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.icon {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.select {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+}
+
+.select:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.select:focus {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.select option {
+  background-color: #080808 !important;
+  color: white !important;
+}
+
+.input {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  height: 40px !important;
+}
+
+.input:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.input:focus {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.numberInput {
+  width: 100% !important;
+}
+
+.stepperButton {
+  border: none !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.stepperButton:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.checkbox {
+  color: white !important;
+}
+
+.checkbox [class*="chakra-checkbox__control"] {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: transparent !important;
+}
+
+.checkbox [class*="chakra-checkbox__control"][data-checked] {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.button {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  font-size: 14px !important;
+  height: 40px !important;
+  border-radius: 8px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.button:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.button:active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Scrollbar styles */
+.modalContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalContent::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.modalContent::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}

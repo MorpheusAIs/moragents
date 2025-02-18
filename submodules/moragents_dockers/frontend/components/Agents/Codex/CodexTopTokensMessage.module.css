@@ -1,0 +1,186 @@
+/* CodexTopTokensMessage.module.css */
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #e4e4e4;
+}
+
+.total {
+  color: #888;
+  font-size: 14px;
+}
+
+.tokenCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mainInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.tokenInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.tokenImage {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tokenDetails {
+  min-width: 0;
+  flex: 1;
+}
+
+.tokenSymbol {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e4e4e4;
+}
+
+.tokenName {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.priceSection {
+  text-align: right;
+  min-width: 120px;
+}
+
+.currentPrice {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #e4e4e4;
+  justify-content: flex-end;
+}
+
+.contractInfo {
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+.metricsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #888;
+}
+
+.metricLabel {
+  color: #666;
+}
+
+.priceChanges {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.priceChangeItem {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.timeLabel {
+  color: #666;
+  width: 20px;
+  text-align: right;
+}
+
+.positive {
+  color: #4caf50;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.negative {
+  color: #f44336;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.showMoreButton {
+  width: 100%;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.showMoreButton:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #aaa;
+}
+
+@media (max-width: 640px) {
+  .metricsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .priceChanges {
+    display: none;
+  }
+}
