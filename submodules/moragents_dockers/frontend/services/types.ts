@@ -26,6 +26,18 @@ export type AssistantMessage = ChatMessageBase & {
     | ClaimMessagePayload;
 };
 
+export interface Conversation {
+  id: string;
+  messages: ChatMessage[];
+  createdAt: number;
+  hasUploadedFile: boolean;
+}
+
+export interface LocalStorageData {
+  conversations: { [key: string]: Conversation };
+  lastConversationId: number;
+}
+
 export type SwapTxPayloadType = {
   dstAmount: string;
   tx: {

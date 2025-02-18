@@ -1,33 +1,21 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { FC } from "react";
 import { Flex, Box, useBreakpointValue } from "@chakra-ui/react";
-import { ChatMessage } from "@/services/types";
-// import { useTransactionConfirmations } from "wagmi";
 import { MessageList } from "@/components/MessageList";
 import { ChatInput } from "@/components/ChatInput";
 import { LoadingIndicator } from "@/components/LoadingIndicator";
-import { ChatProps } from "@/components/Chat/types";
+import { useChatContext } from "@/contexts/chat/useChatContext";
 
-export const Chat: FC<ChatProps> = ({
-  onSubmitMessage,
-  messages,
+export const Chat: FC<{ isSidebarOpen?: boolean }> = ({
   isSidebarOpen = false,
-  setIsSidebarOpen,
 }) => {
-  const [messagesData, setMessagesData] = useState<ChatMessage[]>(messages);
-  const [isLoading, setIsLoading] = useState(false);
+  const { state, sendMessage } = useChatContext();
+  const { messages, currentConversationId, isLoading } = state;
 
+  const currentMessages = messages[currentConversationId] || [];
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      setMessagesData([...messages]);
-    }
-  }, [messages]);
-
   const handleSubmit = async (message: string, file: File | null) => {
-    setIsLoading(true);
-    await onSubmitMessage(message, file);
-    setIsLoading(false);
+    await sendMessage(message, file);
   };
 
   return (
@@ -43,11 +31,11 @@ export const Chat: FC<ChatProps> = ({
         ml="auto"
         mr="auto"
       >
-        <MessageList messages={messagesData} />
+        <MessageList messages={currentMessages} />
         {isLoading && <LoadingIndicator />}
         <ChatInput
           onSubmit={handleSubmit}
-          hasMessages={messagesData.length > 1}
+          hasMessages={currentMessages.length > 1}
           disabled={isLoading}
           isSidebarOpen={isSidebarOpen}
         />

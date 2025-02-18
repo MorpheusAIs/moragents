@@ -21,32 +21,31 @@ import {
   IconRefresh,
   IconTrash,
 } from "@tabler/icons-react";
+import { useRouter } from "next/router";
+import { ProfileMenu } from "./ProfileMenu";
+import styles from "./index.module.css";
+
+// Import from our new modular services
+import { useChatContext } from "@/contexts/chat/useChatContext";
 import {
   getAllConversations,
   createNewConversation,
   clearMessagesHistory,
-} from "@/services/chat_management/sessions";
-import { ProfileMenu } from "./ProfileMenu";
-import styles from "./index.module.css";
-import { useRouter } from "next/router";
+} from "@/contexts/chat";
 
 export type LeftSidebarProps = {
   isSidebarOpen: boolean;
   onToggleSidebar: (open: boolean) => void;
-  currentConversationId: string;
-  onConversationSelect: (conversationId: string) => void;
-  onDeleteConversation: (conversationId: string) => void;
-  setCurrentConversationId: (conversationId: string) => void;
 };
 
 export const LeftSidebar: FC<LeftSidebarProps> = ({
   isSidebarOpen,
   onToggleSidebar,
-  currentConversationId,
-  onConversationSelect,
-  onDeleteConversation,
-  setCurrentConversationId,
 }) => {
+  // Use our centralized chat context
+  const { state, setCurrentConversation, deleteChat } = useChatContext();
+  const { currentConversationId } = state;
+
   const [conversations, setConversations] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -72,8 +71,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
       // Create new conversation in local storage
       const newConversationId = createNewConversation();
       fetchConversations();
-      onConversationSelect(newConversationId);
-      setCurrentConversationId(newConversationId);
+      setCurrentConversation(newConversationId);
     } catch (error) {
       console.error("Failed to create new conversation:", error);
     } finally {
@@ -83,11 +81,10 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      await onDeleteConversation(conversationId);
+      await deleteChat(conversationId);
       fetchConversations();
       if (conversationId === currentConversationId) {
-        onConversationSelect("default");
-        setCurrentConversationId("default");
+        setCurrentConversation("default");
       }
     } catch (error) {
       console.error("Failed to delete conversation:", error);
@@ -158,10 +155,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                     ? styles.conversationActive
                     : ""
                 }`}
-                onClick={() => {
-                  onConversationSelect(conversationId);
-                  setCurrentConversationId(conversationId);
-                }}
+                onClick={() => setCurrentConversation(conversationId)}
               >
                 <span className={styles.conversationName}>
                   {formatConversationName(conversationId)}

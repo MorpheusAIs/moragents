@@ -51,11 +51,9 @@ class DelegationController:
                 logger.error(f"Agent {current_agent} returned invalid response type {type(agent_response)}")
                 raise HTTPException(status_code=500, detail="Agent returned invalid response type")
 
-            # Convert to API response and add to chat history
-            chat_manager_instance.add_response(agent_response.dict(), current_agent, chat_request.conversation_id)
-
-            logger.info(f"Sending response: {agent_response.dict()}")
-            return agent_response.dict()
+            response = agent_response.to_chat_message(current_agent).model_dump()
+            logger.info(f"Sending response: {response}")
+            return JSONResponse(content=response)
 
         except HTTPException:
             raise

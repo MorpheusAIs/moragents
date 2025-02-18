@@ -3,11 +3,11 @@ import {
   uploadToIrys,
   decryptData,
   downloadFromIrys,
-} from "@/services/lit_protocol/utils";
+} from "@/services/LitProtocol/utils";
 import {
   getStorageData,
   saveStorageData,
-} from "@/services/chat_management/sessions";
+} from "@/services/ChatManagement/sessions";
 
 export const encryptAndUploadChats = async (): Promise<string> => {
   try {

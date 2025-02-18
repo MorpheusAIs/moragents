@@ -20,7 +20,7 @@ import {
   uploadToIrys,
   decryptData,
   downloadFromIrys,
-} from "@/services/lit_protocol/utils";
+} from "@/services/LitProtocol/utils";
 import styles from "./ApiCredentials.module.css";
 
 interface CodexConfigProps {

@@ -1,0 +1,29 @@
+.container {
+  background-color: #000;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.contentWrapper {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.sidebarWrapper {
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.chatWrapper {
+  flex: 1;
+  overflow: hidden;
+  transition: margin 0.3s ease;
+}

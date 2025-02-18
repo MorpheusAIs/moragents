@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import Dict, List, Optional, Pattern
 
 from src.models.service.agent_config import AgentConfig
 
@@ -7,9 +7,9 @@ from src.models.service.agent_config import AgentConfig
 class TokenRegistry:
     """Registry for mapping between token names and mint addresses."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         # This mapping should be regularly updated with the most popular tokens
-        self._name_to_mint = {
+        self._name_to_mint: Dict[str, str] = {
             "BONK": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",  # BONK
             "RAY": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",  # Raydium
             "MEAN": "MEANeD3XDdUmNMsRGjASkSWdC8prLYsoRJ61pPeHctD",  # Mean Protocol
@@ -62,10 +62,10 @@ class TokenRegistry:
         }
 
         # Create reverse mapping
-        self._mint_to_name = {v: k for k, v in self._name_to_mint.items()}
+        self._mint_to_name: Dict[str, str] = {v: k for k, v in self._name_to_mint.items()}
 
         # Compile regex pattern for Solana mint addresses (base58 encoded public keys)
-        self._mint_pattern = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,44}$")
+        self._mint_pattern: Pattern[str] = re.compile(r"^[1-9A-HJ-NP-Za-km-z]{32,44}$")
 
     def get_mint_by_name(self, name: str) -> Optional[str]:
         """Get mint address for a token name (case-insensitive)."""
