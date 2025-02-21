@@ -81,6 +81,7 @@ Fully Extensible! Add your own agents and have them automatically invoked based 
    ```shell
       $ xcode-select --install
    ```
+- If you don't already have Docker installed, the installation may fail the first time. Simply run Docker, grant permissions as needed, and ensure you are logged in with a Docker account. Then run the installation a second time and it should work.
 ---
 
 ### Windows (x86_64)
