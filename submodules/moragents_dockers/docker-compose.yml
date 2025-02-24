@@ -1,5 +1,4 @@
 version: "3.8"
-
 services:
   agents:
     image: lachsbagel/moragents_dockers-agents:amd64-0.2.2
@@ -12,10 +11,10 @@ services:
     volumes:
       - agents_data:/var/lib/agents
       - ./agents/src:/app/src
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
-      - BASE_URL=http://host.docker.internal:11434
+      - BASE_URL=http://ollama:11434
+    networks:
+      - ollama-network
 
   nginx:
     image: lachsbagel/moragents_dockers-nginx:amd64-0.2.2
@@ -25,6 +24,22 @@ services:
       target: nginx
     ports:
       - "3333:80"
+    networks:
+      - ollama-network
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - ollama-network
+
+networks:
+  ollama-network:
+    driver: bridge
 
 volumes:
   agents_data:
+  ollama_data:
