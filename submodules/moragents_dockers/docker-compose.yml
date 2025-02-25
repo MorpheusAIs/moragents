@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
       context: ./agents
     ports:
-      - "8080:5000"
+      - "8888:5000"
     restart: always
     volumes:
       - agents_data:/var/lib/agents

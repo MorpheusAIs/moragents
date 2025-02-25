@@ -1,0 +1,20 @@
+{
+  "Parameters": [
+    {
+      "ParameterKey": "Environment",
+      "ParameterValue": "production"
+    },
+    {
+      "ParameterKey": "DomainName",
+      "ParameterValue": "your-domain.com"
+    },
+    {
+      "ParameterKey": "BackendInstanceType",
+      "ParameterValue": "t4g.small"
+    },
+    {
+      "ParameterKey": "SSLCertificateArn",
+      "ParameterValue": "arn:aws:acm:region:account:certificate/certificate-id"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 500;
+  color: #e4e4e4;
+}
+
+.scoreWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.highScore {
+  color: #ef4444;
+}
+
+.mediumScore {
+  color: #f59e0b;
+}
+
+.lowScore {
+  color: #22c55e;
+}
+
+.addressBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.address {
+  font-family: monospace;
+  font-size: 14px;
+  color: #888;
+}
+
+.copyButton {
+  color: #666;
+  background: none;
+  border: none;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.copyButton:hover {
+  color: #888;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.riskList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.riskCard {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dangerRisk {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.warnRisk {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.infoRisk {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.riskHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.riskName {
+  font-size: 16px;
+  font-weight: 500;
+  color: #e4e4e4;
+}
+
+.riskValue {
+  font-size: 14px;
+  color: #888;
+}
+
+.riskDescription {
+  color: #888;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.riskScore {
+  color: #666;
+  font-size: 12px;
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .riskCard {
+    padding: 12px;
+  }
+}

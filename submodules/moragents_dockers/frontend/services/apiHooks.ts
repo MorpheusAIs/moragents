@@ -115,46 +115,6 @@ export const sendSwapStatus = async (
   }
 };
 
-export const getMessagesHistory = async (
-  backendClient: Axios,
-  conversationId: string = "default"
-): Promise<ChatMessage[]> => {
-  const responseBody = await backendClient.get("/chat/messages", {
-    params: {
-      conversation_id: conversationId,
-    },
-  });
-
-  return responseBody.data.messages.map((message: any) => {
-    return {
-      role: message.role,
-      content: message.content,
-      agentName: message.agentName,
-      error_message: message.error_message,
-      metadata: message.metadata,
-      requires_action: message.requires_action,
-      action_type: message.action_type,
-      timestamp: message.timestamp,
-    } as ChatMessage;
-  });
-};
-
-export const clearMessagesHistory = async (
-  backendClient: Axios,
-  conversationId: string = "default"
-): Promise<void> => {
-  try {
-    await backendClient.get("/chat/clear", {
-      params: {
-        conversation_id: conversationId,
-      },
-    });
-  } catch (error) {
-    console.error("Failed to clear message history:", error);
-    throw error;
-  }
-};
-
 export const writeMessage = async (
   history: ChatMessage[],
   message: string,
@@ -171,7 +131,7 @@ export const writeMessage = async (
   history.push(newMessage);
   let resp;
   try {
-    resp = await backendClient.post("/chat", {
+    resp = await backendClient.post("/api/v1/chat", {
       prompt: {
         role: "user",
         content: message,
@@ -185,20 +145,6 @@ export const writeMessage = async (
   }
 
   return await getMessagesHistory(backendClient, conversationId);
-};
-
-export const createNewConversation = async (
-  backendClient: Axios
-): Promise<string> => {
-  const response = await backendClient.post("/chat/conversations");
-  return response.data.conversation_id;
-};
-
-export const deleteConversation = async (
-  backendClient: Axios,
-  conversationId: string
-): Promise<void> => {
-  await backendClient.delete(`/chat/conversations/${conversationId}`);
 };
 
 export const postTweet = async (
@@ -347,6 +293,65 @@ export const setOneInchCredentials = async (
     return response.data;
   } catch (error) {
     console.error("Failed to set 1inch API keys:", error);
+    throw error;
+  }
+};
+
+import { Axios } from "axios";
+
+interface ElfaCredentials {
+  api_key: string;
+}
+
+interface CodexCredentials {
+  api_key: string;
+}
+
+interface SantimentCredentials {
+  api_key: string;
+}
+
+export const setElfaCredentials = async (
+  backendClient: Axios,
+  keys: ElfaCredentials
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/keys/elfa", {
+      api_key: keys.api_key,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set Elfa API keys:", error);
+    throw error;
+  }
+};
+
+export const setCodexCredentials = async (
+  backendClient: Axios,
+  keys: CodexCredentials
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/keys/codex", {
+      api_key: keys.api_key,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set Codex API keys:", error);
+    throw error;
+  }
+};
+
+export const setSantimentCredentials = async (
+  backendClient: Axios,
+  keys: SantimentCredentials
+): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await backendClient.post("/keys/santiment", {
+      api_key: keys.api_key,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to set Santiment API keys:", error);
     throw error;
   }
 };

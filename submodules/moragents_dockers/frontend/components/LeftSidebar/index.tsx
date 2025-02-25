@@ -1,152 +1,109 @@
 import React, { FC, useEffect, useState } from "react";
-import { useToast, Select, VStack, Box, Text } from "@chakra-ui/react";
 import {
-  IconTrash,
-  IconPencilPlus,
+  Box,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  Select,
+  Text,
+  VStack,
+  Popover,
+  PopoverContent,
+  PopoverBody,
+  PopoverArrow,
+  PopoverTrigger,
+} from "@chakra-ui/react";
+import {
   IconChevronLeft,
   IconChevronRight,
+  IconPlus,
+  IconSearch,
   IconRefresh,
+  IconTrash,
 } from "@tabler/icons-react";
-import { getHttpClient } from "@/services/constants";
+import { useRouter } from "next/router";
+import { ProfileMenu } from "./ProfileMenu";
+import styles from "./index.module.css";
+
+// Import from our new modular services
+import { useChatContext } from "@/contexts/chat/useChatContext";
 import {
+  getAllConversations,
   createNewConversation,
   clearMessagesHistory,
-} from "@/services/apiHooks";
-import { SettingsButton } from "@/components/Settings";
-import { Workflows } from "@/components/Workflows";
-import styles from "./index.module.css";
-import { useRouter } from "next/router";
-import { ApiCredentialsButton } from "@/components/Credentials/Button";
+} from "@/contexts/chat";
 
 export type LeftSidebarProps = {
-  /** Whether the sidebar is currently open (expanded) or collapsed */
   isSidebarOpen: boolean;
-  /** Callback to toggle the sidebar state */
   onToggleSidebar: (open: boolean) => void;
-
-  /** Your existing props for conversation management */
-  currentConversationId: string;
-  onConversationSelect: (conversationId: string) => void;
-  onDeleteConversation: (conversationId: string) => void;
-  setCurrentConversationId: (conversationId: string) => void;
 };
 
 export const LeftSidebar: FC<LeftSidebarProps> = ({
   isSidebarOpen,
   onToggleSidebar,
-  currentConversationId,
-  onConversationSelect,
-  onDeleteConversation,
-  setCurrentConversationId,
 }) => {
+  // Use our centralized chat context
+  const { state, setCurrentConversation, deleteChat } = useChatContext();
+  const { currentConversationId } = state;
+
   const [conversations, setConversations] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("llama3.2:3b");
-  const backendClient = getHttpClient();
   const router = useRouter();
-  const toast = useToast();
+  const ToggleIcon = isSidebarOpen ? IconChevronLeft : IconChevronRight;
 
   const modelOptions = [{ value: "llama3.2:3b", label: "Llama 3.2 (3B)" }];
 
-  // Decide which icon to show depending on whether the sidebar is open
-  const ToggleIcon = isSidebarOpen ? IconChevronLeft : IconChevronRight;
-
-  // Fetch existing conversations from your backend
-  const fetchConversations = async () => {
+  const fetchConversations = () => {
     try {
-      const response = await getHttpClient().get("/chat/conversations");
-      const conversationIds: string[] = response.data.conversation_ids;
-      // Ensure "default" is always at the top if it exists
-      conversationIds.sort((a, b) => {
-        if (a === "default") return -1;
-        if (b === "default") return 1;
-        return a.localeCompare(b);
-      });
+      // Get conversations from local storage
+      const conversationIds = getAllConversations();
       setConversations(conversationIds);
     } catch (error) {
       console.error("Failed to fetch conversations:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch conversations",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
     }
   };
 
-  // Create a new conversation
   const handleCreateNewConversation = async () => {
     setIsLoading(true);
     try {
-      const response = await createNewConversation(getHttpClient());
-      await fetchConversations();
-      onConversationSelect(response);
-      setCurrentConversationId(response);
-      toast({
-        title: "Success",
-        description: "New conversation created",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
+      // Create new conversation in local storage
+      const newConversationId = createNewConversation();
+      fetchConversations();
+      setCurrentConversation(newConversationId);
     } catch (error) {
       console.error("Failed to create new conversation:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create new conversation",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Delete a conversation
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      await onDeleteConversation(conversationId);
-      await fetchConversations();
+      await deleteChat(conversationId);
+      fetchConversations();
       if (conversationId === currentConversationId) {
-        onConversationSelect("default");
-        setCurrentConversationId("default");
+        setCurrentConversation("default");
       }
-      toast({
-        title: "Success",
-        description: "Conversation deleted",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
     } catch (error) {
       console.error("Failed to delete conversation:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete conversation",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
     }
   };
 
   const handleClearChatHistory = async () => {
     try {
-      await clearMessagesHistory(backendClient);
+      clearMessagesHistory(currentConversationId);
       router.reload();
     } catch (error) {
       console.error("Failed to clear chat history:", error);
     }
   };
 
-  // On mount, fetch conversations
   useEffect(() => {
     fetchConversations();
-  }, []);
+  }, [currentConversationId]);
 
-  // Simple function to give each conversation a friendly name
   const formatConversationName = (id: string) => {
     if (id === "default") return "Default Chat";
     const parts = id.split("_");
@@ -154,26 +111,43 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
     return `Chat ${number}`;
   };
 
+  const filteredConversations = conversations.filter((conv) =>
+    formatConversationName(conv)
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div
       className={`${styles.sidebarContainer} ${
-        isSidebarOpen ? "" : styles.collapsed
+        !isSidebarOpen ? styles.collapsed : ""
       }`}
     >
-      {/* Sidebar Content */}
       <div className={styles.sidebar}>
         <div className={styles.container}>
-          <div className={styles.mainContent}>
+          <div className={styles.searchContainer}>
+            <InputGroup>
+              <InputLeftElement>
+                <IconSearch className={styles.searchIcon} size={16} />
+              </InputLeftElement>
+              <Input
+                placeholder="Search chats..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={styles.searchInput}
+              />
+            </InputGroup>
             <button
-              className={styles.newChatButton}
+              className={styles.newChatIcon}
               onClick={handleCreateNewConversation}
               disabled={isLoading}
             >
-              <IconPencilPlus size={16} />
-              <span>New chat</span>
+              <IconPlus size={16} />
             </button>
+          </div>
 
-            {conversations.map((conversationId) => (
+          <div className={styles.mainContent}>
+            {filteredConversations.map((conversationId) => (
               <div
                 key={conversationId}
                 className={`${styles.conversationItem} ${
@@ -181,10 +155,7 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
                     ? styles.conversationActive
                     : ""
                 }`}
-                onClick={() => {
-                  onConversationSelect(conversationId);
-                  setCurrentConversationId(conversationId);
-                }}
+                onClick={() => setCurrentConversation(conversationId)}
               >
                 <span className={styles.conversationName}>
                   {formatConversationName(conversationId)}
@@ -215,65 +186,90 @@ export const LeftSidebar: FC<LeftSidebarProps> = ({
             ))}
           </div>
 
-          <VStack spacing={4} className={styles.sidebarFooter} align="stretch">
-            <Box display="flex" flexDirection="column" gap={2}>
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Text fontSize="md" fontWeight="bold" color="white" mr={2}>
-                  Model:
-                </Text>
-                <Select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  size="md"
-                  bg="#1f1f1f"
+          <Box width="100%" mb={1}>
+            <Popover
+              placement="top"
+              trigger="hover"
+              openDelay={0}
+              closeDelay={0}
+            >
+              <PopoverTrigger>
+                <Box
+                  as="button"
+                  width="100%"
+                  bg="rgba(255, 255, 255, 0.05)"
                   color="white"
-                  borderColor="rgba(255, 255, 255, 0.2)"
-                  _hover={{ borderColor: "rgba(255, 255, 255, 0.4)" }}
-                  _focus={{ borderColor: "teal.400" }}
-                  width="65%"
+                  borderColor="rgba(255, 255, 255, 0.1)"
+                  borderWidth="1px"
+                  borderRadius="8px"
+                  fontSize="15px"
+                  fontWeight="500"
+                  height="40px"
+                  opacity="0.8"
+                  cursor="pointer"
+                  _hover={{ bg: "rgba(255, 255, 255, 0.08)" }}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
                 >
-                  {modelOptions.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                      style={{ backgroundColor: "#1f1f1f", color: "white" }}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </Box>
-
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
+                  Create or Trade Tokenized Agents
+                </Box>
+              </PopoverTrigger>
+              <PopoverContent
+                bg="#080808"
+                borderColor="rgba(255, 255, 255, 0.1)"
+                boxShadow="0 4px 12px rgba(0, 0, 0, 0.2)"
+                color="white"
+                fontSize="14px"
+                maxWidth="380px"
+                _focus={{
+                  boxShadow: "none",
+                  outline: "none",
+                }}
               >
-                <Text fontSize="md" fontWeight="bold" color="white" mr={2}>
-                  Cost:
-                </Text>
-                <Text fontSize="sm" color="green.400" fontWeight="500">
-                  Free. Running locally.
-                </Text>
+                <PopoverArrow bg="#080808" />
+                <PopoverBody p={4}>
+                  All of the functionality in moragents can be leveraged in your
+                  own custom agents that can trade for you, post on X, and more.
+                  Agent tokenization is coming soon.
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
+          </Box>
+
+          <div className={styles.footer}>
+            <VStack spacing={4} align="stretch" width="100%">
+              <Box width="100%">
+                <Box className={styles.modelSelection}>
+                  <Text className={styles.modelLabel}>Model:</Text>
+                  <Select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    className={styles.modelSelect}
+                  >
+                    {modelOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Box>
+                <div className={styles.comingSoonContainer}>
+                  <Text className={styles.costInfo}>Coming soon</Text>
+                  <Text className={styles.modelNote}>
+                    Stake your Morpheus tokens to access more powerful models
+                    and leverage builder keys to automatically enable advanced
+                    agents.
+                  </Text>
+                </div>
               </Box>
+            </VStack>
 
-              <Text fontSize="sm" color="gray.400" fontStyle="italic">
-                More powerful models are coming soon via the Lumerin Node Router
-              </Text>
-            </Box>
-
-            <Workflows />
-            <ApiCredentialsButton />
-            <SettingsButton />
-          </VStack>
+            <ProfileMenu />
+          </div>
         </div>
       </div>
 
-      {/* Toggle Button on the right edge of the sidebar */}
       <button
         className={styles.toggleButton}
         onClick={() => onToggleSidebar(!isSidebarOpen)}

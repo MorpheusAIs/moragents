@@ -2,24 +2,38 @@
   position: relative;
   width: 100%;
   background-color: transparent;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .flexContainer {
-  margin-top: 1rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  margin-top: 0.5rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
   background-color: transparent;
   width: 100%;
 }
 
+/* @media (min-width: 640px) {
+  .flexContainer {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+} */
+
 .inputGroup {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.2rem;
   border-radius: 8px;
-  background-color: #353936;
+  background-color: #333;
   width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .inputGroup {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .fileAddon {
@@ -27,6 +41,16 @@
   border: none !important;
   color: #59f886 !important;
   cursor: pointer;
+  padding: 8px !important;
+  display: flex;
+  align-items: center;
+}
+
+.fileAddon button {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
 }
 
 .hiddenInput {
@@ -39,8 +63,15 @@
 
 .messageInput {
   border: none !important;
-  color: white !important;
+  color: white;
   width: 100%;
+  font-size: 12px;
+}
+
+@media (min-width: 640px) {
+  .messageInput {
+    font-size: 16px;
+  }
 }
 
 .messageInput:focus {
@@ -55,8 +86,13 @@
 
 .sendButton {
   background-color: transparent !important;
-  font-size: 24px;
   color: #59f886 !important;
+}
+
+@media (max-width: 768px) {
+  .sendButton {
+    padding: 0.5rem;
+  }
 }
 
 .sendButton:hover {

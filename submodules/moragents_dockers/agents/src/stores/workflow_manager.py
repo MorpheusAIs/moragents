@@ -7,7 +7,7 @@ import aiofiles
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field
 from enum import Enum
-from src.agents.dca_agent.tools import DCAActionHandler
+from src.services.agents.dca_agent.tools import DCAActionHandler
 
 logger = logging.getLogger(__name__)
 
